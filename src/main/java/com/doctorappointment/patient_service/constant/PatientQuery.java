@@ -48,4 +48,8 @@ public class PatientQuery {
     //get all patients
     public static final String GET_ALL_PATIENTS =
             "SELECT * FROM " + PATIENTS_TABLE;
+
+    //exists by email
+    public static final String EXISTS_BY_EMAIL=
+            "SELECT " + PATIENT_EMAIL + " FROM " + PATIENTS_TABLE + " WHERE " + PATIENT_EMAIL + " =?";
 }
