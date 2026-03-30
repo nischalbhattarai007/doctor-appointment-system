@@ -12,22 +12,17 @@ import java.util.regex.Pattern;
 
 @Introspected
 @Serdeable
-@Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
-public class PatientModel {
-    private UUID patientId;
-    private String firstName;
-    private String lastName;
-    private String email;
-    private String password;
-    private boolean isDeleted;
-    private String phoneNumber;
-    private String address;
+@Builder(toBuilder = true)
+public record PatientModel (UUID patientId,
+                            String firstName,
+                            String lastName,
+                            String email,
+                            String password,
+                            boolean isDeleted,
+                            String phoneNumber,
+                            String address) {
 
-    public void  validateAddPatient(){
+    public PatientModel {
         //name validation
             if (isNullOrEmpty(firstName) ){
                 throw new ValidationException(" first name cannot be empty or null");
@@ -61,7 +56,7 @@ public class PatientModel {
             if(!normalizedPhone.startsWith("97") && !normalizedPhone.startsWith("98")){
                 throw new InvalidPhoneNumberException("Invalid phone number");
             }
-            this.phoneNumber="+977 " + normalizedPhone;
+            phoneNumber="+977 " + normalizedPhone;
 
             //password validation
         if(isNullOrEmpty(password)){
@@ -75,7 +70,6 @@ public class PatientModel {
         if(isNullOrEmpty(address)){
             throw new ValidationException(" address cannot be empty or null");
         }
-
     }
 
     public boolean isNullOrEmpty(String value){
