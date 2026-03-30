@@ -7,9 +7,10 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface PatientRepoInterface {
-    void addPatient(PatientModel patient);
+    PatientModel addPatient(PatientModel patient);
    Optional<PatientModel> getPatientById(UUID id);
     Optional<PatientModel> getPatientByEmail(String email);
     void updatePatient(PatientModel patient);
     void deletePatient(UUID id);
+    boolean existsPatientByEmail(String email);
 }
