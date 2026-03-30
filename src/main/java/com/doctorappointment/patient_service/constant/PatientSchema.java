@@ -15,6 +15,6 @@ public class PatientSchema {
     public static final String PATIENT_PASSWORD = "password";
     public static final String PATIENT_ADDRESS = "address";
     public static final String PATIENT_PHONE = "phone_number";
-    public static final boolean IS_DELETED = false;
+    public static final String IS_DELETED = "is_deleted";
 
 }
