@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.doctorappointment";
+option java_outer_classname = "PatientProto";
+option objc_class_prefix = "HLW";
+
+package com.doctorappointment;
+
+service PatientService{
+
+}

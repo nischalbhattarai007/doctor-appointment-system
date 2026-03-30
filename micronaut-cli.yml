@@ -1,0 +1,6 @@
+applicationType: grpc
+defaultPackage: com.doctorappointment
+testFramework: junit
+sourceLanguage: java
+buildTool: gradle
+features: [app-name, cassandra, discovery-core, gradle, grpc, http-client-test, java, java-application, junit, lombok, micronaut-build, nats, properties, readme, security, security-annotations, serialization-jackson, shade, slf4j-simple]

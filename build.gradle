@@ -1,0 +1,86 @@
+plugins {
+    id("io.micronaut.application") version "4.6.2"
+    id("com.google.protobuf") version "0.9.4"
+    id("com.gradleup.shadow") version "8.3.9"
+}
+
+version = "0.1"
+group = "com.doctorappointment"
+
+
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    annotationProcessor("org.projectlombok:lombok")
+    annotationProcessor("io.micronaut.security:micronaut-security-annotations")
+    annotationProcessor("io.micronaut.serde:micronaut-serde-processor")
+    implementation("io.micronaut:micronaut-discovery-core")
+    implementation("io.micronaut.cassandra:micronaut-cassandra")
+    implementation("io.micronaut.grpc:micronaut-grpc-runtime")
+    implementation("io.micronaut.nats:micronaut-nats")
+    implementation("io.micronaut.security:micronaut-security")
+    implementation("io.micronaut.serde:micronaut-serde-jackson")
+    implementation("javax.annotation:javax.annotation-api")
+    compileOnly("org.projectlombok:lombok")
+    runtimeOnly("org.slf4j:slf4j-simple")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+
+
+
+application {
+    mainClass = "com.doctorappointment.Application"
+}
+
+java {
+    sourceCompatibility = JavaVersion.toVersion("25")
+    targetCompatibility = JavaVersion.toVersion("25")
+}
+
+
+
+
+
+
+sourceSets {
+    main {
+        java {
+            srcDirs("build/generated/source/proto/main/grpc")
+            srcDirs("build/generated/source/proto/main/java")
+        }
+    }
+}
+
+protobuf {
+    protoc { artifact = "com.google.protobuf:protoc:3.25.8" }
+    plugins {
+        grpc { artifact = "io.grpc:protoc-gen-grpc-java:1.75.0" }
+    }
+    generateProtoTasks {
+        all()*.plugins { grpc {} }
+    }
+}
+
+
+
+micronaut {
+    testRuntime("junit5")
+    processing {
+        incremental(true)
+        annotations("com.doctorappointment.*")
+    }
+}
+
+tasks.named("dockerfileNative") {
+    jdkVersion = "25"
+}
+
+
+
+
+
+
+
