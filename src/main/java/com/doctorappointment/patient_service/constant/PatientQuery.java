@@ -1,7 +1,7 @@
 package com.doctorappointment.patient_service.constant;
 import static com.doctorappointment.patient_service.constant.PatientSchema.*;
 public class PatientQuery {
-    //
+    // insert patients details
     public static final String INSERT=
             "INSERT INTO " + PATIENTS_TABLE +
                     " ("+
@@ -22,15 +22,15 @@ public class PatientQuery {
                     PATIENT_PHONE+", :"+
                     IS_DELETED +
                     ")";
-
+//get patients by id
     public static final String FIND_BY_ID =
             "SELECT * FROM " + PATIENTS_TABLE +
                     " WHERE " + PATIENT_ID + " =:" + PATIENT_ID;
-
+//get patients by email
     public static final String FIND_BY_EMAIL =
             "SELECT * FROM " + PATIENTS_TABLE +
                     " WHERE " + PATIENT_EMAIL + " =:" + PATIENT_EMAIL;
-
+//update patients details
     public static final String UPDATE =
             "UPDATE " + PATIENTS_TABLE +
                     " SET "  +
@@ -39,7 +39,7 @@ public class PatientQuery {
                     PATIENT_PHONE + " =:" + PATIENT_PHONE + ", " +
                     PATIENT_ADDRESS      + " =:" + PATIENT_ADDRESS      +
                     " WHERE " + PATIENT_ID + " =:" + PATIENT_ID;
-
+//soft delete patients details
     public static final String SOFT_DELETE =
             "UPDATE " + PATIENTS_TABLE +
                     " SET "  + IS_DELETED + " = true" +
