@@ -6,10 +6,12 @@ import com.doctorappointment.config.ScyllaDbConfig;
 import com.doctorappointment.patient_service.constant.PatientQuery;
 import com.doctorappointment.patient_service.constant.PatientSchema;
 import com.doctorappointment.patient_service.dto.PatientModel;
+import jakarta.inject.Singleton;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
-
+@Singleton
 class PatientRepository implements PatientRepoInterface {
     private final ScyllaDbConfig config;
     private final CqlSession session;
@@ -41,13 +43,18 @@ class PatientRepository implements PatientRepoInterface {
     }
 
     @Override
-    public PatientModel getPatientById(UUID id) {
-        return null;
+    public Optional<PatientModel> getPatientById(UUID id) {
+        return Optional.empty();
     }
 
     @Override
-    public PatientModel updatePatient(PatientModel patient) {
-        return null;
+    public Optional<PatientModel> getPatientByEmail(String email) {
+        return Optional.empty();
+    }
+
+    @Override
+    public void updatePatient(PatientModel patient) {
+
     }
 
     @Override
@@ -55,13 +62,5 @@ class PatientRepository implements PatientRepoInterface {
 
     }
 
-    @Override
-    public List<PatientModel> getAllPatients() {
-        return List.of();
-    }
 
-    @Override
-    public PatientModel getPatientByEmail(String email) {
-        return null;
-    }
 }
