@@ -44,4 +44,8 @@ public class PatientQuery {
             "UPDATE " + PATIENTS_TABLE +
                     " SET "  + IS_DELETED + " = true" +
                     " WHERE " + PATIENT_ID + " =:" + PATIENT_ID;
+
+    //get all patients
+    public static final String GET_ALL_PATIENTS =
+            "SELECT * FROM " + PATIENTS_TABLE;
 }
