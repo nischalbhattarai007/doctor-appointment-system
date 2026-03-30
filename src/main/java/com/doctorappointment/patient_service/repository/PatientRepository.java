@@ -1,7 +1,9 @@
 package com.doctorappointment.patient_service.repository;
 
 import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.BoundStatement;
 import com.datastax.oss.driver.api.core.cql.PreparedStatement;
+import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.doctorappointment.config.ScyllaDbConfig;
 import com.doctorappointment.patient_service.constant.PatientQuery;
 import com.doctorappointment.patient_service.constant.PatientSchema;
@@ -29,17 +31,18 @@ class PatientRepository implements PatientRepoInterface {
     }
 
     @Override
-    public void addPatient(PatientModel patient) {
+    public PatientModel addPatient(PatientModel patient) {
         session.execute(insertPatient.bind()
-                .setUuid(PatientSchema.PATIENT_ID, patient.getPatientId())
-                .setString(PatientSchema.PATIENT_FIRSTNAME, patient.getFirstName())
-                .setString(PatientSchema.PATIENT_LASTNAME, patient.getLastName())
-                .setString(PatientSchema.PATIENT_EMAIL, patient.getEmail())
-                .setString(PatientSchema.PATIENT_PASSWORD, patient.getPassword())
-                .setString(PatientSchema.PATIENT_ADDRESS, patient.getAddress())
-                .setString(PatientSchema.PATIENT_PHONE, patient.getPhoneNumber())
+                .setUuid(PatientSchema.PATIENT_ID, patient.patientId())
+                .setString(PatientSchema.PATIENT_FIRSTNAME, patient.firstName())
+                .setString(PatientSchema.PATIENT_LASTNAME, patient.lastName())
+                .setString(PatientSchema.PATIENT_EMAIL, patient.email())
+                .setString(PatientSchema.PATIENT_PASSWORD, patient.password())
+                .setString(PatientSchema.PATIENT_ADDRESS, patient.address())
+                .setString(PatientSchema.PATIENT_PHONE, patient.phoneNumber())
                 .setBoolean(PatientSchema.IS_DELETED, patient.isDeleted())
         );
+        return  patient;
     }
 
     @Override
@@ -62,5 +65,11 @@ class PatientRepository implements PatientRepoInterface {
 
     }
 
-
-}
+    @Override
+    public boolean existsPatientByEmail(String email) {
+        var ps=session.prepare(PatientQuery.EXISTS_BY_EMAIL);
+        BoundStatement bs=ps.bind(email);
+        ResultSet rs=session.execute(bs);
+        return rs.one()!=null;
+        }
+    }

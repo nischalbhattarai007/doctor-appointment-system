@@ -13,11 +13,14 @@ public class PatientService {
     public PatientService(PatientRepoInterface patientRepo) {
         this.patientRepo = patientRepo;
     }
-    public void addPatient(PatientModel patient) {
-        if(patientRepo.getPatientByEmail(patient.getEmail()).isPresent()){
+    public PatientModel addPatient(PatientModel patient) {
+//        patient.validateAddPatient();
+        if(patientRepo.existsPatientByEmail(patient.email())) {
             throw new EmailAlreadyExistsException("Email already exists");
         }
-        patient.setPatientId(UUID.randomUUID());
-        patientRepo.addPatient(patient);
+
+        return patientRepo.addPatient(patient.toBuilder()
+                .patientId(UUID.randomUUID())
+                .build());
     }
 }
