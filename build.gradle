@@ -28,7 +28,8 @@ dependencies {
     runtimeOnly("org.slf4j:slf4j-simple")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     implementation("io.micronaut.security:micronaut-security")
-
+    // Source: https://mvnrepository.com/artifact/org.mindrot/jbcrypt
+    implementation("org.mindrot:jbcrypt:0.4")
 }
 
 
