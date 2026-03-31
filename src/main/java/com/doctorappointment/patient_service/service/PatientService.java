@@ -63,4 +63,19 @@ public class PatientService {
         log.info("Patient updated with this ID {}", patient.patientId());
         return updated;
     }
+    //delete patients by Id
+    public void deletePatient(UUID id) {
+        if(id == null) {
+            throw new PatientNotFoundException("Patient id is required");
+        }
+        PatientModel existingPatient=patientRepo.getPatientById(id);
+        if(existingPatient == null) {
+            throw new PatientNotFoundException("Patient not found with this ID : "+ id);
+        }
+        if(existingPatient.isDeleted()) {
+            throw new PatientNotFoundException("Patient is already deleted");
+        }
+        patientRepo.deletePatient(id);
+        log.info("Patient deleted with this ID {}", id);
+    }
 }

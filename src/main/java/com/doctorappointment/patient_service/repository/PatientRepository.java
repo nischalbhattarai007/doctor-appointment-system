@@ -23,6 +23,7 @@ class PatientRepository implements PatientRepoInterface {
     private final PreparedStatement getPatientById;
     private final PreparedStatement getPatientByEmail;
     private final PreparedStatement updatePatient;
+    private final PreparedStatement deletePatient;
 
 
     PatientRepository(ScyllaDbConfig config) {
@@ -32,6 +33,7 @@ class PatientRepository implements PatientRepoInterface {
         this.getPatientById=session.prepare(PatientQuery.FIND_BY_ID);
         this.getPatientByEmail=session.prepare(PatientQuery.FIND_BY_EMAIL);
         this.updatePatient=session.prepare(PatientQuery.UPDATE);
+        this.deletePatient=session.prepare(PatientQuery.SOFT_DELETE);
     }
 
     @Override
@@ -101,12 +103,11 @@ class PatientRepository implements PatientRepoInterface {
 
     @Override
     public void deletePatient(UUID id) {
-        BoundStatement bs=getPatientById.bind(id);
-        Row row = session.execute(bs).one();
-        if(row==null){
-            return;
+        if(id==null){
+            throw new PatientNotFoundException("Patient id is null");
         }
-
+        BoundStatement bs=deletePatient.bind(id);
+        session.execute(bs);
     }
 
     @Override

@@ -137,5 +137,30 @@ public class PatientGrpcService extends PatientServiceGrpc.PatientServiceImplBas
                             .asRuntimeException());
         }
     }
+    public void deletePatient
+            (GetByIdRequest request, StreamObserver<DeletePatientResponse> responseStreamObserver) {
+        try{
+            UUID id= UUID.fromString(request.getPatientId());
+            service.deletePatient(id);
+            DeletePatientResponse response=DeletePatientResponse.newBuilder()
+                    .setStatus("Success")
+                    .setMessage("Patient deleted successfully")
+                    .build();
+            responseStreamObserver.onNext(response);
+            responseStreamObserver.onCompleted();
+        }
+        catch (PatientNotFoundException e){
+            responseStreamObserver.onError(
+                    Status.NOT_FOUND
+                            .withDescription("Patient not found")
+                            .asRuntimeException());
+        }
+        catch (Exception e){
+            responseStreamObserver.onError(
+                    Status.INTERNAL
+                            .withDescription(e.getMessage())
+                            .asRuntimeException());
+        }
+    }
 
 }
