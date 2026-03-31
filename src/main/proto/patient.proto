@@ -25,27 +25,27 @@ service PatientService {
 // Auth
 
 message LoginRequest {
-  string email    = 1;
+  string email = 1;
   string password = 2;
 }
 
 // Patient
 
 message RegisterPatientRequest {
-  string first_name   = 1;
-  string last_name    = 2;
-  string email        = 3;
-  string password     = 4;
+  string first_name = 1;
+  string last_name = 2;
+  string email = 3;
+  string password = 4;
   string phone_number = 5;
-  string address      = 6;
+  string address = 6;
 }
 
 message UpdatePatientRequest {
-  int64  patient_id   = 1;
-  string first_name   = 2;
-  string last_name    = 3;
+  int64  patient_id = 1;
+  string first_name = 2;
+  string last_name = 3;
   string phone_number = 4;
-  string address      = 5;
+  string address = 5;
 }
 
 message GetByIdRequest {
@@ -53,71 +53,71 @@ message GetByIdRequest {
 }
 
 message PatientResponse {
-  string  patient_id   =1;
-  string first_name   = 2;
-  string last_name    = 3;
-  string email        = 4;
+  string  patient_id = 1;
+  string first_name = 2;
+  string last_name = 3;
+  string email = 4;
   string phone_number = 5;
-  string address      = 6;
-  string status       = 7;
-  string message      = 8;
+  string address = 6;
+  string status = 7;
+  string message = 8;
 }
 
 // Doctor
 
 message LocationRequest {
-  double latitude  = 1;
+  double latitude = 1;
   double longitude = 2;
   double radius_km = 3;
 }
 
 message DoctorListResponse {
   repeated DoctorSummary doctors = 1;
-  string status                  = 2;
-  string message                 = 3;
+  string status = 2;
+  string message = 3;
 }
 
 message DoctorSummary {
-  int64  doctor_id      = 1;
-  string first_name     = 2;
-  string last_name      = 3;
+  int64  doctor_id = 1;
+  string first_name = 2;
+  string last_name = 3;
   string specialization = 4;
-  double distance_km    = 5;
+  double distance_km = 5;
 }
 
 //Availability
 
 message DoctorAvailabilityRequest {
   int64  doctor_id = 1;
-  string date      = 2;
+  string date = 2;
 }
 
 message DoctorAvailabilityResponse {
-  int64  doctor_id    = 1;
-  string date         = 2;
+  int64  doctor_id = 1;
+  string date = 2;
   bool   is_available = 3;
-  string status       = 4;
-  string message      = 5;
+  string status = 4;
+  string message = 5;
 }
 
 //Appointment
 
 message AppointmentRequest {
   int64  patient_id = 1;
-  int64  doctor_id  = 2;
-  string date       = 3;
+  int64  doctor_id = 2;
+  string date = 3;
 }
 
 message CancelAppointmentRequest {
   int64 appointment_id = 1;
-  int64 patient_id     = 2;
+  int64 patient_id = 2;
 }
 
 message AppointmentResponse {
   int64  appointment_id = 1;
-  int64  patient_id     = 2;
-  int64  doctor_id      = 3;
-  string date           = 4;
-  string status         = 5; // CONFIRMED, CANCELLED, REJECTED
-  string message        = 6;
+  int64  patient_id = 2;
+  int64  doctor_id = 3;
+  string date = 4;
+  string status = 5; // CONFIRMED, CANCELLED, REJECTED
+  string message = 6;
 }
