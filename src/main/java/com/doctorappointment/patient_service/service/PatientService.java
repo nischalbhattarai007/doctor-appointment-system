@@ -34,4 +34,31 @@ public class PatientService {
         log.info("Getting patient by id {}", id);
         return patientRepo.getPatientById(id);
     }
+    public PatientModel getPatientByEmail(String email) {
+        if(email == null) {
+            throw new PatientNotFoundException("Patient not found");
+        }
+        log.info("Getting patient by email {}", email);
+        return patientRepo.getPatientByEmail(email);
+    }
+    //update patient by ID
+    public PatientModel updatePatient(PatientModel patient) {
+        if(patient.patientId() == null) {
+            throw new PatientNotFoundException("Patient id is required");
+        }
+        PatientModel existingPatient=patientRepo.getPatientById(patient.patientId());
+        if(existingPatient == null) {
+            throw new PatientNotFoundException("Patient not found");
+        }
+        if(existingPatient.isDeleted()) {
+            throw new PatientNotFoundException("Patient is already deleted");
+        }
+        PatientModel updated=patient.toBuilder()
+                .email(existingPatient.email())
+                .password(existingPatient.password())
+                .build();
+        patientRepo.updatePatient(updated);
+        log.info("Patient updated with this ID {}", patient.patientId());
+        return updated;
+    }
 }
