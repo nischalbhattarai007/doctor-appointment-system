@@ -17,6 +17,7 @@ public class PatientService {
     public PatientService(PatientRepoInterface patientRepo) {
         this.patientRepo = patientRepo;
     }
+    //add patient
     public PatientModel addPatient(PatientModel patient) {
         if(patientRepo.existsPatientByEmail(patient.email())) {
             throw new EmailAlreadyExistsException("Email already exists");
@@ -27,6 +28,7 @@ public class PatientService {
                 .password(hashedPassword)
                 .build());
     }
+    //get patient by ID
     public PatientModel getPatientById(UUID id) {
         if(id == null) {
             throw new PatientNotFoundException("Patient not found");

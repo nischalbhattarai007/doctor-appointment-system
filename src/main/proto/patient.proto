@@ -10,6 +10,7 @@ service PatientService {
   rpc Login(LoginRequest)returns(LoginResponse);
   rpc RegisterPatient(RegisterPatientRequest)returns(PatientResponse);
   rpc GetPatientById(GetByIdRequest)returns(GetByIdResponse);
+  rpc GetPatientByEmail(GetByEmailRequest) returns (GetByEmailResponse);
   rpc UpdatePatient(UpdatePatientRequest)returns(UpdatePatientResponse);
   rpc DeletePatient(GetByIdRequest)returns(DeletePatientResponse);
   rpc GetNearestDoctors(NearestDoctorsRequest)returns (DoctorListResponse);
@@ -100,7 +101,20 @@ message UpdatePatientResponse {
   string status       = 7;
   string message      = 8;
 }
-
+//get patients by email
+message GetByEmailRequest{
+  string email=1;
+}
+message GetByEmailResponse{
+  string patient_id   = 1;
+  string first_name   = 2;
+  string last_name    = 3;
+  string email        = 4;
+  string phone_number = 5;
+  string address      = 6;
+  string status       = 7;
+  string message      = 8;
+}
 //doctor
 
 // Used for GetDoctorsByLocation (filter by radius)

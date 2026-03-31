@@ -3,6 +3,7 @@ package com.doctorappointment.patient_service.grpc;
 import com.doctorappointment.*;
 import com.doctorappointment.patient_service.dto.PatientModel;
 import com.doctorappointment.patient_service.exception.InvalidPhoneNumberException;
+import com.doctorappointment.patient_service.exception.PatientNotFoundException;
 import com.doctorappointment.patient_service.helper.PatientGrpcHelper;
 import com.doctorappointment.patient_service.service.PatientService;
 import io.grpc.Status;
@@ -48,10 +49,11 @@ public class PatientGrpcService extends PatientServiceGrpc.PatientServiceImplBas
     }
 
     @Override
-    public void getPatientById(GetByIdRequest request, StreamObserver<GetByIdResponse> responseStreamObserver) {
-        String idString = request.getPatientId();
-        UUID id = UUID.fromString(idString);
+    public void getPatientById
+            (GetByIdRequest request, StreamObserver<GetByIdResponse> responseStreamObserver) {
         try {
+            String idString = request.getPatientId();
+            UUID id = UUID.fromString(idString);
             PatientModel patientModel = service.getPatientById(id);
             if (patientModel == null) {
                 responseStreamObserver.onError(
@@ -70,6 +72,7 @@ public class PatientGrpcService extends PatientServiceGrpc.PatientServiceImplBas
                     .setStatus("Success")
                     .setMessage("Patients retrieved successfully")
                     .build();
+            log.info("Patient retrieved from ID successfully");
             responseStreamObserver.onNext(response);
             responseStreamObserver.onCompleted();
         } catch (Exception e) {
@@ -79,4 +82,60 @@ public class PatientGrpcService extends PatientServiceGrpc.PatientServiceImplBas
                             .asRuntimeException());
         }
     }
+    @Override
+    public void getPatientByEmail
+            (GetByEmailRequest request, StreamObserver<GetByEmailResponse> responseStreamObserver) {
+        try {
+            String email = request.getEmail();
+            PatientModel patientModel = service.getPatientByEmail(email);
+            if (patientModel == null) {
+                responseStreamObserver.onError(
+                        Status.NOT_FOUND
+                                .withDescription(" Patient not found")
+                                .asRuntimeException());
+                return;
+            }
+            GetByEmailResponse response = GetByEmailResponse.newBuilder()
+                    .setPatientId(patientModel.patientId().toString())
+                    .setFirstName(patientModel.firstName())
+                    .setLastName(patientModel.lastName())
+                    .setAddress(patientModel.address())
+                    .setPhoneNumber(patientModel.phoneNumber())
+                    .setEmail(patientModel.email())
+                    .setStatus("Success")
+                    .setMessage("Patients retrieved successfully")
+                    .build();
+            log.info("Patient retrieved from email  successfully");
+            responseStreamObserver.onNext(response);
+            responseStreamObserver.onCompleted();
+        } catch (Exception e) {
+            responseStreamObserver.onError(
+                    Status.INTERNAL
+                            .withDescription(e.getMessage())
+                            .asRuntimeException());
+        }
+    }
+    public void updatePatient
+            (UpdatePatientRequest request,StreamObserver<UpdatePatientResponse> responseStreamObserver) {
+        try{
+            PatientModel patientModel=service.updatePatient(PatientGrpcHelper.fromUpdateRequest(request));
+            responseStreamObserver.onNext(
+                    PatientGrpcHelper.toUpdateResponse
+                            (patientModel,"Success","Patient updated successfully"));
+                    log.info("Patient updated successfully");
+                    responseStreamObserver.onCompleted();
+        }
+        catch (PatientNotFoundException e){
+            responseStreamObserver.onError(
+                    Status.NOT_FOUND
+                            .withDescription("Patient not found")
+                            .asRuntimeException());
+        } catch (Exception e) {
+            responseStreamObserver.onError(
+                    Status.INTERNAL
+                            .withDescription(e.getMessage())
+                            .asRuntimeException());
+        }
+    }
+
 }

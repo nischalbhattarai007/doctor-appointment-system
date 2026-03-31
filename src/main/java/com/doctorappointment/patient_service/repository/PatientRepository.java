@@ -21,6 +21,7 @@ class PatientRepository implements PatientRepoInterface {
     private final CqlSession session;
     private final PreparedStatement insertPatient;
     private final PreparedStatement getPatientById;
+    private final PreparedStatement getPatientByEmail;
     private final PreparedStatement updatePatient;
 
 
@@ -29,6 +30,7 @@ class PatientRepository implements PatientRepoInterface {
         this.session= config.getSession();
         this.insertPatient=session.prepare(PatientQuery.INSERT);
         this.getPatientById=session.prepare(PatientQuery.FIND_BY_ID);
+        this.getPatientByEmail=session.prepare(PatientQuery.FIND_BY_EMAIL);
         this.updatePatient=session.prepare(PatientQuery.UPDATE);
     }
 
@@ -65,17 +67,45 @@ class PatientRepository implements PatientRepoInterface {
                 .build();
     }
     @Override
-    public Optional<PatientModel> getPatientByEmail(String email) {
-        return Optional.empty();
+    public PatientModel getPatientByEmail(String email) {
+       BoundStatement bs=getPatientByEmail.bind(email);
+        Row row = session.execute(bs).one();
+        if(row==null){
+            return null;
+        }
+        return PatientModel.builder()
+                .patientId(row.getUuid(PatientSchema.PATIENT_ID))
+                .firstName(row.getString(PatientSchema.PATIENT_FIRSTNAME))
+                .lastName(row.getString(PatientSchema.PATIENT_LASTNAME))
+                .email(row.getString(PatientSchema.PATIENT_EMAIL))
+                .password(row.getString(PatientSchema.PATIENT_PASSWORD))
+                .address(row.getString(PatientSchema.PATIENT_ADDRESS))
+                .phoneNumber(row.getString(PatientSchema.PATIENT_PHONE))
+                .isDeleted(row.getBoolean(PatientSchema.IS_DELETED))
+                .build();
     }
 
     @Override
-    public void updatePatient(PatientModel patient) {
-
+    public PatientModel updatePatient(PatientModel patient) {
+        BoundStatement bs=updatePatient.bind(
+                patient.firstName(),
+                patient.lastName(),
+                patient.phoneNumber(),
+                patient.address(),
+                patient.email(),
+                patient.password(),
+                patient.patientId());
+        session.execute(bs);
+        return patient;
     }
 
     @Override
     public void deletePatient(UUID id) {
+        BoundStatement bs=getPatientById.bind(id);
+        Row row = session.execute(bs).one();
+        if(row==null){
+            return;
+        }
 
     }
 
