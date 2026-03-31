@@ -54,7 +54,6 @@ public record PatientModel(UUID patientId,
         if (!normalizedPhone.startsWith("97") && !normalizedPhone.startsWith("98")) {
             throw new InvalidPhoneNumberException("Invalid phone number");
         }
-        phoneNumber = "+977 " + normalizedPhone;
 
         //password validation
         if (isNullOrEmpty(password)) {

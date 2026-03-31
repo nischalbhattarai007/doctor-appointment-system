@@ -4,10 +4,12 @@ import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.BoundStatement;
 import com.datastax.oss.driver.api.core.cql.PreparedStatement;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
+import com.datastax.oss.driver.api.core.cql.Row;
 import com.doctorappointment.config.ScyllaDbConfig;
 import com.doctorappointment.patient_service.constant.PatientQuery;
 import com.doctorappointment.patient_service.constant.PatientSchema;
 import com.doctorappointment.patient_service.dto.PatientModel;
+import com.doctorappointment.patient_service.exception.PatientNotFoundException;
 import jakarta.inject.Singleton;
 
 import java.util.List;
@@ -38,17 +40,30 @@ class PatientRepository implements PatientRepoInterface {
                patient.lastName(),
                patient.email(),
                patient.password(),
+               false,
                patient.phoneNumber(),
-               patient.isDeleted());
+               patient.address());
        session.execute(bs);
        return patient;
     }
-
     @Override
-    public Optional<PatientModel> getPatientById(UUID id) {
-        return Optional.empty();
+    public PatientModel getPatientById(UUID id) {
+        BoundStatement bs=getPatientById.bind(id);
+        Row row = session.execute(bs).one();
+        if(row==null){
+            return null;
+        }
+        return PatientModel.builder()
+                .patientId(row.getUuid(PatientSchema.PATIENT_ID))
+                .firstName(row.getString(PatientSchema.PATIENT_FIRSTNAME))
+                .lastName(row.getString(PatientSchema.PATIENT_LASTNAME))
+                .email(row.getString(PatientSchema.PATIENT_EMAIL))
+                .password(row.getString(PatientSchema.PATIENT_PASSWORD))
+                .address(row.getString(PatientSchema.PATIENT_ADDRESS))
+                .phoneNumber(row.getString(PatientSchema.PATIENT_PHONE))
+                .isDeleted(row.getBoolean(PatientSchema.IS_DELETED))
+                .build();
     }
-
     @Override
     public Optional<PatientModel> getPatientByEmail(String email) {
         return Optional.empty();

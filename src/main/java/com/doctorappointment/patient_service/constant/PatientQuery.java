@@ -10,17 +10,17 @@ public class PatientQuery {
                     PATIENT_LASTNAME + ", " +
                     PATIENT_EMAIL + ", " +
                     PATIENT_PASSWORD+ ", "+
-                    PATIENT_ADDRESS+ ", "+
+                    IS_DELETED+ ", "+
                     PATIENT_PHONE+", "+
-                    IS_DELETED + ") VALUES (?,?,?,?,?,?,?,?)";
+                    PATIENT_ADDRESS +") VALUES (?,?,?,?,?,?,?,?)";
 //get patients by id
     public static final String FIND_BY_ID =
             "SELECT * FROM " + PATIENTS_TABLE +
-                    " WHERE " + PATIENT_ID + " =:" + PATIENT_ID;
+                    " WHERE " + PATIENT_ID + " =?";
 //get patients by email
     public static final String FIND_BY_EMAIL =
             "SELECT * FROM " + PATIENTS_TABLE +
-                    " WHERE " + PATIENT_EMAIL + " =:" + PATIENT_EMAIL;
+                    " WHERE " + PATIENT_EMAIL + " =?";
 //update patients details
     public static final String UPDATE =
             "UPDATE " + PATIENTS_TABLE +

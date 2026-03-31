@@ -22,6 +22,7 @@ public class PatientGrpcHelper {
                 .password(request.getPassword())
                 .address(request.getAddress())
                 .phoneNumber(request.getPhoneNumber())
+                .isDeleted(false)
                 .build();
     }
     public static PatientResponse toResponse(PatientModel patient,
