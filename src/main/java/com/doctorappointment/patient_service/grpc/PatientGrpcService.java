@@ -21,24 +21,24 @@ public class PatientGrpcService extends PatientServiceGrpc.PatientServiceImplBas
     public PatientGrpcService(PatientService service) {
         this.service = service;
     }
+
     @Override
     public void registerPatient
-            (RegisterPatientRequest request, StreamObserver<PatientResponse>responseStreamObserver) {
-        try{
+            (RegisterPatientRequest request, StreamObserver<PatientResponse> responseStreamObserver) {
+        try {
             var patientReq = PatientGrpcHelper.fromRegisterRequest(request);
-        PatientModel patientModel = service.addPatient(patientReq);
-        responseStreamObserver.onNext(
-                PatientGrpcHelper.toResponse
-                        (patientModel,"SUCCESS","Patient registered successfully"));
-        log.info("Patient registered successfully");
-        responseStreamObserver.onCompleted();
-    }catch(ValidationException e){
+            PatientModel patientModel = service.addPatient(patientReq);
+            responseStreamObserver.onNext(
+                    PatientGrpcHelper.toResponse
+                            (patientModel, "SUCCESS", "Patient registered successfully"));
+            log.info("Patient registered successfully");
+            responseStreamObserver.onCompleted();
+        } catch (ValidationException e) {
             responseStreamObserver.onError(
                     Status.INVALID_ARGUMENT
                             .withDescription(e.getMessage())
                             .asRuntimeException());
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             responseStreamObserver.onError(
                     Status.INTERNAL
                             .withDescription(e.getMessage())
