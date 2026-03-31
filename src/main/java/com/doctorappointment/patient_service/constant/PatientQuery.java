@@ -12,16 +12,7 @@ public class PatientQuery {
                     PATIENT_PASSWORD+ ", "+
                     PATIENT_ADDRESS+ ", "+
                     PATIENT_PHONE+", "+
-                    IS_DELETED + ") VALUES (:" +
-                    PATIENT_ID + ", :" +
-                    PATIENT_FIRSTNAME + ", :" +
-                    PATIENT_LASTNAME + ", :" +
-                    PATIENT_EMAIL + ", :" +
-                    PATIENT_PASSWORD+ ", :"+
-                    PATIENT_ADDRESS+ ", :"+
-                    PATIENT_PHONE+", :"+
-                    IS_DELETED +
-                    ")";
+                    IS_DELETED + ") VALUES (?,?,?,?,?,?,?,?)";
 //get patients by id
     public static final String FIND_BY_ID =
             "SELECT * FROM " + PATIENTS_TABLE +

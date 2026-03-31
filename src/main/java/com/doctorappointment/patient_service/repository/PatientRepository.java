@@ -32,17 +32,16 @@ class PatientRepository implements PatientRepoInterface {
 
     @Override
     public PatientModel addPatient(PatientModel patient) {
-        session.execute(insertPatient.bind()
-                .setUuid(PatientSchema.PATIENT_ID, patient.patientId())
-                .setString(PatientSchema.PATIENT_FIRSTNAME, patient.firstName())
-                .setString(PatientSchema.PATIENT_LASTNAME, patient.lastName())
-                .setString(PatientSchema.PATIENT_EMAIL, patient.email())
-                .setString(PatientSchema.PATIENT_PASSWORD, patient.password())
-                .setString(PatientSchema.PATIENT_ADDRESS, patient.address())
-                .setString(PatientSchema.PATIENT_PHONE, patient.phoneNumber())
-                .setBoolean(PatientSchema.IS_DELETED, patient.isDeleted())
-        );
-        return  patient;
+       BoundStatement bs=insertPatient.bind(
+               patient.patientId(),
+               patient.firstName(),
+               patient.lastName(),
+               patient.email(),
+               patient.password(),
+               patient.phoneNumber(),
+               patient.isDeleted());
+       session.execute(bs);
+       return patient;
     }
 
     @Override
