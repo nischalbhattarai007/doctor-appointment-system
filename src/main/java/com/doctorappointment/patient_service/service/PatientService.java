@@ -4,6 +4,7 @@ import com.doctorappointment.patient_service.dto.PatientModel;
 import com.doctorappointment.patient_service.dto.PatientRequest;
 import com.doctorappointment.patient_service.exception.EmailAlreadyExistsException;
 import com.doctorappointment.patient_service.exception.InvalidEmailPasswordException;
+import com.doctorappointment.patient_service.exception.InvalidPasswordException;
 import com.doctorappointment.patient_service.exception.PatientNotFoundException;
 import com.doctorappointment.patient_service.repository.PatientRepoInterface;
 import jakarta.inject.Singleton;
@@ -23,8 +24,11 @@ public class PatientService {
     }
     //add patient
     public PatientModel addPatient(PatientRequest patient) {
-        if(!patientRepo.existsPatientByEmail(patient.email())) {
+        if(patientRepo.existsPatientByEmail(patient.email())) {
             throw new EmailAlreadyExistsException("Email already exists");
+        }
+        if(patient.password().length() < 8) {
+            throw new InvalidPasswordException("Password too short");
         }
         String hashedPassword= BCrypt.hashpw(patient.password(), BCrypt.gensalt());
         PatientModel patientModel=PatientModel.builder()
@@ -98,10 +102,11 @@ public class PatientService {
 
     //login
     public PatientModel login(String email, String password) {
+        log.info("Login email :{}, password :{}",email,password==null ? "null":password.isEmpty());
         if(email == null || password == null) {
             throw new PatientNotFoundException("Email is required");
         }
-        PatientModel patient=patientRepo.getPatientByEmail(email);
+        PatientModel patient=patientRepo.getPatientByEmail(email.trim());
         if(patient == null) {
             throw new InvalidEmailPasswordException("Patient not found");
         }

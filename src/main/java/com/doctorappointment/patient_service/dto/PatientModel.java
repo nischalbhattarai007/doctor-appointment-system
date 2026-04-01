@@ -59,9 +59,6 @@ public record PatientModel(UUID patientId,
         if (isNullOrEmpty(password)) {
             throw new ValidationException(" password cannot be empty or null");
         }
-        if (password.length() < 8) {
-            throw new ValidationException(" password must be at least 8 characters long");
-        }
 
         //address validation
         if (isNullOrEmpty(address)) {

@@ -1,7 +1,9 @@
 package com.doctorappointment.patient_service.grpc;
 
 import com.doctorappointment.*;
+import com.doctorappointment.patient_service.auth.BasicAuthInterceptor;
 import com.doctorappointment.patient_service.dto.PatientModel;
+import com.doctorappointment.patient_service.exception.EmailAlreadyExistsException;
 import com.doctorappointment.patient_service.exception.InvalidPhoneNumberException;
 import com.doctorappointment.patient_service.exception.PatientNotFoundException;
 import com.doctorappointment.patient_service.helper.PatientGrpcHelper;
@@ -34,7 +36,14 @@ public class PatientGrpcService extends PatientServiceGrpc.PatientServiceImplBas
                             (patientModel, "SUCCESS", "Patient registered successfully"));
             log.info("Patient registered successfully");
             responseStreamObserver.onCompleted();
-        } catch (ValidationException e) {
+        }catch(EmailAlreadyExistsException e){
+            responseStreamObserver.onError(
+                    Status.ALREADY_EXISTS
+                            .withDescription("Email already exists")
+                            .asRuntimeException());
+            return;
+        }
+        catch (ValidationException e) {
             responseStreamObserver.onError(
                     Status.INVALID_ARGUMENT
                             .withDescription(e.getMessage())
@@ -52,6 +61,7 @@ public class PatientGrpcService extends PatientServiceGrpc.PatientServiceImplBas
     public void getPatientById
             (GetByIdRequest request, StreamObserver<GetByIdResponse> responseStreamObserver) {
         try {
+            String email=BasicAuthInterceptor.EMAIL_CONTEXT_KEY.get();
             String idString = request.getPatientId();
             UUID id = UUID.fromString(idString);
             PatientModel patientModel = service.getPatientById(id);
@@ -60,6 +70,14 @@ public class PatientGrpcService extends PatientServiceGrpc.PatientServiceImplBas
                         Status.NOT_FOUND
                                 .withDescription("Patient not found")
                                 .asRuntimeException());
+                return;
+            }
+            if(!patientModel.email().equals(email)){
+                responseStreamObserver.onError(
+                        Status.PERMISSION_DENIED
+                                .withDescription("Access denied")
+                                .asRuntimeException()
+                );
                 return;
             }
             GetByIdResponse response = GetByIdResponse.newBuilder()
@@ -86,6 +104,14 @@ public class PatientGrpcService extends PatientServiceGrpc.PatientServiceImplBas
     public void getPatientByEmail
             (GetByEmailRequest request, StreamObserver<GetByEmailResponse> responseStreamObserver) {
         try {
+            String email_check=BasicAuthInterceptor.EMAIL_CONTEXT_KEY.get();
+            if(!email_check.equals(request.getEmail())){
+                responseStreamObserver.onError(
+                        Status.PERMISSION_DENIED
+                                .withDescription("Access denied")
+                                .asRuntimeException());
+                return;
+            }
             String email = request.getEmail();
             PatientModel patientModel = service.getPatientByEmail(email);
             if (patientModel == null) {
@@ -119,6 +145,17 @@ public class PatientGrpcService extends PatientServiceGrpc.PatientServiceImplBas
     public void updatePatient
             (UpdatePatientRequest request,StreamObserver<UpdatePatientResponse> responseStreamObserver) {
         try{
+            String email=BasicAuthInterceptor.EMAIL_CONTEXT_KEY.get();
+            UUID id = UUID.fromString(request.getPatientId());
+            PatientModel existing=service.getPatientById(id);
+            if(!existing.email().equals(email)){
+                responseStreamObserver.onError(
+                        Status.PERMISSION_DENIED
+                                .withDescription("Access denied")
+                                .asRuntimeException()
+                );
+                return;
+            }
             PatientModel patientModel=service.updatePatient(PatientGrpcHelper.fromUpdateRequest(request));
             responseStreamObserver.onNext(
                     PatientGrpcHelper.toUpdateResponse
@@ -142,7 +179,17 @@ public class PatientGrpcService extends PatientServiceGrpc.PatientServiceImplBas
     public void deletePatient
             (GetByIdRequest request, StreamObserver<DeletePatientResponse> responseStreamObserver) {
         try{
+            String email=BasicAuthInterceptor.EMAIL_CONTEXT_KEY.get();
             UUID id= UUID.fromString(request.getPatientId());
+            PatientModel existing=service.getPatientById(id);
+            if(!existing.email().equals(email)){
+                responseStreamObserver.onError(
+                        Status.UNAUTHENTICATED
+                                .withDescription("Access denied")
+                                .asRuntimeException()
+                );
+                return;
+            }
             service.deletePatient(id);
             DeletePatientResponse response=DeletePatientResponse.newBuilder()
                     .setStatus("Success")
@@ -164,12 +211,17 @@ public class PatientGrpcService extends PatientServiceGrpc.PatientServiceImplBas
                             .asRuntimeException());
         }
     }
+    //login
     @Override
     public void login
             (LoginRequest request, StreamObserver<LoginResponse> responseStreamObserver) {
+        log.info("Login email :{}, password:{}",request.getEmail(),request.getPassword());
         try {
-            PatientModel patientModel = service.login
-                    (request.getEmail(), request.getPassword());
+            String email= BasicAuthInterceptor.EMAIL_CONTEXT_KEY.get();
+            String password=BasicAuthInterceptor.PASSWORD_CONTEXT_KEY.get();
+            log.info("Login attempt for email: {}", email);
+
+            PatientModel patientModel = service.login(email,password);
            LoginResponse response=LoginResponse.newBuilder()
                    .setPatientId(String.valueOf(patientModel.patientId()))
                    .setFirstName(patientModel.firstName())

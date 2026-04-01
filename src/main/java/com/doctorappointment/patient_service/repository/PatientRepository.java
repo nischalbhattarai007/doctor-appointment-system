@@ -26,6 +26,7 @@ class PatientRepository implements PatientRepoInterface {
     private final PreparedStatement getPatientByEmail;
     private final PreparedStatement updatePatient;
     private final PreparedStatement deletePatient;
+    private final PreparedStatement existsPatient;
 //    private final PreparedStatement getAllPatients;
 
 
@@ -37,6 +38,7 @@ class PatientRepository implements PatientRepoInterface {
         this.getPatientByEmail=session.prepare(PatientQuery.FIND_BY_EMAIL);
         this.updatePatient=session.prepare(PatientQuery.UPDATE);
         this.deletePatient=session.prepare(PatientQuery.SOFT_DELETE);
+        this.existsPatient=session.prepare(PatientQuery.EXISTS_BY_EMAIL);
 //        this.getAllPatients=session.prepare(PatientQuery.GET_ALL_PATIENTS);
 
     }
@@ -75,8 +77,10 @@ class PatientRepository implements PatientRepoInterface {
     }
     @Override
     public PatientModel getPatientByEmail(String email) {
+        log.info("Searching for email {}",email);
        BoundStatement bs=getPatientByEmail.bind(email);
         Row row = session.execute(bs).one();
+        log.info("Row found: {}",row);
         if(row==null){
             return null;
         }
@@ -117,9 +121,8 @@ class PatientRepository implements PatientRepoInterface {
 
     @Override
     public boolean existsPatientByEmail(String email) {
-        var ps=session.prepare(PatientQuery.EXISTS_BY_EMAIL);
-        BoundStatement bs=ps.bind(email);
-        ResultSet rs=session.execute(bs);
+        BoundStatement bs=existsPatient.bind(email);
+        ResultSet rs = session.execute(bs);
         return rs.one()!=null;
         }
 //        @Override
