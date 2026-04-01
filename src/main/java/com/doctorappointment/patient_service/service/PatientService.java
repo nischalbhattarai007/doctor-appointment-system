@@ -3,6 +3,7 @@ import com.doctorappointment.PatientResponse;
 import com.doctorappointment.patient_service.dto.PatientModel;
 import com.doctorappointment.patient_service.dto.PatientRequest;
 import com.doctorappointment.patient_service.exception.EmailAlreadyExistsException;
+import com.doctorappointment.patient_service.exception.InvalidEmailPasswordException;
 import com.doctorappointment.patient_service.exception.PatientNotFoundException;
 import com.doctorappointment.patient_service.repository.PatientRepoInterface;
 import jakarta.inject.Singleton;
@@ -94,4 +95,23 @@ public class PatientService {
 //        log.info("Getting all patients");
 //        return patientRepo.getAllPatients();
 //    }
+
+    //login
+    public PatientModel login(String email, String password) {
+        if(email == null || password == null) {
+            throw new PatientNotFoundException("Email is required");
+        }
+        PatientModel patient=patientRepo.getPatientByEmail(email);
+        if(patient == null) {
+            throw new InvalidEmailPasswordException("Patient not found");
+        }
+        if(patient.isDeleted()){
+            throw new PatientNotFoundException("Patient not found");
+        }
+        if(!BCrypt.checkpw(password, patient.password())) {
+            throw new InvalidEmailPasswordException("Invalid email or password");
+        }
+        log.info("Logged in with email {} and password {}", email, patient.password());
+        return patient;
+    }
 }

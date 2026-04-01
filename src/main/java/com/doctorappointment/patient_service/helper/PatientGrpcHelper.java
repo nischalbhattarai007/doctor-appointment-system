@@ -6,9 +6,10 @@ import com.doctorappointment.UpdatePatientRequest;
 import com.doctorappointment.UpdatePatientResponse;
 import com.doctorappointment.patient_service.dto.PatientModel;
 import com.doctorappointment.patient_service.dto.PatientRequest;
+import jakarta.inject.Singleton;
 
 import java.util.UUID;
-
+@Singleton
 public class PatientGrpcHelper {
     public static PatientRequest fromRegisterRequest(RegisterPatientRequest request) {
 //        PatientModel patientModel = new PatientModel();

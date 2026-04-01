@@ -164,6 +164,36 @@ public class PatientGrpcService extends PatientServiceGrpc.PatientServiceImplBas
                             .asRuntimeException());
         }
     }
-
+    @Override
+    public void login
+            (LoginRequest request, StreamObserver<LoginResponse> responseStreamObserver) {
+        try {
+            PatientModel patientModel = service.login
+                    (request.getEmail(), request.getPassword());
+           LoginResponse response=LoginResponse.newBuilder()
+                   .setPatientId(String.valueOf(patientModel.patientId()))
+                   .setFirstName(patientModel.firstName())
+                   .setLastName(patientModel.lastName())
+                   .setAddress(patientModel.address())
+                   .setEmail(patientModel.email())
+                   .setPhoneNumber(patientModel.phoneNumber())
+                   .build();
+           responseStreamObserver.onNext(response);
+           log.info("Patient login successfully");
+           responseStreamObserver.onCompleted();
+        }
+        catch (PatientNotFoundException e){
+            responseStreamObserver.onError(
+                    Status.UNAUTHENTICATED
+                            .withDescription(e.getMessage())
+                            .asRuntimeException());
+        }
+        catch (Exception e){
+            responseStreamObserver.onError(
+                    Status.INTERNAL
+                            .withDescription(e.getMessage())
+                            .asRuntimeException());
+        }
+    }
 
 }
