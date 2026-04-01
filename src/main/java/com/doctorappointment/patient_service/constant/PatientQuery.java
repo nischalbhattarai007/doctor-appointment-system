@@ -49,5 +49,5 @@ public class PatientQuery {
 
     //exists by email
     public static final String EXISTS_BY_EMAIL =
-            "SELECT COUNT(*) FROM"  + PATIENTS_TABLE + " WHERE " + PATIENT_EMAIL + " =?";
+            "SELECT COUNT(*) FROM "  + PATIENTS_TABLE + " WHERE " + PATIENT_EMAIL + " = ?";
 }

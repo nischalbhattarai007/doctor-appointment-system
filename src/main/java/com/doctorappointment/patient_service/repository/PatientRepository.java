@@ -11,9 +11,13 @@ import com.doctorappointment.patient_service.constant.PatientSchema;
 import com.doctorappointment.patient_service.dto.PatientModel;
 import com.doctorappointment.patient_service.exception.PatientNotFoundException;
 import jakarta.inject.Singleton;
+import lombok.extern.slf4j.Slf4j;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 @Singleton
+@Slf4j
 class PatientRepository implements PatientRepoInterface {
     private final ScyllaDbConfig config;
     private final CqlSession session;
@@ -22,6 +26,7 @@ class PatientRepository implements PatientRepoInterface {
     private final PreparedStatement getPatientByEmail;
     private final PreparedStatement updatePatient;
     private final PreparedStatement deletePatient;
+//    private final PreparedStatement getAllPatients;
 
 
     PatientRepository(ScyllaDbConfig config) {
@@ -32,6 +37,8 @@ class PatientRepository implements PatientRepoInterface {
         this.getPatientByEmail=session.prepare(PatientQuery.FIND_BY_EMAIL);
         this.updatePatient=session.prepare(PatientQuery.UPDATE);
         this.deletePatient=session.prepare(PatientQuery.SOFT_DELETE);
+//        this.getAllPatients=session.prepare(PatientQuery.GET_ALL_PATIENTS);
+
     }
 
     @Override
@@ -115,4 +122,21 @@ class PatientRepository implements PatientRepoInterface {
         ResultSet rs=session.execute(bs);
         return rs.one()!=null;
         }
+//        @Override
+//    public List<PatientModel> getAllPatients() {
+//        ResultSet rs=session.execute(PatientQuery.GET_ALL_PATIENTS);
+//        List<PatientModel> patients=new ArrayList<>();
+//        for(Row row:rs){
+//            patients.add(PatientModel.builder()
+//                    .patientId(row.getUuid(PatientSchema.PATIENT_ID))
+//                    .firstName(row.getString(PatientSchema.PATIENT_FIRSTNAME))
+//                    .lastName(row.getString(PatientSchema.PATIENT_LASTNAME))
+//                    .email(row.getString(PatientSchema.PATIENT_EMAIL))
+//                    .password(row.getString(PatientSchema.PATIENT_PASSWORD))
+//                    .phoneNumber(row.getString(PatientSchema.PATIENT_PHONE))
+//                    .address(row.getString(PatientSchema.PATIENT_ADDRESS))
+//                    .isDeleted(row.getBoolean(PatientSchema.IS_DELETED))
+//                    .build());}
+//        return patients;
+//        }
     }

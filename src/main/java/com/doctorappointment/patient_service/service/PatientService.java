@@ -9,6 +9,7 @@ import jakarta.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 import org.mindrot.jbcrypt.BCrypt;
 
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -21,7 +22,7 @@ public class PatientService {
     }
     //add patient
     public PatientModel addPatient(PatientRequest patient) {
-        if(patientRepo.existsPatientByEmail(patient.email())) {
+        if(!patientRepo.existsPatientByEmail(patient.email())) {
             throw new EmailAlreadyExistsException("Email already exists");
         }
         String hashedPassword= BCrypt.hashpw(patient.password(), BCrypt.gensalt());
@@ -30,7 +31,7 @@ public class PatientService {
                 .firstName(patient.firstName())
                 .lastName(patient.lastName())
                 .email(patient.email())
-                .password(patient.password())
+                .password(hashedPassword)
                 .isDeleted(false)
                 .phoneNumber(patient.phoneNumber())
                 .address(patient.address())
@@ -89,4 +90,8 @@ public class PatientService {
         patientRepo.deletePatient(id);
         log.info("Patient deleted with this ID {}", id);
     }
+//    public List<PatientModel> getAllPatients() {
+//        log.info("Getting all patients");
+//        return patientRepo.getAllPatients();
+//    }
 }
