@@ -44,14 +44,14 @@ public record PatientModel(UUID patientId,
         if (isNullOrEmpty(phoneNumber)) {
             throw new ValidationException(" phone number cannot be empty or null");
         }
-        String normalizedPhone = phoneNumber.replaceAll("\\s+", "");
-        if (normalizedPhone.startsWith("+977")) {
-            normalizedPhone = normalizedPhone.substring(4);
+         phoneNumber = phoneNumber.replaceAll("\\s+", "");
+        if (phoneNumber.startsWith("+977")) {
+            phoneNumber = phoneNumber.substring(4);
         }
-        if (!normalizedPhone.matches("\\d{10}")) {
+        if (!phoneNumber.matches("\\d{10}")) {
             throw new InvalidPhoneNumberException("Invalid phone number");
         }
-        if (!normalizedPhone.startsWith("97") && !normalizedPhone.startsWith("98")) {
+        if (!phoneNumber.startsWith("97") && !phoneNumber.startsWith("98")) {
             throw new InvalidPhoneNumberException("Invalid phone number");
         }
 
@@ -69,7 +69,7 @@ public record PatientModel(UUID patientId,
         }
     }
 
-    public boolean isNullOrEmpty(String value) {
+    public static boolean isNullOrEmpty(String value) {
         return value == null || value.isEmpty();
     }
 

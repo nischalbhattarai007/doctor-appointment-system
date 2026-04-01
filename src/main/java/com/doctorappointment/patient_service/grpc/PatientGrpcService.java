@@ -115,6 +115,7 @@ public class PatientGrpcService extends PatientServiceGrpc.PatientServiceImplBas
                             .asRuntimeException());
         }
     }
+    @Override
     public void updatePatient
             (UpdatePatientRequest request,StreamObserver<UpdatePatientResponse> responseStreamObserver) {
         try{
@@ -137,6 +138,7 @@ public class PatientGrpcService extends PatientServiceGrpc.PatientServiceImplBas
                             .asRuntimeException());
         }
     }
+    @Override
     public void deletePatient
             (GetByIdRequest request, StreamObserver<DeletePatientResponse> responseStreamObserver) {
         try{

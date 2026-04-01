@@ -1,5 +1,7 @@
 package com.doctorappointment.patient_service.service;
+import com.doctorappointment.PatientResponse;
 import com.doctorappointment.patient_service.dto.PatientModel;
+import com.doctorappointment.patient_service.dto.PatientRequest;
 import com.doctorappointment.patient_service.exception.EmailAlreadyExistsException;
 import com.doctorappointment.patient_service.exception.PatientNotFoundException;
 import com.doctorappointment.patient_service.repository.PatientRepoInterface;
@@ -18,15 +20,22 @@ public class PatientService {
         this.patientRepo = patientRepo;
     }
     //add patient
-    public PatientModel addPatient(PatientModel patient) {
+    public PatientModel addPatient(PatientRequest patient) {
         if(patientRepo.existsPatientByEmail(patient.email())) {
             throw new EmailAlreadyExistsException("Email already exists");
         }
         String hashedPassword= BCrypt.hashpw(patient.password(), BCrypt.gensalt());
-        return patientRepo.addPatient(patient.toBuilder()
+        PatientModel patientModel=PatientModel.builder()
                 .patientId(UUID.randomUUID())
-                .password(hashedPassword)
-                .build());
+                .firstName(patient.firstName())
+                .lastName(patient.lastName())
+                .email(patient.email())
+                .password(patient.password())
+                .isDeleted(false)
+                .phoneNumber(patient.phoneNumber())
+                .address(patient.address())
+                .build();
+        return patientRepo.addPatient(patientModel);
     }
     //get patient by ID
     public PatientModel getPatientById(UUID id) {
@@ -44,7 +53,7 @@ public class PatientService {
         return patientRepo.getPatientByEmail(email);
     }
     //update patient by ID
-    public PatientModel updatePatient(PatientModel patient) {
+    public PatientModel updatePatient(PatientRequest patient) {
         if(patient.patientId() == null) {
             throw new PatientNotFoundException("Patient id is required");
         }
@@ -53,15 +62,17 @@ public class PatientService {
             throw new PatientNotFoundException("Patient not found");
         }
         if(existingPatient.isDeleted()) {
-            throw new PatientNotFoundException("Patient is already deleted");
+            throw new PatientNotFoundException("Patient not found");
         }
-        PatientModel updated=patient.toBuilder()
-                .email(existingPatient.email())
-                .password(existingPatient.password())
+        PatientModel updated = existingPatient.toBuilder()
+                .patientId(existingPatient.patientId())
+                .firstName(patient.firstName())
+                .lastName(patient.lastName())
+                .phoneNumber(patient.phoneNumber())
+                .address(patient.address())
                 .build();
-        patientRepo.updatePatient(updated);
         log.info("Patient updated with this ID {}", patient.patientId());
-        return updated;
+        return  patientRepo.updatePatient(updated);
     }
     //delete patients by Id
     public void deletePatient(UUID id) {

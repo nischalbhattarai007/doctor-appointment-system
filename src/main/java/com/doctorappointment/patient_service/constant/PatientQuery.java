@@ -15,7 +15,6 @@ public class PatientQuery {
                     IS_DELETED + ", " +
                     PATIENT_PHONE + ", " +
                     PATIENT_ADDRESS + ") VALUES (?,?,?,?,?,?,?,?)";
-
     //get patients by id
     public static final String FIND_BY_ID =
             "SELECT * FROM " + PATIENTS_TABLE +
@@ -35,8 +34,8 @@ public class PatientQuery {
                     PATIENT_PHONE + " =?," +
                     PATIENT_ADDRESS + " =?," +
                     PATIENT_EMAIL + " =?," +
-                    PATIENT_PASSWORD + " =?," +
-                    " WHERE " + PATIENT_ID + " =?,";
+                    PATIENT_PASSWORD + " =?" +
+                    " WHERE " + PATIENT_ID + " =?";
 
     //soft delete patients details
     public static final String SOFT_DELETE =
@@ -50,5 +49,5 @@ public class PatientQuery {
 
     //exists by email
     public static final String EXISTS_BY_EMAIL =
-            "SELECT " + PATIENT_EMAIL + " FROM " + PATIENTS_TABLE + " WHERE " + PATIENT_EMAIL + " =?";
+            "SELECT COUNT(*) FROM"  + PATIENTS_TABLE + " WHERE " + PATIENT_EMAIL + " =?";
 }

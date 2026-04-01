@@ -12,8 +12,6 @@ import com.doctorappointment.patient_service.dto.PatientModel;
 import com.doctorappointment.patient_service.exception.PatientNotFoundException;
 import jakarta.inject.Singleton;
 
-import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 @Singleton
 class PatientRepository implements PatientRepoInterface {

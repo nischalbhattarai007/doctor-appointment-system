@@ -5,11 +5,12 @@ import com.doctorappointment.RegisterPatientRequest;
 import com.doctorappointment.UpdatePatientRequest;
 import com.doctorappointment.UpdatePatientResponse;
 import com.doctorappointment.patient_service.dto.PatientModel;
+import com.doctorappointment.patient_service.dto.PatientRequest;
 
 import java.util.UUID;
 
 public class PatientGrpcHelper {
-    public static PatientModel fromRegisterRequest(RegisterPatientRequest request) {
+    public static PatientRequest fromRegisterRequest(RegisterPatientRequest request) {
 //        PatientModel patientModel = new PatientModel();
 //        patientModel.setFirstName(request.getFirstName());
 //        patientModel.setLastName(request.getLastName());
@@ -19,14 +20,13 @@ public class PatientGrpcHelper {
 //        patientModel.setPhoneNumber(request.getPhoneNumber());
 //        return patientModel;
 
-        return PatientModel.builder()
+        return PatientRequest.builder()
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
                 .email(request.getEmail())
                 .password(request.getPassword())
                 .address(request.getAddress())
                 .phoneNumber(request.getPhoneNumber())
-                .isDeleted(false)
                 .build();
     }
     public static PatientResponse toResponse(PatientModel patient,
@@ -43,8 +43,8 @@ public class PatientGrpcHelper {
                 .setMessage(message)
                 .build();
     }
-    public static PatientModel fromUpdateRequest(UpdatePatientRequest request) {
-        return PatientModel.builder()
+    public static PatientRequest fromUpdateRequest(UpdatePatientRequest request) {
+        return PatientRequest.builder()
                 .patientId(UUID.fromString(request.getPatientId()))
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
