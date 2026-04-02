@@ -57,4 +57,8 @@ public class DoctorQuery {
             "SELECT " + EMAIL + " FROM " + DOCTORS_TABLE +
                     " WHERE " + EMAIL + " =?";
 
+    //get all doctor
+    public static final String GET_ALL_DOCTORS =
+            "SELECT * FROM " + DOCTORS_TABLE;
+
 }
