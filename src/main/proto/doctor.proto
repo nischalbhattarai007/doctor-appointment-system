@@ -8,5 +8,177 @@ option objc_class_prefix = "HLW";
 package com.doctorappointment;
 
 service DoctorService{
-
+  rpc DoctorLogin(DoctorLoginRequest) returns (DoctorLoginResponse);
+  rpc RegisterDoctor(RegisterDoctorRequest) returns (RegisterDoctorResponse);
+  rpc GetDoctorById(GetDoctorByIdRequest) returns (GetDoctorByIdResponse);
+  rpc DeleteDoctorById(GetDoctorByIdRequest) returns(DeleteDoctorResponse);
+  rpc GetDoctorByEmail(GetByDoctorEmailRequest) returns(GetByDoctorEmailResponse);
+  rpc UpdateDoctorById(UpdateDoctorRequest) returns (UpdateDoctorResponse);
+  rpc GetDoctorsByLocation(LocationRequest) returns (DoctorListResponse);
+  rpc GetDoctorAvailability(DoctorAvailabilityRequest) returns (DoctorAvailabilityResponse);
+  rpc GetNearestDoctor(NearestLocationRequest) returns (NearestDoctorListResponse);
 }
+//login request
+message DoctorLoginRequest{
+  string doctor_email = 1;
+  string password = 2;
+}
+//login response
+message DoctorLoginResponse{
+  string doctor_id = 1;
+  string doctor_first_name = 2;
+  string doctor_last_name = 3;
+  string doctor_email = 4;
+  string doctor_phone_number = 5;
+  string doctor_address = 6;
+  string doctor_status = 7;
+  string doctor_message = 8;
+}
+//register doctor
+message RegisterDoctorRequest{
+  string doctor_first_name = 1;
+  string doctor_last_name = 2;
+  string doctor_email = 3;
+  string password = 4;
+  string doctor_phone_number = 5;
+  string doctor_address = 6;
+}
+//register response
+message RegisterDoctorResponse{
+  string doctor_id = 1;
+  string doctor_first_name = 2;
+  string doctor_last_name = 3;
+  string doctor_email = 4;
+  string doctor_phone_number = 5;
+  string doctor_address = 6;
+  string specialization = 7;
+  string clinic_address = 8;
+  double latitude = 9;
+  double longitude = 10;
+  string doctor_status = 11;
+  string doctor_message = 12;
+}
+//get by id
+message GetDoctorByIdRequest{
+  string doctor_id = 1;
+}
+//get by id response
+message GetDoctorByIdResponse{
+  string doctor_id = 1;
+  string doctor_first_name = 2;
+  string doctor_last_name = 3;
+  string doctor_email = 4;
+  string doctor_phone_number = 5;
+  string doctor_address = 6;
+  string specialization = 7;
+  string clinic_address = 8;
+  double latitude = 9;
+  double longitude = 10;
+  string doctor_status = 11;
+  string doctor_message = 12;
+}
+//delete doctor by id response
+message DeleteDoctorResponse{
+  string doctor_id = 1;
+  string doctor_status = 2;
+  string doctor_message = 3;
+}
+//get doctor by doctor_email
+//get by id
+message GetByDoctorEmailRequest{
+  string doctor_email = 1;
+}
+//get by id response
+message GetByDoctorEmailResponse{
+  string doctor_id = 1;
+  string doctor_first_name = 2;
+  string doctor_last_name = 3;
+  string doctor_email = 4;
+  string doctor_phone_number = 5;
+  string doctor_address = 6;
+  string specialization = 7;
+  string clinic_address = 8;
+  double latitude = 9;
+  double longitude = 10;
+  string doctor_status = 11;
+  string doctor_message = 12;
+}
+//update doctor by Id
+message UpdateDoctorRequest{
+  string doctor_id = 1;
+  string doctor_first_name = 2;
+  string doctor_last_name = 3;
+  string doctor_phone_number = 4;
+  string doctor_address = 5;
+  string specialization = 6;
+  string clinic_address = 7;
+  double latitude = 8;
+  double longitude = 9;
+}
+//update doctor by Id response
+message UpdateDoctorResponse{
+  string doctor_id = 1;
+  string doctor_first_name = 2;
+  string doctor_last_name = 3;
+  string doctor_email = 4;
+  string doctor_phone_number = 5;
+  string doctor_address = 6;
+  string specialization = 7;
+  string clinic_address = 8;
+  double latitude = 9;
+  double longitude = 10;
+  string doctor_status = 11;
+  string doctor_message = 12;
+}
+// get doctor by location
+message LocationRequest{
+  double latitude = 1;
+  double longitude = 2;
+  double radius_km = 3;
+  int32 limit = 4;
+}
+//doctor list response
+message DoctorListResponse {
+  repeated DoctorSummary doctors = 1;
+  string doctor_status = 2;
+  string doctor_message = 3;
+}
+//doctor list summary
+message DoctorSummary {
+  string doctor_id = 1;
+  string doctor_first_name = 2;
+  string doctor_last_name = 3;
+  string specialization = 4;
+  double distance_km = 5;
+  string clinic_address = 6;
+  string doctor_phone_number = 7;
+}
+//doctor availability
+message DoctorAvailabilityRequest {
+  string doctor_id = 1;
+  string date = 2;  // format: YYYY-MM-DD
+}
+//doctor availability response
+message DoctorAvailabilityResponse {
+  string doctor_id = 1;
+  string date = 2; // format: YYYY-MM-DD
+  bool   is_available = 3;
+  int32  booked_count = 4;
+  int32  max_capacity = 5;
+  string doctor_status = 6;
+  string doctor_message = 7;
+}
+//get doctor with nearest location
+message NearestLocationRequest{
+  double latitude = 1;
+  double longitude = 2;
+  double radius_km = 3;
+  int32 limit = 4;
+}
+//nearest location response
+message NearestDoctorListResponse {
+  repeated DoctorSummary doctors = 1;
+  string doctor_status = 2;
+  string doctor_message = 3;
+}
+
