@@ -15,7 +15,7 @@ public class BasicAuthInterceptor implements ServerInterceptor {
     private static final Metadata.Key<String> AUTH_HEADER =
             Metadata.Key.of("authorization", Metadata.ASCII_STRING_MARSHALLER);
 
-    // ← Context keys to pass credentials to handler
+    // Context keys to pass credentials to handler
     public static final Context.Key<String> EMAIL_CONTEXT_KEY = Context.key("email");
     public static final Context.Key<String> PASSWORD_CONTEXT_KEY = Context.key("password");
 

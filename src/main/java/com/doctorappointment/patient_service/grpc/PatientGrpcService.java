@@ -4,7 +4,6 @@ import com.doctorappointment.*;
 import com.doctorappointment.patient_service.auth.BasicAuthInterceptor;
 import com.doctorappointment.patient_service.dto.PatientModel;
 import com.doctorappointment.patient_service.exception.EmailAlreadyExistsException;
-import com.doctorappointment.patient_service.exception.InvalidPhoneNumberException;
 import com.doctorappointment.patient_service.exception.PatientNotFoundException;
 import com.doctorappointment.patient_service.helper.PatientGrpcHelper;
 import com.doctorappointment.patient_service.service.PatientService;
@@ -36,14 +35,12 @@ public class PatientGrpcService extends PatientServiceGrpc.PatientServiceImplBas
                             (patientModel, "SUCCESS", "Patient registered successfully"));
             log.info("Patient registered successfully");
             responseStreamObserver.onCompleted();
-        }catch(EmailAlreadyExistsException e){
+        } catch (EmailAlreadyExistsException e) {
             responseStreamObserver.onError(
                     Status.ALREADY_EXISTS
                             .withDescription("Email already exists")
                             .asRuntimeException());
-            return;
-        }
-        catch (ValidationException e) {
+        } catch (ValidationException e) {
             responseStreamObserver.onError(
                     Status.INVALID_ARGUMENT
                             .withDescription(e.getMessage())
@@ -61,7 +58,7 @@ public class PatientGrpcService extends PatientServiceGrpc.PatientServiceImplBas
     public void getPatientById
             (GetByIdRequest request, StreamObserver<GetByIdResponse> responseStreamObserver) {
         try {
-            String email=BasicAuthInterceptor.EMAIL_CONTEXT_KEY.get();
+            String email = BasicAuthInterceptor.EMAIL_CONTEXT_KEY.get();
             String idString = request.getPatientId();
             UUID id = UUID.fromString(idString);
             PatientModel patientModel = service.getPatientById(id);
@@ -72,7 +69,7 @@ public class PatientGrpcService extends PatientServiceGrpc.PatientServiceImplBas
                                 .asRuntimeException());
                 return;
             }
-            if(!patientModel.email().equals(email)){
+            if (!patientModel.email().equals(email)) {
                 responseStreamObserver.onError(
                         Status.PERMISSION_DENIED
                                 .withDescription("Access denied")
@@ -100,12 +97,13 @@ public class PatientGrpcService extends PatientServiceGrpc.PatientServiceImplBas
                             .asRuntimeException());
         }
     }
+
     @Override
     public void getPatientByEmail
             (GetByEmailRequest request, StreamObserver<GetByEmailResponse> responseStreamObserver) {
         try {
-            String email_check=BasicAuthInterceptor.EMAIL_CONTEXT_KEY.get();
-            if(!email_check.equals(request.getEmail())){
+            String email_check = BasicAuthInterceptor.EMAIL_CONTEXT_KEY.get();
+            if (!email_check.equals(request.getEmail())) {
                 responseStreamObserver.onError(
                         Status.PERMISSION_DENIED
                                 .withDescription("Access denied")
@@ -141,14 +139,15 @@ public class PatientGrpcService extends PatientServiceGrpc.PatientServiceImplBas
                             .asRuntimeException());
         }
     }
+
     @Override
     public void updatePatient
-            (UpdatePatientRequest request,StreamObserver<UpdatePatientResponse> responseStreamObserver) {
-        try{
-            String email=BasicAuthInterceptor.EMAIL_CONTEXT_KEY.get();
+            (UpdatePatientRequest request, StreamObserver<UpdatePatientResponse> responseStreamObserver) {
+        try {
+            String email = BasicAuthInterceptor.EMAIL_CONTEXT_KEY.get();
             UUID id = UUID.fromString(request.getPatientId());
-            PatientModel existing=service.getPatientById(id);
-            if(!existing.email().equals(email)){
+            PatientModel existing = service.getPatientById(id);
+            if (!existing.email().equals(email)) {
                 responseStreamObserver.onError(
                         Status.PERMISSION_DENIED
                                 .withDescription("Access denied")
@@ -156,14 +155,13 @@ public class PatientGrpcService extends PatientServiceGrpc.PatientServiceImplBas
                 );
                 return;
             }
-            PatientModel patientModel=service.updatePatient(PatientGrpcHelper.fromUpdateRequest(request));
+            PatientModel patientModel = service.updatePatient(PatientGrpcHelper.fromUpdateRequest(request));
             responseStreamObserver.onNext(
                     PatientGrpcHelper.toUpdateResponse
-                            (patientModel,"Success","Patient updated successfully"));
-                    log.info("Patient updated successfully");
-                    responseStreamObserver.onCompleted();
-        }
-        catch (PatientNotFoundException e){
+                            (patientModel, "Success", "Patient updated successfully"));
+            log.info("Patient updated successfully");
+            responseStreamObserver.onCompleted();
+        } catch (PatientNotFoundException e) {
             responseStreamObserver.onError(
                     Status.NOT_FOUND
                             .withDescription("Patient not found")
@@ -175,14 +173,15 @@ public class PatientGrpcService extends PatientServiceGrpc.PatientServiceImplBas
                             .asRuntimeException());
         }
     }
+
     @Override
     public void deletePatient
             (GetByIdRequest request, StreamObserver<DeletePatientResponse> responseStreamObserver) {
-        try{
-            String email=BasicAuthInterceptor.EMAIL_CONTEXT_KEY.get();
-            UUID id= UUID.fromString(request.getPatientId());
-            PatientModel existing=service.getPatientById(id);
-            if(!existing.email().equals(email)){
+        try {
+            String email = BasicAuthInterceptor.EMAIL_CONTEXT_KEY.get();
+            UUID id = UUID.fromString(request.getPatientId());
+            PatientModel existing = service.getPatientById(id);
+            if (!existing.email().equals(email)) {
                 responseStreamObserver.onError(
                         Status.UNAUTHENTICATED
                                 .withDescription("Access denied")
@@ -191,56 +190,53 @@ public class PatientGrpcService extends PatientServiceGrpc.PatientServiceImplBas
                 return;
             }
             service.deletePatient(id);
-            DeletePatientResponse response=DeletePatientResponse.newBuilder()
+            DeletePatientResponse response = DeletePatientResponse.newBuilder()
                     .setStatus("Success")
                     .setMessage("Patient deleted successfully")
                     .build();
             responseStreamObserver.onNext(response);
             responseStreamObserver.onCompleted();
-        }
-        catch (PatientNotFoundException e){
+        } catch (PatientNotFoundException e) {
             responseStreamObserver.onError(
                     Status.NOT_FOUND
                             .withDescription("Patient not found")
                             .asRuntimeException());
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             responseStreamObserver.onError(
                     Status.INTERNAL
                             .withDescription(e.getMessage())
                             .asRuntimeException());
         }
     }
+
     //login
     @Override
     public void login
-            (LoginRequest request, StreamObserver<LoginResponse> responseStreamObserver) {
-        log.info("Login email :{}, password:{}",request.getEmail(),request.getPassword());
+    (LoginRequest request, StreamObserver<LoginResponse> responseStreamObserver) {
+        log.info("Login email :{}, password:{}", request.getEmail(), request.getPassword());
         try {
-            String email= BasicAuthInterceptor.EMAIL_CONTEXT_KEY.get();
-            String password=BasicAuthInterceptor.PASSWORD_CONTEXT_KEY.get();
+            String email = BasicAuthInterceptor.EMAIL_CONTEXT_KEY.get();
+            String password = BasicAuthInterceptor.PASSWORD_CONTEXT_KEY.get();
             log.info("Login attempt for email: {}", email);
 
-            PatientModel patientModel = service.login(email,password);
-           LoginResponse response=LoginResponse.newBuilder()
-                   .setPatientId(String.valueOf(patientModel.patientId()))
-                   .setFirstName(patientModel.firstName())
-                   .setLastName(patientModel.lastName())
-                   .setAddress(patientModel.address())
-                   .setEmail(patientModel.email())
-                   .setPhoneNumber(patientModel.phoneNumber())
-                   .build();
-           responseStreamObserver.onNext(response);
-           log.info("Patient login successfully");
-           responseStreamObserver.onCompleted();
-        }
-        catch (PatientNotFoundException e){
+            PatientModel patientModel = service.login(email, password);
+            LoginResponse response = LoginResponse.newBuilder()
+                    .setPatientId(String.valueOf(patientModel.patientId()))
+                    .setFirstName(patientModel.firstName())
+                    .setLastName(patientModel.lastName())
+                    .setAddress(patientModel.address())
+                    .setEmail(patientModel.email())
+                    .setPhoneNumber(patientModel.phoneNumber())
+                    .build();
+            responseStreamObserver.onNext(response);
+            log.info("Patient login successfully");
+            responseStreamObserver.onCompleted();
+        } catch (PatientNotFoundException e) {
             responseStreamObserver.onError(
                     Status.UNAUTHENTICATED
                             .withDescription(e.getMessage())
                             .asRuntimeException());
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             responseStreamObserver.onError(
                     Status.INTERNAL
                             .withDescription(e.getMessage())
