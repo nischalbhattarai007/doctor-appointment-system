@@ -44,7 +44,7 @@ public class BasicAuthInterceptor implements ServerInterceptor {
         try {
             String[] credentials = decodeHeader(metadata.get(AUTH_HEADER));
             if (!basicAuthValidator.validate(credentials[0], credentials[1])) {
-                return reject(call, "Invalid email or password");
+                return reject(call, "Invalid email or password(log from interceptor)");
             }
             log.info("Authenticated: {}", credentials[0]);
 

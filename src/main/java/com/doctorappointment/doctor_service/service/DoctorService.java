@@ -127,6 +127,7 @@ public class DoctorService {
         }
         DoctorModel doctor = doctorRepo.getDoctorByEmail(email);
         if (doctor == null) {
+            log.info("Doctor with email {} login successfully", email);
            throw new EmailPasswordRequiredException("Invalid email or password");
         }
         if (doctor.isDeleted()) {
