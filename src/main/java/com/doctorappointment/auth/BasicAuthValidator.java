@@ -1,4 +1,4 @@
-package com.doctorappointment.patient_service.auth;
+package com.doctorappointment.auth;
 
 import com.doctorappointment.patient_service.dto.PatientModel;
 import com.doctorappointment.patient_service.repository.PatientRepoInterface;

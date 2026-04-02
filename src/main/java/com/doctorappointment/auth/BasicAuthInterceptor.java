@@ -1,4 +1,4 @@
-package com.doctorappointment.patient_service.auth;
+package com.doctorappointment.auth;
 
 import com.doctorappointment.patient_service.exception.InvalidAuthorizationFormatException;
 import com.doctorappointment.patient_service.exception.MissingAuthorizationHeaderException;
@@ -20,7 +20,8 @@ public class BasicAuthInterceptor implements ServerInterceptor {
     public static final Context.Key<String> PASSWORD_CONTEXT_KEY = Context.key("password");
 
     private static final Set<String> PUBLIC_METHODS = Set.of(
-            "com.doctorappointment.PatientService/RegisterPatient"
+            "com.doctorappointment.PatientService/RegisterPatient",
+            "com.doctorappointment.DoctorService/RegisterDoctor"
     );
 
     private final BasicAuthValidator basicAuthValidator;
