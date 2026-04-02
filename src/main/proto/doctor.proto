@@ -42,6 +42,10 @@ message RegisterDoctorRequest{
   string password = 4;
   string doctor_phone_number = 5;
   string doctor_address = 6;
+  string specialization  = 7;
+  string clinic_address  = 8;
+  double latitude        = 9;
+  double longitude       = 10;
 }
 //register response
 message RegisterDoctorResponse{
