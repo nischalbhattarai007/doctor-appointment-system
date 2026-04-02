@@ -2,18 +2,15 @@ package com.doctorappointment.doctor_service.service;
 
 import com.doctorappointment.doctor_service.dto.DoctorModel;
 import com.doctorappointment.doctor_service.dto.DoctorRequest;
-import com.doctorappointment.doctor_service.exception.DoctorEmailNotFoundException;
-import com.doctorappointment.doctor_service.exception.DoctorIdNotFoundException;
-import com.doctorappointment.doctor_service.exception.EmailAlreadyExistsException;
+import com.doctorappointment.doctor_service.exception.*;
 import com.doctorappointment.doctor_service.repository.DoctorRepoInterface;
 import jakarta.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 import org.mindrot.jbcrypt.BCrypt;
 
 import java.util.UUID;
-
-@Slf4j
 @Singleton
+@Slf4j
 public class DoctorService {
     private final DoctorRepoInterface doctorRepo;
 
@@ -123,7 +120,22 @@ public class DoctorService {
         doctorRepo.deleteDoctorById(id);
     }
 
-
-
-
+    //login
+    public DoctorModel login(String email, String password) {
+        if(email == null || email.isEmpty() || password == null) {
+            throw new EmailPasswordRequiredException("Email or password is required");
+        }
+        DoctorModel doctor = doctorRepo.getDoctorByEmail(email);
+        if (doctor == null) {
+           throw new EmailPasswordRequiredException("Invalid email or password");
+        }
+        if (doctor.isDeleted()) {
+            throw new DoctorIdNotFoundException("Doctor account is deactivated");
+        }
+        if(!BCrypt.checkpw(password, doctor.password())) {
+            throw new InvalidPasswordException("Invalid password");
+        }
+        log.info("Logged in doctor with email {} successfully", email);
+        return doctor;
+    }
 }

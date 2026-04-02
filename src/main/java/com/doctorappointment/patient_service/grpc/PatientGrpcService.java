@@ -1,7 +1,7 @@
 package com.doctorappointment.patient_service.grpc;
 
 import com.doctorappointment.*;
-import com.doctorappointment.patient_service.auth.BasicAuthInterceptor;
+import com.doctorappointment.auth.BasicAuthInterceptor;
 import com.doctorappointment.patient_service.dto.PatientModel;
 import com.doctorappointment.patient_service.exception.EmailAlreadyExistsException;
 import com.doctorappointment.patient_service.exception.PatientNotFoundException;
