@@ -1,7 +1,7 @@
 package com.doctorappointment.auth;
 
-import com.doctorappointment.patient_service.exception.InvalidAuthorizationFormatException;
-import com.doctorappointment.patient_service.exception.MissingAuthorizationHeaderException;
+import com.doctorappointment.patient.exception.InvalidAuthorizationFormatException;
+import com.doctorappointment.patient.exception.MissingAuthorizationHeaderException;
 import io.grpc.*;
 import jakarta.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;

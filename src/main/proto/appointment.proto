@@ -1,0 +1,77 @@
+syntax = "proto3";
+option java_multiple_files = true;
+option java_package = "com.doctorappointment";
+option java_outer_classname = "AppointmentProto";
+option objc_class_prefix = "HLW";
+
+package com.doctorappointment;
+
+service AppointmentService {
+  rpc RequestAppointment(AppointmentRequest)returns(AppointmentResponse);
+  rpc CancelAppointment(CancelAppointmentRequest)returns(AppointmentResponse);
+  rpc ConfirmAppointment(AppointmentActionRequest)returns(AppointmentResponse);
+  rpc RejectAppointment(AppointmentActionRequest)returns(AppointmentResponse);
+  rpc GetAppointmentById(GetAppointmentByIdRequest)returns(AppointmentResponse);
+  rpc GetPatientAppointments(GetByPatientIdRequest)returns(AppointmentListResponse);
+  rpc GetDoctorAppointments(GetByDoctorIdRequest)returns(AppointmentListResponse);
+}
+//request appointment
+message AppointmentRequest {
+  string patient_id = 1;
+  string doctor_id = 2;
+  string date = 3; // format: YYYY-MM-DD
+  string notes = 4; // optional patient notes
+}
+
+message CancelAppointmentRequest {
+  string appointment_id = 1;
+  string cancelled_by = 2; // "PATIENT" or "DOCTOR"
+  string reason = 3; // optional cancel reason
+}
+
+message AppointmentActionRequest {
+  string appointment_id = 1;
+  string doctor_id = 2; // doctor confirming or rejecting
+  string reason = 3; // optional reason for rejection
+}
+
+message GetAppointmentByIdRequest {
+  string appointment_id = 1;
+}
+
+message GetByPatientIdRequest {
+  string patient_id = 1;
+}
+
+message GetByDoctorIdRequest {
+  string doctor_id = 1;
+  string date = 2; // optional filter by date
+}
+//appointment response
+message AppointmentResponse {
+  string appointment_id = 1;
+  string patient_id = 2;
+  string doctor_id = 3;
+  string date = 4;
+  string status = 5; // PENDING, CONFIRMED, REJECTED, CANCELLED
+  string notes = 6;
+  string reason = 7; // cancel or rejection reason
+  string cancelled_by = 8; // PATIENT or DOCTOR
+  string status_code = 9;
+  string message = 10;
+}
+
+message AppointmentListResponse {
+  repeated AppointmentSummary appointments = 1;
+  string status = 2;
+  string message = 3;
+}
+
+message AppointmentSummary {
+  string appointment_id = 1;
+  string patient_id = 2;
+  string doctor_id = 3;
+  string date = 4;
+  string status = 5;
+  string notes = 6;
+}

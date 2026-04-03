@@ -1,9 +1,9 @@
 package com.doctorappointment.auth;
 
-import com.doctorappointment.doctor_service.dto.DoctorModel;
-import com.doctorappointment.doctor_service.repository.DoctorRepoInterface;
-import com.doctorappointment.patient_service.dto.PatientModel;
-import com.doctorappointment.patient_service.repository.PatientRepoInterface;
+import com.doctorappointment.doctor.dto.DoctorModel;
+import com.doctorappointment.doctor.repository.DoctorRepoInterface;
+import com.doctorappointment.patient.dto.PatientModel;
+import com.doctorappointment.patient.repository.PatientRepoInterface;
 import jakarta.inject.Singleton;
 import org.mindrot.jbcrypt.BCrypt;
 @Singleton

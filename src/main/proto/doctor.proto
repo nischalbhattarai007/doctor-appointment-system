@@ -118,6 +118,7 @@ message UpdateDoctorRequest{
   string clinic_address = 7;
   double latitude = 8;
   double longitude = 9;
+  int32 daily_limit=10;
 }
 //update doctor by Id response
 message UpdateDoctorResponse{
