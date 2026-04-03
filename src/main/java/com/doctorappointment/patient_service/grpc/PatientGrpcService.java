@@ -7,6 +7,8 @@ import com.doctorappointment.patient_service.exception.EmailAlreadyExistsExcepti
 import com.doctorappointment.patient_service.exception.PatientNotFoundException;
 import com.doctorappointment.patient_service.helper.PatientGrpcHelper;
 import com.doctorappointment.patient_service.service.PatientService;
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import jakarta.inject.Singleton;
@@ -19,7 +21,6 @@ import java.util.UUID;
 @Singleton
 public class PatientGrpcService extends PatientServiceGrpc.PatientServiceImplBase {
     private final PatientService service;
-
     public PatientGrpcService(PatientService service) {
         this.service = service;
     }

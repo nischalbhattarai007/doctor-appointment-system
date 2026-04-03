@@ -5,12 +5,14 @@ import com.doctorappointment.doctor_service.dto.DoctorModel;
 import com.doctorappointment.doctor_service.dto.DoctorRequest;
 import jakarta.inject.Singleton;
 
+import java.util.List;
 import java.util.UUID;
+
 @Singleton
 public class DoctorGrpcHelper {
     //register for doctor
     public static DoctorRequest fromRegisterRequest
-            (RegisterDoctorRequest doctorRequest) {
+    (RegisterDoctorRequest doctorRequest) {
         return DoctorRequest.builder()
                 .firstName(doctorRequest.getDoctorFirstName())
                 .lastName(doctorRequest.getDoctorLastName())
@@ -27,7 +29,7 @@ public class DoctorGrpcHelper {
 
     //register response to doctor
     public static RegisterDoctorResponse toRegisterResponse
-            (DoctorModel doctor, String status, String message) {
+    (DoctorModel doctor, String status, String message) {
         return RegisterDoctorResponse.newBuilder()
                 .setDoctorId(doctor.doctorId().toString())
                 .setDoctorFirstName(doctor.firstName())
@@ -45,9 +47,9 @@ public class DoctorGrpcHelper {
     }
 
     //update doctor by ID
-   public static DoctorRequest fromUpdateRequest
-           (UpdateDoctorRequest request) {
-        return DoctorRequest.builder()
+    public static DoctorModel fromUpdateRequest
+    (UpdateDoctorRequest request) {
+        return DoctorModel.builder()
                 .doctorId(UUID.fromString(request.getDoctorId()))
                 .firstName(request.getDoctorFirstName())
                 .lastName(request.getDoctorLastName())
@@ -58,14 +60,14 @@ public class DoctorGrpcHelper {
                 .latitude(request.getLatitude())
                 .longitude(request.getLongitude())
                 .build();
-   }
-   //update doctor response
-    public static UpdateDoctorResponse toUpdateResponse(DoctorModel model,String status,String message) {
+    }
+
+    //update doctor response
+    public static UpdateDoctorResponse toUpdateResponse(DoctorModel model, String status, String message) {
         return UpdateDoctorResponse.newBuilder()
                 .setDoctorId(model.doctorId().toString())
                 .setDoctorFirstName(model.firstName())
                 .setDoctorLastName(model.lastName())
-                .setDoctorEmail(model.email())
                 .setDoctorPhoneNumber(model.phoneNumber())
                 .setDoctorAddress(model.address())
                 .setSpecialization(model.specialization())
@@ -93,5 +95,96 @@ public class DoctorGrpcHelper {
                 .build();
     }
 
+    //get by ID
+    public static GetDoctorByIdResponse toGetByIdResponse(DoctorModel doctor,
+                                                          String status,
+                                                          String message) {
+        return GetDoctorByIdResponse.newBuilder()
+                .setDoctorId(doctor.doctorId().toString())
+                .setDoctorFirstName(doctor.firstName())
+                .setDoctorLastName(doctor.lastName())
+                .setDoctorEmail(doctor.email())
+                .setDoctorPhoneNumber(doctor.phoneNumber())
+                .setDoctorAddress(doctor.address())
+                .setSpecialization(doctor.specialization())
+                .setClinicAddress(doctor.clinicAddress())
+                .setLatitude(doctor.latitude())
+                .setLongitude(doctor.longitude())
+                .setDoctorStatus(status)
+                .setDoctorMessage(message)
+                .build();
+    }
+
+    //get by email
+    public static GetByDoctorEmailResponse getDoctorByEmailResponse(DoctorModel doctor,
+                                                                    String status,
+                                                                    String message) {
+        return GetByDoctorEmailResponse.newBuilder()
+                .setDoctorId(doctor.doctorId().toString())
+                .setDoctorFirstName(doctor.firstName())
+                .setDoctorLastName(doctor.lastName())
+                .setDoctorEmail(doctor.email())
+                .setDoctorPhoneNumber(doctor.phoneNumber())
+                .setDoctorAddress(doctor.address())
+                .setSpecialization(doctor.specialization())
+                .setClinicAddress(doctor.clinicAddress())
+                .setLatitude(doctor.latitude())
+                .setLongitude(doctor.longitude())
+                .setDoctorStatus(status)
+                .setDoctorMessage(message)
+                .build();
+    }
+
+    //delete doctor
+    public static DeleteDoctorResponse toDeleteResponse(String doctorId,
+                                                        String status,
+                                                        String message) {
+        return DeleteDoctorResponse.newBuilder()
+                .setDoctorId(doctorId)
+                .setDoctorStatus(status)
+                .setDoctorMessage(message)
+                .build();
+    }
+
+    //doctor list response
+    public static DoctorListResponse toDoctorListResponse(List<DoctorModel> doctors,
+                                                          List<Double> distances,
+                                                          String status,
+                                                          String message) {
+        DoctorListResponse.Builder builder = DoctorListResponse.newBuilder()
+                .setDoctorStatus(status)
+                .setDoctorMessage(message);
+        for (int i = 0; i < doctors.size(); i++) {
+            DoctorModel d = doctors.get(i);
+            builder.addDoctors(DoctorSummary.newBuilder()
+                    .setDoctorId(d.doctorId().toString())
+                    .setDoctorFirstName(d.firstName())
+                    .setDoctorLastName(d.lastName())
+                    .setSpecialization(d.specialization())
+                    .setClinicAddress(d.clinicAddress())
+                    .setDoctorPhoneNumber(d.phoneNumber())
+                    .setDistanceKm(distances.get(i))
+                    .build());
+        }
+        return builder.build();
+    }
+//response doctor availability
+    public static DoctorAvailabilityResponse toAvailabilityResponse(String doctorId,
+                                                                    String date,
+                                                                    boolean isAvailable,
+                                                                    int bookedCount,
+                                                                    int maxCapacity,
+                                                                    String status,
+                                                                    String message) {
+        return DoctorAvailabilityResponse.newBuilder()
+                .setDoctorId(doctorId)
+                .setDate(date)
+                .setIsAvailable(isAvailable)
+                .setBookedCount(bookedCount)
+                .setMaxCapacity(maxCapacity)
+                .setDoctorStatus(status)
+                .setDoctorMessage(message)
+                .build();
+    }
 
 }

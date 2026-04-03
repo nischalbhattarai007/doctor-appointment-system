@@ -6,10 +6,12 @@ import io.micronaut.core.annotation.Introspected;
 import io.micronaut.serde.annotation.Serdeable;
 import jakarta.validation.ValidationException;
 import lombok.Builder;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.UUID;
 import java.util.regex.Pattern;
 
+@Slf4j
 @Introspected
 @Serdeable
 @Builder(toBuilder = true)
@@ -35,6 +37,7 @@ public record DoctorModel(
             throw new ValidationException("Last name cannot be empty or null");
         }
         if (isNullOrEmpty(email)) {
+            log.error("Email cannot be empty or null(from model)");
             throw new ValidationException("Email cannot be empty or null");
         }
         String emailRegex = "^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";

@@ -10,6 +10,7 @@ import com.doctorappointment.doctor_service.constant.DoctorSchema;
 import com.doctorappointment.doctor_service.dto.DoctorModel;
 import jakarta.inject.Singleton;
 
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
