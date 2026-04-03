@@ -13,8 +13,6 @@ service PatientService {
   rpc GetPatientByEmail(GetByEmailRequest) returns (GetByEmailResponse);
   rpc UpdatePatient(UpdatePatientRequest)returns(UpdatePatientResponse);
   rpc DeletePatient(GetByIdRequest)returns(DeletePatientResponse);
-  rpc RequestAppointment(AppointmentRequest)returns(AppointmentResponse);
-  rpc CancelAppointment(CancelAppointmentRequest)returns(AppointmentResponse);
 }
 
 // Auth
