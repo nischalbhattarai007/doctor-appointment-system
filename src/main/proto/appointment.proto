@@ -7,36 +7,36 @@ option objc_class_prefix = "HLW";
 package com.doctorappointment;
 
 service AppointmentService {
-  rpc RequestAppointment(AppointmentRequest)returns(AppointmentResponse);
-  rpc CancelAppointment(CancelAppointmentRequest)returns(AppointmentResponse);
-  rpc ConfirmAppointment(AppointmentActionRequest)returns(AppointmentResponse);
-  rpc RejectAppointment(AppointmentActionRequest)returns(AppointmentResponse);
-  rpc GetAppointmentById(GetAppointmentByIdRequest)returns(AppointmentResponse);
+  rpc RequestAppointment(AppointmentServiceCreateRequest)returns(AppointmentServiceResponse);
+  rpc CancelAppointment( AppointmentServiceCancelRequest)returns(AppointmentServiceResponse);
+  rpc ConfirmAppointment(AppointmentActionRequest)returns(AppointmentServiceResponse);
+  rpc RejectAppointment(AppointmentActionRequest)returns(AppointmentServiceResponse);
+  rpc GetAppointmentById(GetAppointmentByIdRequest)returns(AppointmentServiceResponse);
   rpc GetPatientAppointments(GetByPatientIdRequest)returns(AppointmentListResponse);
   rpc GetDoctorAppointments(GetByDoctorIdRequest)returns(AppointmentListResponse);
 }
 //request appointment
-message AppointmentRequest {
+message AppointmentServiceCreateRequest{
   string patient_id = 1;
   string doctor_id = 2;
   string date = 3; // format: YYYY-MM-DD
   string notes = 4; // optional patient notes
 }
 
-message CancelAppointmentRequest {
-  string appointment_id = 1;
+message  AppointmentServiceCancelRequest {
+  string appointment_service_id = 1;
   string cancelled_by = 2; // "PATIENT" or "DOCTOR"
   string reason = 3; // optional cancel reason
 }
 
 message AppointmentActionRequest {
-  string appointment_id = 1;
+  string appointment_service_id = 1;
   string doctor_id = 2; // doctor confirming or rejecting
   string reason = 3; // optional reason for rejection
 }
 
 message GetAppointmentByIdRequest {
-  string appointment_id = 1;
+  string appointment_service_id = 1;
 }
 
 message GetByPatientIdRequest {
@@ -48,8 +48,8 @@ message GetByDoctorIdRequest {
   string date = 2; // optional filter by date
 }
 //appointment response
-message AppointmentResponse {
-  string appointment_id = 1;
+message AppointmentServiceResponse {
+  string appointment_service_id = 1;
   string patient_id = 2;
   string doctor_id = 3;
   string date = 4;
@@ -68,7 +68,7 @@ message AppointmentListResponse {
 }
 
 message AppointmentSummary {
-  string appointment_id = 1;
+  string appointment_service_id = 1;
   string patient_id = 2;
   string doctor_id = 3;
   string date = 4;

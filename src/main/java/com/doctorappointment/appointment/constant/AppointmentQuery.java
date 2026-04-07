@@ -10,7 +10,7 @@ public class AppointmentQuery {
                     APPOINTMENT_ID + ", " +
                     PATIENT_ID + ", " +
                     DOCTOR_ID + ", " +
-                    DATE + ", " +
+                    APPOINTMENT_DATE + ", " +
                     STATUS + ", " +
                     NOTES + ", " +
                     REASON + ", " +
@@ -29,7 +29,7 @@ public class AppointmentQuery {
                     " SET " +
                     STATUS + " =?, " +
                     REASON + " =?, " +
-                    CANCELLED_BY + " =?" +
+                    CANCELLED_BY + " =? " +
                     " WHERE " + APPOINTMENT_ID + " =?";
 
     //Save to doctor lookup table
@@ -37,7 +37,7 @@ public class AppointmentQuery {
             "INSERT INTO " + APPOINTMENTS_BY_DOCTOR_TABLE +
                     " (" +
                     DOCTOR_ID + ", " +
-                    DATE + ", " +
+                    APPOINTMENT_DATE + ", " +
                     APPOINTMENT_ID + ", " +
                     STATUS +
                     ") VALUES (?,?,?,?)";
@@ -45,15 +45,15 @@ public class AppointmentQuery {
     //appointment find by doctor
     public static final String FIND_BY_DOCTOR =
             "SELECT * FROM " + APPOINTMENTS_BY_DOCTOR_TABLE +
-                    " WHERE " + DOCTOR_ID + " =?" +
-                    " AND " + DATE + " =?";
+                    " WHERE " + DOCTOR_ID + " =? " +
+                    " AND " + APPOINTMENT_DATE + " =?";
 
     //update status by doctor
     public static final String UPDATE_STATUS_BY_DOCTOR =
             "UPDATE " + APPOINTMENTS_BY_DOCTOR_TABLE +
-                    " SET " + STATUS + " =?" +
-                    " WHERE " + DOCTOR_ID + " =?" +
-                    " AND " + DATE + " =?" +
+                    " SET " + STATUS + " =? " +
+                    " WHERE " + DOCTOR_ID + " =? " +
+                    " AND " + APPOINTMENT_DATE + " =? " +
                     " AND " + APPOINTMENT_ID + " =?";
 
     //Save to patient lookup table
@@ -61,8 +61,7 @@ public class AppointmentQuery {
             "INSERT INTO " + APPOINTMENTS_BY_PATIENT_TABLE +
                     " (" +
                     PATIENT_ID + ", " +
-                    APPOINTMENT_ID + ", " +
-                    DATE + ", " +
+                    APPOINTMENT_ID + ", " + APPOINTMENT_DATE + ", " +
                     STATUS +
                     ") VALUES (?,?,?,?)";
 
@@ -74,13 +73,13 @@ public class AppointmentQuery {
     //appointment status update by patient
     public static final String UPDATE_STATUS_BY_PATIENT =
             "UPDATE " + APPOINTMENTS_BY_PATIENT_TABLE +
-                    " SET " + STATUS + " =?" +
-                    " WHERE " + PATIENT_ID + " =?" +
+                    " SET " + STATUS + " =? " +
+                    " WHERE " + PATIENT_ID + " =? " +
                     " AND " + APPOINTMENT_ID + " =?";
 
-    //count by doctor date
+    //count by doctor APPOINTMENT_DATE
     public static final String COUNT_BY_DOCTOR_DATE =
             "SELECT COUNT(*) FROM " + APPOINTMENTS_BY_DOCTOR_TABLE +
-                    " WHERE " + DOCTOR_ID + " =?" +
-                    " AND "   + DATE      + " =?";
+                    " WHERE " + DOCTOR_ID + " =? " +
+                    " AND "   + APPOINTMENT_DATE + " =? ";
 }

@@ -44,8 +44,8 @@ public class DoctorQuery {
                     SPECIALIZATION + " =?, " +
                     CLINIC_ADDRESS + " =?, " +
                     LATITUDE + " =?, " +
-                    LONGITUDE + " =?" +
-                    DAILY_LIMIT + " =?" +
+                    LONGITUDE + " =?, " +
+                    DAILY_LIMIT + " =? " +
                     " WHERE " + DOCTOR_ID + " =?";
 
     //soft delete doctor by id

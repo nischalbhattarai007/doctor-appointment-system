@@ -17,7 +17,7 @@ public record AppointmentModel (
         UUID appointmentId,
         UUID doctorId,
         UUID patientId,
-        String date,
+        String appointment_date,
         String status,
         String notes,
         String reason,
@@ -31,16 +31,16 @@ public record AppointmentModel (
         if(doctorId == null){
             throw new DoctorIdNotFoundException("Doctor Id is null");
         }
-        if(isNullOrEmpty(date)){
-            throw new DateNotFoundException("Date is null or empty");
+        if(isNullOrEmpty(appointment_date)){
+            throw new DateNotFoundException("appointment_date is null or empty");
         }
         try{
-            LocalDate localDate = LocalDate.parse(date);
+            LocalDate localDate = LocalDate.parse(appointment_date);
             if(localDate.isBefore(LocalDate.now())){
-                throw new DateValidationException(" Appointment date cannot be in the past");
+                throw new DateValidationException(" Appointment appointment_date cannot be in the past");
             }
         }catch(DateTimeParseException e){
-            throw new DateValidationException("Invalid date format -use YYYY-MM-DD ");
+            throw new DateValidationException("Invalid appointment_date format -use YYYY-MM-DD ");
         }
         if(isNullOrEmpty(status)){
             throw new EmptyStatusValidationException("Status is null or empty");
