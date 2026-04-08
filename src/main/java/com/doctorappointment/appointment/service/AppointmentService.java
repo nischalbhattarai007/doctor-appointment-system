@@ -3,6 +3,7 @@ package com.doctorappointment.appointment.service;
 import com.doctorappointment.appointment.constant.AppointmentStatus;
 import com.doctorappointment.appointment.dto.AppointmentModel;
 import com.doctorappointment.appointment.dto.AppointmentRequest;
+import com.doctorappointment.appointment.enums.CancelledAppointmentEnum;
 import com.doctorappointment.appointment.exception.UnauthorizedAccessException;
 import com.doctorappointment.appointment.repository.AppointmentRepoInterface;
 import com.doctorappointment.doctor.dto.DoctorModel;
@@ -15,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+
 @Singleton
 @Slf4j
 public class AppointmentService {
@@ -25,6 +27,7 @@ public class AppointmentService {
         this.appointmentRepo = appointmentRepo;
         this.doctorRepo = doctorRepo;
     }
+
 
     //request appointment
     public AppointmentModel requestAppointment(AppointmentRequest request) {
@@ -88,18 +91,25 @@ public class AppointmentService {
     //cancel appointment
     public AppointmentModel cancelAppointment(UUID appointmentId, UUID cancelledById, String cancelledBy, String reason) {
         AppointmentModel existingAppointment = getExistingAppointment(appointmentId);
-        if (cancelledBy.equals("PATIENT")) {
-            if (!existingAppointment.patientId().equals(cancelledById)) {
-                throw new UnauthorizedAccessException("Only the assigned patient cancel this appointment");
-            }
-        } else if (cancelledBy.equals("DOCTOR")) {
-            if (!existingAppointment.doctorId().equals(cancelledById)) {
-                throw new UnauthorizedAccessException("Only the assigned doctor cancel this appointment");
-            }
-        } else {
-            throw new UnauthorizedAccessException("Invalid cancelled by(use doctor or patient)");
-
+        CancelledAppointmentEnum cancelledAppointment;
+        try {
+            cancelledAppointment = CancelledAppointmentEnum.valueOf(cancelledBy.trim().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new AppointmentNotFoundException("Invalid cancelledBy (use PATIENT or DOCTOR)");
         }
+        switch (cancelledAppointment) {
+            case PATIENT -> {
+                if (!existingAppointment.patientId().equals(cancelledById)) {
+                    throw new UnauthorizedAccessException("Only the assigned patient cancel this appointment");
+                }
+            }
+            case DOCTOR -> {
+                if (!existingAppointment.doctorId().equals(cancelledById)) {
+                    throw new UnauthorizedAccessException("Only the assigned doctor cancel this appointment");
+                }
+            }
+        }
+        log.info("doctor Id {} patient Id {}", cancelledById, existingAppointment.patientId());
         //only pending and confirmed can be canceled
         if (existingAppointment.status().equals(AppointmentStatus.REJECTED)
                 || existingAppointment.status().equals(AppointmentStatus.CANCELLED)) {
@@ -124,8 +134,8 @@ public class AppointmentService {
     }
 
     //get doctor appointment
-    public List<AppointmentModel> getDoctorAppointments(UUID doctorId,String appointment_date) {
-        if(doctorId==null){
+    public List<AppointmentModel> getDoctorAppointments(UUID doctorId, String appointment_date) {
+        if (doctorId == null) {
             throw new AppointmentNotFoundException("doctor id is required");
         }
         log.info("Getting doctor appointments for doctor {}", doctorId);
@@ -133,8 +143,8 @@ public class AppointmentService {
     }
 
     //get patient appointment
-    public List<AppointmentModel> getPatientAppointments(UUID patientId){
-        if(patientId==null){
+    public List<AppointmentModel> getPatientAppointments(UUID patientId) {
+        if (patientId == null) {
             throw new AppointmentNotFoundException("patient id is required");
         }
         log.info("Getting patient appointments for patient {}", patientId);
@@ -146,9 +156,11 @@ public class AppointmentService {
         if (appointmentId == null) {
             throw new AppointmentNotFoundException("Appointment id is required");
         }
+        log.info("Getting appointment {}", appointmentId);
         AppointmentModel existing = appointmentRepo.getAppointmentById(appointmentId);
+        log.info("Getting appointment {}", existing);
         if (existing == null) {
-            throw new AppointmentNotFoundException("Appointment not found with id: " + appointmentId);
+            throw new AppointmentNotFoundException("Appointment not found with id " + appointmentId);
         }
         return existing;
     }

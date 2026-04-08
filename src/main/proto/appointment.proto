@@ -27,6 +27,7 @@ message  AppointmentServiceCancelRequest {
   string appointment_service_id = 1;
   string cancelled_by = 2; // "PATIENT" or "DOCTOR"
   string reason = 3; // optional cancel reason
+  string cancelled_by_id = 4;
 }
 
 message AppointmentActionRequest {

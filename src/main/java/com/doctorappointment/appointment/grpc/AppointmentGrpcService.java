@@ -1,31 +1,244 @@
 package com.doctorappointment.appointment.grpc;
-import com.doctorappointment.AppointmentServiceCreateRequest;
-import com.doctorappointment.AppointmentServiceGrpc;
-import com.doctorappointment.AppointmentServiceResponse;
+
+import com.doctorappointment.*;
 import com.doctorappointment.appointment.dto.AppointmentModel;
+import com.doctorappointment.appointment.exception.UnauthorizedAccessException;
 import com.doctorappointment.appointment.helper.AppointmentGrpcHelper;
 import com.doctorappointment.appointment.service.AppointmentService;
+import com.doctorappointment.doctor.exception.AppointmentNotFoundException;
+import com.doctorappointment.doctor.exception.DoctorFullyBookedException;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import jakarta.inject.Singleton;
+import lombok.extern.slf4j.Slf4j;
+
+import java.util.List;
+import java.util.UUID;
+
+@Slf4j
 @Singleton
-public class AppointmentGrpcService extends AppointmentServiceGrpc.AppointmentServiceImplBase{
+public class AppointmentGrpcService extends AppointmentServiceGrpc.AppointmentServiceImplBase {
     private final AppointmentService service;
+
     public AppointmentGrpcService(AppointmentService service) {
         this.service = service;
     }
-    public void requestAppointment(AppointmentServiceCreateRequest request, StreamObserver<AppointmentServiceResponse>responseObserver){
-        try{
-            AppointmentModel model=service.requestAppointment(AppointmentGrpcHelper.fromAppointmentRequest(request));
+
+    @Override
+    public void requestAppointment(AppointmentServiceCreateRequest request, StreamObserver<AppointmentServiceResponse> responseObserver) {
+        try {
+            AppointmentModel model = service.requestAppointment(AppointmentGrpcHelper.fromAppointmentRequest(request));
             responseObserver.onNext(
                     AppointmentGrpcHelper.toAppointmentResponse
                             (model, "SUCCESS", "Appointment requested successfully"));
+            log.info("Appointment requested successfully");
             responseObserver.onCompleted();
-        }catch(Exception e){
+        } catch (DoctorFullyBookedException e) {
+            responseObserver.onError(
+                    Status.FAILED_PRECONDITION
+                            .withDescription(e.getMessage())
+                            .asRuntimeException());
+        } catch (AppointmentNotFoundException e) {
+            responseObserver.onError(
+                    Status.NOT_FOUND
+                            .withDescription(e.getMessage())
+                            .asRuntimeException());
+        } catch (Exception e) {
             responseObserver.onError(
                     Status.INVALID_ARGUMENT
                             .withDescription(e.getMessage())
                             .asRuntimeException());
         }
     }
+
+    public void confirmAppointment
+            (AppointmentActionRequest request, StreamObserver<AppointmentServiceResponse> responseObserver) {
+        try {
+            UUID appointmentId = UUID.fromString(request.getAppointmentServiceId());
+            UUID doctorId = UUID.fromString(request.getDoctorId());
+            AppointmentModel model = service.confirmAppointment(appointmentId, doctorId);
+            responseObserver.onNext(
+                    AppointmentGrpcHelper.toAppointmentServiceResponse(model, "SUCCESS", "Appointment confirmed successfully")
+            );
+            log.info("Appointment confirmed successfully");
+            responseObserver.onCompleted();
+        } catch (UnauthorizedAccessException e) {
+            responseObserver.onError(
+                    Status.PERMISSION_DENIED
+                            .withDescription(e.getMessage())
+                            .asRuntimeException()
+            );
+        } catch (AppointmentNotFoundException e) {
+            responseObserver.onError(
+                    Status.NOT_FOUND
+                            .withDescription(e.getMessage())
+                            .asRuntimeException()
+            );
+        } catch (Exception e) {
+            responseObserver.onError(
+                    Status.INTERNAL
+                            .withDescription(e.getMessage())
+                            .asRuntimeException()
+            );
+        }
+    }
+
+    //cancel appointment
+    @Override
+    public void cancelAppointment
+    (AppointmentServiceCancelRequest request, StreamObserver<AppointmentServiceResponse> responseObserver) {
+        try {
+            UUID appointmentId = UUID.fromString(request.getAppointmentServiceId());
+            UUID cancelledById=UUID.fromString(request.getCancelledById());
+            AppointmentModel appointment = service.cancelAppointment(
+                    appointmentId,
+                    cancelledById,
+                    request.getCancelledBy(),
+                    request.getReason());
+            responseObserver.onNext(
+                    AppointmentGrpcHelper.toAppointmentServiceResponse
+                            (appointment, "SUCCESS", "Appointment cancelled successfully")
+            );
+            log.info("Appointment cancelled successfully");
+            responseObserver.onCompleted();
+        } catch (AppointmentNotFoundException e) {
+            responseObserver.onError(
+                    Status.NOT_FOUND
+                            .withDescription(e.getMessage())
+                            .asRuntimeException());
+        } catch (UnauthorizedAccessException e) {
+            responseObserver.onError(
+                    Status.PERMISSION_DENIED
+                            .withDescription(e.getMessage())
+                            .asRuntimeException());
+        } catch (Exception e) {
+            responseObserver.onError(
+                    Status.INTERNAL
+                            .withDescription(e.getMessage())
+                            .asRuntimeException()
+            );
+        }
+    }
+
+    @Override
+    public void rejectAppointment
+            (AppointmentActionRequest request, StreamObserver<AppointmentServiceResponse> responseObserver) {
+        try {
+            UUID appointmentId = UUID.fromString(request.getAppointmentServiceId());
+            UUID doctorId = UUID.fromString(request.getDoctorId());
+            AppointmentModel model = service.rejectAppointment(appointmentId, doctorId);
+            responseObserver.onNext(
+                    AppointmentGrpcHelper.toAppointmentResponse(model, "SUCCESS", "Appointment rejected successfully")
+            );
+            log.info("Appointment {} rejected successfully", appointmentId);
+            responseObserver.onCompleted();
+        } catch (AppointmentNotFoundException e) {
+            responseObserver.onError(
+                    Status.NOT_FOUND
+                            .withDescription(e.getMessage())
+                            .asRuntimeException());
+        } catch (UnauthorizedAccessException e) {
+            responseObserver.onError(
+                    Status.PERMISSION_DENIED
+                            .withDescription(e.getMessage())
+                            .asRuntimeException());
+        } catch (Exception e) {
+            responseObserver.onError(
+                    Status.INTERNAL
+                            .withDescription(e.getMessage())
+                            .asRuntimeException());
+        }
+    }
+
+    //get appointment by id
+    @Override
+    public void getAppointmentById
+    (GetAppointmentByIdRequest request, StreamObserver<AppointmentServiceResponse> responseObserver) {
+        try {
+            UUID appointmentId = UUID.fromString(request.getAppointmentServiceId());
+            AppointmentModel appointment = service.getAppointmentById(appointmentId);
+            responseObserver.onNext(
+                    AppointmentGrpcHelper.toAppointmentServiceResponse
+                            (appointment, "SUCCESS", "Appointment found successfully"));
+            log.info("Appointment {} found successfully", appointmentId);
+            responseObserver.onCompleted();
+        } catch (AppointmentNotFoundException e) {
+            responseObserver.onError(
+                    Status.NOT_FOUND
+                            .withDescription(e.getMessage())
+                            .asRuntimeException());
+        } catch (UnauthorizedAccessException e) {
+            responseObserver.onError(
+                    Status.PERMISSION_DENIED
+                            .withDescription(e.getMessage())
+                            .asRuntimeException());
+        } catch (Exception e) {
+            responseObserver.onError(
+                    Status.INTERNAL
+                            .withDescription(e.getMessage())
+                            .asRuntimeException());
+        }
+    }
+
+    //get patient appointments
+    @Override
+    public void getPatientAppointments
+    (GetByPatientIdRequest request, StreamObserver<AppointmentListResponse> responseObserver) {
+        try {
+            UUID patientId = UUID.fromString(request.getPatientId());
+            List<AppointmentModel> appointments = service.getPatientAppointments(patientId);
+            responseObserver.onNext
+                    (AppointmentGrpcHelper.toAppointmentListResponse
+                            (appointments, "SUCCESS", "Appointment list successfully retrieved"));
+            log.info("patients Appointment list successfully retrieved");
+            responseObserver.onCompleted();
+        } catch (AppointmentNotFoundException e) {
+            responseObserver.onError(
+                    Status.NOT_FOUND
+                            .withDescription(e.getMessage())
+                            .asRuntimeException());
+        } catch (UnauthorizedAccessException e) {
+            responseObserver.onError(
+                    Status.PERMISSION_DENIED
+                            .withDescription(e.getMessage())
+                            .asRuntimeException());
+        } catch (Exception e) {
+            responseObserver.onError(
+                    Status.INTERNAL
+                            .withDescription(e.getMessage())
+                            .asRuntimeException());
+        }
+    }
+
+    @Override
+    public void getDoctorAppointments
+            (GetByDoctorIdRequest request, StreamObserver<AppointmentListResponse> responseObserver) {
+        try {
+            UUID DoctorId = UUID.fromString(request.getDoctorId());
+            List<AppointmentModel> appointments = service.getDoctorAppointments(DoctorId,request.getDate());
+            responseObserver.onNext
+                    (AppointmentGrpcHelper.toAppointmentListResponse
+                            (appointments, "SUCCESS", "Appointment list successfully retrieved"));
+            log.info("Doctor appointments  list successfully retrieved");
+            responseObserver.onCompleted();
+        } catch (AppointmentNotFoundException e) {
+            responseObserver.onError(
+                    Status.NOT_FOUND
+                            .withDescription(e.getMessage())
+                            .asRuntimeException());
+        } catch (UnauthorizedAccessException e) {
+            responseObserver.onError(
+                    Status.PERMISSION_DENIED
+                            .withDescription(e.getMessage())
+                            .asRuntimeException());
+        } catch (Exception e) {
+            responseObserver.onError(
+                    Status.INTERNAL
+                            .withDescription(e.getMessage())
+                            .asRuntimeException());
+        }
+    }
+
+
+
 }

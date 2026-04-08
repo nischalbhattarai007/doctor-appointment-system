@@ -79,7 +79,9 @@ class AppointmentRepository implements AppointmentRepoInterface {
 
     @Override
     public AppointmentModel getAppointmentById(UUID appointmentId) {
+        log.info("Get Appointment by id : {}", appointmentId);
         BoundStatement bs = findById.bind(appointmentId);
+        log.info(" Appointment getById : {}", appointmentId);
         Row row = cqlSession.execute(bs).one();
         if (row == null) {
             return null;
@@ -98,20 +100,20 @@ class AppointmentRepository implements AppointmentRepoInterface {
                 status,
                 reason,
                 cancelledBy,
-                appointmentId.toString()
+                appointmentId
         ));
         //sync with appoints_by_doctor table
-        cqlSession.execute(updateStatusByPatient.bind(
-                status,
-                existingModel.doctorId(),
-                existingModel.appointment_date(),
-                appointmentId.toString()
-        ));
-        //sync with appointments_by_patient
         cqlSession.execute(updateStatusByDoctor.bind(
                 status,
                 existingModel.doctorId(),
-                appointmentId.toString()
+                existingModel.appointment_date(),
+                appointmentId
+        ));
+        //sync with appointments_by_patient
+        cqlSession.execute(updateStatusByPatient.bind(
+                status,
+                existingModel.patientId(),
+                appointmentId
         ));
         log.info(" Appointment status saved : {} -> {}", appointmentId, status);
     }
