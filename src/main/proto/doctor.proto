@@ -42,10 +42,10 @@ message RegisterDoctorRequest{
   string password = 4;
   string doctor_phone_number = 5;
   string doctor_address = 6;
-  string specialization  = 7;
-  string clinic_address  = 8;
-  double latitude        = 9;
-  double longitude       = 10;
+  string specialization = 7;
+  string clinic_address = 8;
+  double latitude = 9;
+  double longitude = 10;
 }
 //register response
 message RegisterDoctorResponse{
@@ -118,7 +118,7 @@ message UpdateDoctorRequest{
   string clinic_address = 7;
   double latitude = 8;
   double longitude = 9;
-  int32 daily_limit=10;
+  int32 daily_limit = 10;
 }
 //update doctor by Id response
 message UpdateDoctorResponse{
@@ -137,10 +137,9 @@ message UpdateDoctorResponse{
 }
 // get doctor by location
 message LocationRequest{
-  double latitude = 1;
-  double longitude = 2;
-  double radius_km = 3;
-  int32 limit = 4;
+  string location_name = 1;
+  double radius_km = 2;
+  int32 limit = 3;
 }
 //doctor list response
 message DoctorListResponse {
@@ -175,10 +174,9 @@ message DoctorAvailabilityResponse {
 }
 //get doctor with nearest location
 message NearestLocationRequest{
-  double latitude = 1;
-  double longitude = 2;
-  double radius_km = 3;
-  int32 limit = 4;
+  string location_name = 1;
+  double radius_km = 2;
+  int32 limit = 3;
 }
 //nearest location response
 message NearestDoctorListResponse {

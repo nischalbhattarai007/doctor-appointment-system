@@ -21,11 +21,12 @@ public class GeocodingService {
 
     public double[] getCoordinates(String address) {
         try {
-            String url = PHOTON_URL + "?q=" +
-                    address.replace(" ", "+") + "&limit=1";
+            String url =  "?q=" + address.replace(" ", "+") + "&limit=1";
+            log.info("Calling Photon with URL: {}", url);
             String response = client
                     .toBlocking()
                     .retrieve(HttpRequest.GET(url));
+            log.info("Photon raw response: {}", response);
 
             JsonNode root = objectMapper.readTree(response);
             JsonNode features = root.get("features");

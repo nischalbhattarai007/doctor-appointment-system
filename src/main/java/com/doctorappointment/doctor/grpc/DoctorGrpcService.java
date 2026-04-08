@@ -9,6 +9,7 @@ import com.doctorappointment.doctor.exception.EmailAlreadyExistsException;
 import com.doctorappointment.doctor.exception.ValidationException;
 import com.doctorappointment.doctor.helper.DoctorGrpcHelper;
 import com.doctorappointment.doctor.service.DoctorService;
+import com.doctorappointment.doctor.service.GeocodingService;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import jakarta.inject.Singleton;
@@ -22,9 +23,11 @@ import java.util.stream.Collectors;
 @Slf4j
 public class DoctorGrpcService extends DoctorServiceGrpc.DoctorServiceImplBase {
     private final DoctorService service;
+    private final GeocodingService  geocodingService;
 
-    public DoctorGrpcService(DoctorService service) {
+    public DoctorGrpcService(DoctorService service, GeocodingService geocodingService) {
         this.service = service;
+        this.geocodingService = geocodingService;
     }
 
     //register doctor
@@ -172,14 +175,18 @@ public class DoctorGrpcService extends DoctorServiceGrpc.DoctorServiceImplBase {
     @Override
     public void getDoctorsByLocation(LocationRequest request, StreamObserver<DoctorListResponse> responseObserver) {
         try {
+            log.info("location_name from request: '{}'", request.getLocationName());
+            double[] coords = geocodingService.getCoordinates(request.getLocationName());
+            double latitude  = coords[0];
+            double longitude = coords[1];
+
             List<DoctorModel> doctors = service.getDoctorsByLocation(
-                    request.getLatitude(),
-                    request.getLongitude(),
+                    latitude,longitude,
                     request.getRadiusKm(),
                     request.getLimit());
             List<Double> distances = doctors.stream()
                     .map(d -> service.calculateDistance(
-                            request.getLatitude(), request.getLongitude(),
+                            latitude,longitude,
                             d.latitude(), d.longitude()))
                     .toList();
             responseObserver.onNext(
@@ -198,16 +205,18 @@ public class DoctorGrpcService extends DoctorServiceGrpc.DoctorServiceImplBase {
     @Override
     public void getNearestDoctor(NearestLocationRequest request, StreamObserver<NearestDoctorListResponse> responseObserver) {
         try {
+            double[] coords=geocodingService.getCoordinates(request.getLocationName());
+            double latitude=coords[0];
+            double longitude=coords[1];
             List<DoctorModel> doctors = service.getNearestDoctors(
-                    request.getLatitude(),
-                    request.getLongitude(),
+                    latitude,longitude,
                     request.getRadiusKm(),
                     request.getLimit()
             );
 
             List<Double> distances = doctors.stream()
                     .map(d -> service.calculateDistance(
-                            request.getLatitude(), request.getLongitude(),
+                            latitude, longitude,
                             d.latitude(), d.longitude()))
                     .toList();
             NearestDoctorListResponse response = NearestDoctorListResponse.newBuilder()
