@@ -31,7 +31,7 @@ public class DoctorService {
 //        if(doctor.password().length() < 8) {
 //            throw new InvalidPasswordException("Password too short");
 //        }
-        String normalizedBuilding=doctor.clinicBuilding()!=null?doctor.clinicBuilding().trim().toLowerCase():"";
+        String normalizedBuilding=normalizeBuilding(doctor.clinicBuilding());
         if(!normalizedBuilding.isBlank() && doctorRepo.existsByClinicBuilding(normalizedBuilding)) {
             throw new ClinicLocationValidataionException("A clinic already exists at '" + doctor.clinicBuilding() + "'. " +
                     "If you practice at the same location, contact support.");
@@ -243,5 +243,12 @@ public class DoctorService {
 
     private boolean isBlank(String value) {
         return value == null || value.isBlank();
+    }
+
+    private String normalizeBuilding(String clinicBuilding) {
+        if (clinicBuilding == null || clinicBuilding.isBlank()) return "";
+        return clinicBuilding.trim()
+                .toLowerCase()
+                .replaceAll("\\s*,\\s*", ","); // "White Building , First Floor" → "white building,first floor"
     }
 }
