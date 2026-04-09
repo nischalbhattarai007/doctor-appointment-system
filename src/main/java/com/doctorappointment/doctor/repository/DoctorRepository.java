@@ -24,6 +24,7 @@ class DoctorRepository implements DoctorRepoInterface {
     private final PreparedStatement updateDoctor;
     private final PreparedStatement softDeleteDoctor;
     private final PreparedStatement existsDoctorByEmail;
+    private final PreparedStatement findByClinicBuilding;
 
     DoctorRepository(CqlSession session) {
         this.session = session;
@@ -34,6 +35,7 @@ class DoctorRepository implements DoctorRepoInterface {
         this.softDeleteDoctor = session.prepare(DoctorQuery.SOFT_DELETE);
         this.existsDoctorByEmail = session.prepare(DoctorQuery.EXISTS_BY_EMAIL);
         this.getAllDoctors = session.prepare(DoctorQuery.GET_ALL_DOCTORS);
+        this.findByClinicBuilding = session.prepare(DoctorQuery.FIND_BY_CLINIC_BUILDING);
     }
 
     @Override
@@ -120,6 +122,12 @@ class DoctorRepository implements DoctorRepoInterface {
             doctors.add(mapRow(row));
         }
         return doctors;
+    }
+
+    @Override
+    public boolean existsByClinicBuilding(String clinicBuilding) {
+        BoundStatement bs=findByClinicBuilding.bind(clinicBuilding.trim().toLowerCase());
+        return session.execute(bs).one() != null;
     }
 
     private DoctorModel mapRow(Row row) {

@@ -67,4 +67,9 @@ public class DoctorQuery {
     public static final String GET_ALL_DOCTORS =
             "SELECT * FROM " + DOCTORS_TABLE;
 
+    //find by clinic building
+    public static final String FIND_BY_CLINIC_BUILDING =
+            "SELECT " + DOCTOR_ID + ", " + CLINIC_BUILDING +
+                    " FROM " + DOCTORS_TABLE +
+                    " WHERE " + CLINIC_BUILDING + " = ?";
 }

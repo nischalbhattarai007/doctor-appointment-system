@@ -31,7 +31,13 @@ public class DoctorService {
 //        if(doctor.password().length() < 8) {
 //            throw new InvalidPasswordException("Password too short");
 //        }
+        String normalizedBuilding=doctor.clinicBuilding()!=null?doctor.clinicBuilding().trim().toLowerCase():"";
+        if(!normalizedBuilding.isBlank() && doctorRepo.existsByClinicBuilding(normalizedBuilding)) {
+            throw new ClinicLocationValidataionException("A clinic already exists at '" + doctor.clinicBuilding() + "'. " +
+                    "If you practice at the same location, contact support.");
+        }
         String hashedPassword = BCrypt.hashpw(doctor.password(), BCrypt.gensalt());
+
         //get coordinates from clinic address
         double[] coordinates = geocodingService.getCoordinates
                 (doctor.clinicName(),
@@ -55,7 +61,7 @@ public class DoctorService {
                 .dailyLimit(10)
                 .isDeleted(false)
                 .clinicName(doctor.clinicName())
-                .clinicBuilding(doctor.clinicBuilding())
+                .clinicBuilding(normalizedBuilding)
                 .build();
         log.info("Doctor with email {} register successfully", doctor.email());
         return doctorRepo.addDoctor(model);
