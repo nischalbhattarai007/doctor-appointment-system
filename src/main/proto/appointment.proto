@@ -14,6 +14,7 @@ service AppointmentService {
   rpc GetAppointmentById(GetAppointmentByIdRequest)returns(AppointmentServiceResponse);
   rpc GetPatientAppointments(GetByPatientIdRequest)returns(AppointmentListResponse);
   rpc GetDoctorAppointments(GetByDoctorIdRequest)returns(AppointmentListResponse);
+  rpc RescheduleAppointment(AppointmentRescheduleRequest) returns(AppointmentServiceResponse);
 }
 //request appointment
 message AppointmentServiceCreateRequest{
@@ -25,11 +26,15 @@ message AppointmentServiceCreateRequest{
 
 message  AppointmentServiceCancelRequest {
   string appointment_service_id = 1;
-  string cancelled_by = 2; // "PATIENT" or "DOCTOR"
+  string patient_id = 2; // "only PATIENT cancel the appointment"
   string reason = 3; // optional cancel reason
-  string cancelled_by_id = 4;
 }
-
+message AppointmentRescheduleRequest{
+  string appointment_service_id=1;
+  string doctor_id=2;
+  string new_date=3;
+  string reason=4;
+}
 message AppointmentActionRequest {
   string appointment_service_id = 1;
   string doctor_id = 2; // doctor confirming or rejecting

@@ -89,38 +89,42 @@ public class AppointmentService {
     }
 
     //cancel appointment
-    public AppointmentModel cancelAppointment(UUID appointmentId, UUID cancelledById, String cancelledBy, String reason) {
+    public AppointmentModel cancelAppointment(UUID appointmentId, UUID patientId, String reason) {
         AppointmentModel existingAppointment = getExistingAppointment(appointmentId);
-        CancelledAppointmentEnum cancelledAppointment;
-        try {
-            cancelledAppointment = CancelledAppointmentEnum.valueOf(cancelledBy.trim().toUpperCase());
-        } catch (IllegalArgumentException e) {
-            throw new AppointmentNotFoundException("Invalid cancelledBy (use PATIENT or DOCTOR)");
+        if(!existingAppointment.patientId().equals(patientId)){
+            throw new UnauthorizedAccessException("Only the assigned patient is allowed");
         }
-        switch (cancelledAppointment) {
-            case PATIENT -> {
-                if (!existingAppointment.patientId().equals(cancelledById)) {
-                    throw new UnauthorizedAccessException("Only the assigned patient cancel this appointment");
-                }
-            }
-            case DOCTOR -> {
-                if (!existingAppointment.doctorId().equals(cancelledById)) {
-                    throw new UnauthorizedAccessException("Only the assigned doctor cancel this appointment");
-                }
-            }
-        }
-        log.info("doctor Id {} patient Id {}", cancelledById, existingAppointment.patientId());
         //only pending and confirmed can be canceled
+
+        appointmentRepo.updateStatus
+                (appointmentId, AppointmentStatus.CANCELLED, reason != null ? reason : "", AppointmentStatus.PATIENT);
+        log.info("Appointment {} cancelled by patient {}", appointmentId, patientId);
+        return existingAppointment.toBuilder()
+                .status(AppointmentStatus.CANCELLED)
+                .reason(reason != null ? reason : "")
+                .cancelledBy(AppointmentStatus.PATIENT)
+                .build();
+    }
+
+    //reschedule -doctor only
+    public AppointmentModel rescheduleAppointment(UUID appointmentId, UUID doctorId,String newDate, String reason) {
+        AppointmentModel existingAppointment = getExistingAppointment(appointmentId);
+        if(!existingAppointment.doctorId().equals(doctorId)){
+            throw new UnauthorizedAccessException("Only the assigned doctor is allowed");
+        }
         if (existingAppointment.status().equals(AppointmentStatus.REJECTED)
                 || existingAppointment.status().equals(AppointmentStatus.CANCELLED)) {
             throw new UnauthorizedAccessException("Cannot cancel appointment with status " + existingAppointment.status());
         }
-        appointmentRepo.updateStatus(appointmentId, AppointmentStatus.CANCELLED, reason != null ? reason : "", cancelledBy);
-        log.info("Appointment {} cancelled by doctor {}", appointmentId, cancelledById);
+        appointmentRepo.updateStatus(appointmentId,
+                newDate,
+                AppointmentStatus.PENDING,
+                reason!=null ? reason:"");
+        log.info("Appointment {} rescheduled by doctor {}", appointmentId, doctorId);
         return existingAppointment.toBuilder()
-                .status(AppointmentStatus.CANCELLED)
-                .reason(reason != null ? reason : "")
-                .cancelledBy(cancelledBy)
+                .appointment_date(newDate)
+                .status(AppointmentStatus.PENDING)
+                .reason(reason!=null? reason:"")
                 .build();
     }
 

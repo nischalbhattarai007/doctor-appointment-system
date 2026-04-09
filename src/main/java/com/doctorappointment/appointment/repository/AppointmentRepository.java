@@ -33,6 +33,8 @@ class AppointmentRepository implements AppointmentRepoInterface {
     private final PreparedStatement insertByPatient;
     private final PreparedStatement findByPatient;
     private final PreparedStatement updateStatusByPatient;
+    //reschedule appointment by doctor
+    private final PreparedStatement updateDateAndStatus;
 
     AppointmentRepository(ScyllaDbConfig config) {
         this.cqlSession = config.getSession();
@@ -46,6 +48,7 @@ class AppointmentRepository implements AppointmentRepoInterface {
         this.insertByPatient = cqlSession.prepare(AppointmentQuery.INSERT_BY_PATIENT);
         this.findByPatient = cqlSession.prepare(AppointmentQuery.FIND_BY_PATIENT);
         this.updateStatusByPatient = cqlSession.prepare(AppointmentQuery.UPDATE_STATUS_BY_PATIENT);
+        this.updateDateAndStatus=cqlSession.prepare(AppointmentQuery.UPDATE_STATUS_BY_DOCTOR);
     }
 
     @Override
@@ -147,6 +150,12 @@ class AppointmentRepository implements AppointmentRepoInterface {
         Row row = cqlSession.execute(bs).one();
         return row == null ? 0 : row.getLong(0);
 
+    }
+
+    @Override
+    public void updateDateAndStatus(UUID appointmentId, String newDate, String status, String reason) {
+        cqlSession.execute(updateDateAndStatus.bind(appointmentId, newDate, status, reason));
+        log.info(" Appointment {} reschedule to {} with status {}", appointmentId, newDate, status);
     }
 
     //helper method

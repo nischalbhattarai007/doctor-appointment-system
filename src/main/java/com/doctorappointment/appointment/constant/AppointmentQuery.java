@@ -82,4 +82,11 @@ public class AppointmentQuery {
             "SELECT COUNT(*) FROM " + APPOINTMENTS_BY_DOCTOR_TABLE +
                     " WHERE " + DOCTOR_ID + " =? " +
                     " AND "   + APPOINTMENT_DATE + " =? ";
+//reschedule appointment
+    public static final String UPDATE_DATE_AND_STATUS =
+            "UPDATE " + APPOINTMENTS_TABLE +
+                    " SET " + APPOINTMENT_DATE + " = ?, " +
+                    STATUS + " = ?, " +
+                    REASON + " = ? " +
+                    " WHERE " + APPOINTMENT_ID + " = ?";
 }

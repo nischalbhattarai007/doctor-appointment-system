@@ -89,11 +89,10 @@ public class AppointmentGrpcService extends AppointmentServiceGrpc.AppointmentSe
     (AppointmentServiceCancelRequest request, StreamObserver<AppointmentServiceResponse> responseObserver) {
         try {
             UUID appointmentId = UUID.fromString(request.getAppointmentServiceId());
-            UUID cancelledById=UUID.fromString(request.getCancelledById());
+            UUID patientId=UUID.fromString(request.getPatientId());
             AppointmentModel appointment = service.cancelAppointment(
                     appointmentId,
-                    cancelledById,
-                    request.getCancelledBy(),
+                    patientId,
                     request.getReason());
             responseObserver.onNext(
                     AppointmentGrpcHelper.toAppointmentServiceResponse
@@ -117,6 +116,41 @@ public class AppointmentGrpcService extends AppointmentServiceGrpc.AppointmentSe
                             .withDescription(e.getMessage())
                             .asRuntimeException()
             );
+        }
+    }
+
+    //reschedule appointment
+    @Override
+    public void rescheduleAppointment
+    (AppointmentRescheduleRequest request, StreamObserver<AppointmentServiceResponse> responseObserver) {
+        try {
+            UUID appointmentId = UUID.fromString(request.getAppointmentServiceId());
+            UUID doctorId = UUID.fromString(request.getDoctorId());
+            AppointmentModel appointment = service.rescheduleAppointment(
+                    appointmentId,
+                    doctorId,
+                    request.getNewDate(),
+                    request.getReason());
+            responseObserver.onNext(
+                    AppointmentGrpcHelper.toAppointmentServiceResponse
+                            (appointment, "SUCCESS", "Appointment rescheduled successfully"));
+            log.info("Appointment rescheduled successfully");
+            responseObserver.onCompleted();
+        }catch (AppointmentNotFoundException e) {
+            responseObserver.onError(
+                    Status.NOT_FOUND
+                            .withDescription(e.getMessage())
+                            .asRuntimeException());
+        }catch (UnauthorizedAccessException e) {
+            responseObserver.onError(
+                    Status.PERMISSION_DENIED
+                            .withDescription(e.getMessage())
+                            .asRuntimeException());
+        }catch (Exception e) {
+            responseObserver.onError(
+                    Status.INTERNAL
+                            .withDescription(e.getMessage())
+                            .asRuntimeException());
         }
     }
 
