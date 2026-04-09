@@ -16,6 +16,8 @@ public record DoctorRequest(
         String specialization,
         String clinicAddress,
         double latitude,
-        double longitude) {
+        double longitude,
+        String clinicName,
+        String clinicBuilding) {
 
 }

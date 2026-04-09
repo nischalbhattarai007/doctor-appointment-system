@@ -3,10 +3,11 @@ package com.doctorappointment.doctor.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micronaut.http.HttpRequest;
+import io.micronaut.http.client.HttpClient;
 import io.micronaut.http.client.annotation.Client;
 import jakarta.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
-import io.micronaut.http.client.HttpClient;
+
 @Singleton
 @Slf4j
 public class GeocodingService {
@@ -19,11 +20,43 @@ public class GeocodingService {
         this.objectMapper = objectMapper;
     }
 
-    public double[] getCoordinates(String address) {
+    // used for register/update doctor (full clinic detail)
+    public double[] getCoordinates(String clinicName, String clinicBuilding, String clinicAddress) {
         try {
-            String url =  "?q=" + address.replace(" ", "+") + "&limit=1";
+            StringBuilder query = new StringBuilder();
+            if (clinicName != null && !clinicName.isBlank()) {
+                query.append(clinicName.trim()).append(", ");
+            }
+            if (clinicBuilding != null && !clinicBuilding.isBlank()) {
+                query.append(clinicBuilding.trim()).append(", ");
+            }
+            query.append(clinicAddress.trim());
+
+            return resolveCoordinates(query.toString());
+
+        } catch (Exception e) {
+            log.error("Geocoding failed: {}", e.getMessage());
+            return defaultKathmandu();
+        }
+    }
+
+    // used for location search (GetNearestDoctor, GetDoctorsByLocation)
+    public double[] getCoordinates(String locationName) {
+        try {
+            return resolveCoordinates(locationName.trim());
+        } catch (Exception e) {
+            log.error("Geocoding failed for '{}': {}", locationName, e.getMessage());
+            return defaultKathmandu();
+        }
+    }
+
+    // shared private method — actual HTTP call happens here
+    private double[] resolveCoordinates(String queryText) {
+        try {
+            String url = "?q=" + queryText.replace(" ", "+") + "&limit=1";
             log.info("Calling Photon with URL: {}", url);
-            String response = client
+
+            String response = client             // ← response is declared here
                     .toBlocking()
                     .retrieve(HttpRequest.GET(url));
             log.info("Photon raw response: {}", response);
@@ -32,25 +65,28 @@ public class GeocodingService {
             JsonNode features = root.get("features");
 
             if (features == null || features.isEmpty()) {
-                log.warn("No coordinates found for address: {}", address);
-                // default to Kathmandu center if not found
-                return new double[]{27.7172, 85.3240};
+                log.warn("No coordinates found for query: '{}'", queryText);
+                return defaultKathmandu();
             }
 
-            JsonNode cords = features.get(0)
+            JsonNode coords = features.get(0)
                     .get("geometry")
                     .get("coordinates");
 
             // Photon returns [longitude, latitude]
-            double longitude = cords.get(0).asDouble();
-            double latitude = cords.get(1).asDouble();
+            double longitude = coords.get(0).asDouble();
+            double latitude  = coords.get(1).asDouble();
 
-            log.info("Coordinates for {}: lat={}, lon={}", address, latitude, longitude);
+            log.info("Resolved '{}' → lat={}, lon={}", queryText, latitude, longitude);
             return new double[]{latitude, longitude};
 
         } catch (Exception e) {
-            log.error("Geocoding failed for address {}: {}", address, e.getMessage());
-            // default to Kathmandu center if API fails
-            return new double[]{27.7172, 85.3240};
+            log.error("Photon HTTP call failed for '{}': {}", queryText, e.getMessage());
+            return defaultKathmandu();
         }
-    }}
+    }
+
+    private double[] defaultKathmandu() {
+        return new double[]{27.7172, 85.3240};
+    }
+}

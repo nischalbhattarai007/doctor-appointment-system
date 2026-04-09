@@ -57,8 +57,6 @@ public class DoctorGrpcHelper {
                 .address(request.getDoctorAddress())
                 .specialization(request.getSpecialization())
                 .clinicAddress(request.getClinicAddress())
-                .latitude(request.getLatitude())
-                .longitude(request.getLongitude())
                 .build();
     }
 
@@ -72,8 +70,6 @@ public class DoctorGrpcHelper {
                 .setDoctorAddress(model.address())
                 .setSpecialization(model.specialization())
                 .setClinicAddress(model.clinicAddress())
-                .setLatitude(model.latitude())
-                .setLongitude(model.longitude())
                 .setDoctorStatus(status)
                 .setDoctorMessage(message)
                 .build();

@@ -51,7 +51,9 @@ class DoctorRepository implements DoctorRepoInterface {
                 doctor.latitude(),
                 doctor.longitude(),
                 doctor.dailyLimit(),
-                false
+                false,
+                doctor.clinicName(),
+                doctor.clinicBuilding()
         );
         session.execute(bs);
         return doctor;
@@ -96,7 +98,9 @@ class DoctorRepository implements DoctorRepoInterface {
                 doctor.latitude(),
                 doctor.longitude(),
                 doctor.dailyLimit(),
-                doctor.doctorId()
+                doctor.doctorId(),
+                doctor.clinicName(),
+                doctor.clinicBuilding()
         );
         session.execute(bs);
         return doctor;
@@ -133,6 +137,8 @@ class DoctorRepository implements DoctorRepoInterface {
                 .longitude(row.getDouble(DoctorSchema.LONGITUDE))
                 .dailyLimit(row.getInt(DoctorSchema.DAILY_LIMIT))
                 .isDeleted(row.getBoolean(DoctorSchema.IS_DELETED))
+                .clinicBuilding(row.getString(DoctorSchema.CLINIC_BUILDING))
+                .clinicName(row.getString(DoctorSchema.CLINIC_NAME))
                 .build();
     }
 }

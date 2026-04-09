@@ -33,7 +33,11 @@ public class DoctorService {
 //        }
         String hashedPassword = BCrypt.hashpw(doctor.password(), BCrypt.gensalt());
         //get coordinates from clinic address
-        double[] coordinates = geocodingService.getCoordinates(doctor.clinicAddress());
+        double[] coordinates = geocodingService.getCoordinates
+                (doctor.clinicName(),
+                doctor.clinicBuilding(),
+                doctor.clinicAddress());
+
         double latitude = coordinates[0];
         double longitude = coordinates[1];
         DoctorModel model = DoctorModel.builder()
@@ -50,6 +54,8 @@ public class DoctorService {
                 .longitude(longitude)
                 .dailyLimit(10)
                 .isDeleted(false)
+                .clinicName(doctor.clinicName())
+                .clinicBuilding(doctor.clinicBuilding())
                 .build();
         log.info("Doctor with email {} register successfully", doctor.email());
         return doctorRepo.addDoctor(model);
@@ -99,6 +105,26 @@ public class DoctorService {
         if (existing.isDeleted()) {
             throw new DoctorIdNotFoundException("Doctor account is deactivated");
         }
+        double latitude=existing.latitude();
+        double longitude=existing.longitude();
+        String newClinicAddress=doctor.clinicAddress();
+        String newClinicName=doctor.clinicName();
+        String newClinicBuilding=doctor.clinicBuilding();
+
+        boolean clinicChanged = (!isBlank(newClinicAddress) && !newClinicAddress.equals(existing.clinicAddress()))
+                || (!isBlank(newClinicName) && !newClinicName.equals(existing.clinicName()))
+                || (!isBlank(newClinicBuilding) && !newClinicBuilding.equals(existing.clinicBuilding()));
+        {
+            if (clinicChanged) {
+                String addressForGeo = isBlank(newClinicAddress) ? existing.clinicAddress() : newClinicAddress;
+                String nameForGeo    = isBlank(newClinicName)    ? existing.clinicName()    : newClinicName;
+                String buildingForGeo= isBlank(newClinicBuilding)? existing.clinicBuilding(): newClinicBuilding;
+                double[] coords = geocodingService.getCoordinates(nameForGeo, buildingForGeo, addressForGeo);
+                latitude = coords[0];
+                longitude = coords[1];
+                log.info("Clinic changed -> re-geocoded: lat={}, lon={}", latitude, longitude);
+            }
+        }
         DoctorModel updated = DoctorModel.builder()
                 .doctorId(existing.doctorId())
                 .firstName(existing.firstName())
@@ -107,8 +133,10 @@ public class DoctorService {
                 .address(existing.address())
                 .specialization(existing.specialization())
                 .clinicAddress(existing.clinicAddress())
-                .latitude(existing.latitude())
-                .longitude(existing.longitude())
+                .clinicName(existing.clinicName())
+                .clinicBuilding(existing.clinicBuilding())
+                .latitude(latitude)
+                .longitude(longitude)
                 .dailyLimit(existing.dailyLimit())
                 .build();
         log.info("Updating doctor with ID {} ", doctor.doctorId());
@@ -205,5 +233,9 @@ public class DoctorService {
     //get nearest doctor
     public List<DoctorModel> getNearestDoctors(double lat1, double lon1, double radiusKm, int limit) {
         return getDoctorsByLocation(lat1, lon1, radiusKm, limit);
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.isBlank();
     }
 }

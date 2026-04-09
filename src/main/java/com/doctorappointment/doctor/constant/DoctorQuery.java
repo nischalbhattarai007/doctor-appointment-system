@@ -20,8 +20,10 @@ public class DoctorQuery {
                     LATITUDE + ", " +
                     LONGITUDE + ", " +
                     DAILY_LIMIT + ", " +
-                    IS_DELETED +
-                    ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                    IS_DELETED + ", " +
+                    CLINIC_NAME + ", " +
+                    CLINIC_BUILDING +
+                    ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
     //find by id
     public static final String FIND_BY_ID =
@@ -45,7 +47,9 @@ public class DoctorQuery {
                     CLINIC_ADDRESS + " =?, " +
                     LATITUDE + " =?, " +
                     LONGITUDE + " =?, " +
-                    DAILY_LIMIT + " =? " +
+                    DAILY_LIMIT + " =?, " +
+                    CLINIC_NAME + " =?, " +
+                    CLINIC_BUILDING + " =? " +
                     " WHERE " + DOCTOR_ID + " =?";
 
     //soft delete doctor by id

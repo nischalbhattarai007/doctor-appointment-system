@@ -172,35 +172,35 @@ public class DoctorGrpcService extends DoctorServiceGrpc.DoctorServiceImplBase {
         }
     }
 
-    @Override
-    public void getDoctorsByLocation(LocationRequest request, StreamObserver<DoctorListResponse> responseObserver) {
-        try {
-            log.info("location_name from request: '{}'", request.getLocationName());
-            double[] coords = geocodingService.getCoordinates(request.getLocationName());
-            double latitude  = coords[0];
-            double longitude = coords[1];
+        @Override
+        public void getDoctorsByLocation(LocationRequest request, StreamObserver<DoctorListResponse> responseObserver) {
+            try {
+                log.info("location_name from request: '{}'", request.getLocationName());
+                double[] coords = geocodingService.getCoordinates(request.getLocationName());
+                double latitude  = coords[0];
+                double longitude = coords[1];
 
-            List<DoctorModel> doctors = service.getDoctorsByLocation(
-                    latitude,longitude,
-                    request.getRadiusKm(),
-                    request.getLimit());
-            List<Double> distances = doctors.stream()
-                    .map(d -> service.calculateDistance(
-                            latitude,longitude,
-                            d.latitude(), d.longitude()))
-                    .toList();
-            responseObserver.onNext(
-                    DoctorGrpcHelper.toDoctorListResponse
-                            (doctors, distances, "Success", "Doctors found successfully"));
-            log.info("Doctors retrieved by location successfully");
-            responseObserver.onCompleted();
-        } catch (Exception e) {
-            responseObserver.onError(
-                    Status.INTERNAL
-                            .withDescription(e.getMessage())
-                            .asException());
+                List<DoctorModel> doctors = service.getDoctorsByLocation(
+                        latitude,longitude,
+                        request.getRadiusKm(),
+                        request.getLimit());
+                List<Double> distances = doctors.stream()
+                        .map(d -> service.calculateDistance(
+                                latitude,longitude,
+                                d.latitude(), d.longitude()))
+                        .toList();
+                responseObserver.onNext(
+                        DoctorGrpcHelper.toDoctorListResponse
+                                (doctors, distances, "Success", "Doctors found successfully"));
+                log.info("Doctors retrieved by location successfully");
+                responseObserver.onCompleted();
+            } catch (Exception e) {
+                responseObserver.onError(
+                        Status.INTERNAL
+                                .withDescription(e.getMessage())
+                                .asException());
+            }
         }
-    }
 
     @Override
     public void getNearestDoctor(NearestLocationRequest request, StreamObserver<NearestDoctorListResponse> responseObserver) {

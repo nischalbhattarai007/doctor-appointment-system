@@ -21,4 +21,6 @@ public class DoctorSchema {
     public static final String LONGITUDE = "longitude";
     public static final String DAILY_LIMIT="daily_limit";
     public static final String IS_DELETED = "is_deleted";
+    public static final String CLINIC_NAME="clinic_name";
+    public static final String CLINIC_BUILDING="clinic_building";
 }

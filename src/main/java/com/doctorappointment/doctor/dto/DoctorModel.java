@@ -28,7 +28,9 @@ public record DoctorModel(
         double latitude,
         double longitude,
         int dailyLimit,
-        boolean isDeleted)
+        boolean isDeleted,
+        String clinicName,
+        String clinicBuilding)
 {
     public DoctorModel{
         if (isNullOrEmpty(firstName)) {

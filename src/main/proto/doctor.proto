@@ -46,6 +46,8 @@ message RegisterDoctorRequest{
   string clinic_address = 8;
   double latitude = 9;
   double longitude = 10;
+  string clinic_name = 11;
+  string clinic_building= 12;
 }
 //register response
 message RegisterDoctorResponse{
@@ -116,9 +118,9 @@ message UpdateDoctorRequest{
   string doctor_address = 5;
   string specialization = 6;
   string clinic_address = 7;
-  double latitude = 8;
-  double longitude = 9;
-  int32 daily_limit = 10;
+  int32 daily_limit = 8;
+  string clinic_name = 9;
+  string clinic_building = 10;
 }
 //update doctor by Id response
 message UpdateDoctorResponse{
