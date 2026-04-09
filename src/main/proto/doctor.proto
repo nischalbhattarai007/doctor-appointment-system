@@ -61,8 +61,11 @@ message RegisterDoctorResponse{
   string clinic_address = 8;
   double latitude = 9;
   double longitude = 10;
-  string doctor_status = 11;
-  string doctor_message = 12;
+  string clinic_name=11;
+  string clinic_building=12;
+  string doctor_status = 13;
+  string doctor_message = 14;
+
 }
 //get by id
 message GetDoctorByIdRequest{
@@ -80,8 +83,10 @@ message GetDoctorByIdResponse{
   string clinic_address = 8;
   double latitude = 9;
   double longitude = 10;
-  string doctor_status = 11;
-  string doctor_message = 12;
+  string clinic_name=11;
+  string clinic_building=12;
+  string doctor_status = 13;
+  string doctor_message = 14;
 }
 //delete doctor by id response
 message DeleteDoctorResponse{
@@ -106,8 +111,10 @@ message GetByDoctorEmailResponse{
   string clinic_address = 8;
   double latitude = 9;
   double longitude = 10;
-  string doctor_status = 11;
-  string doctor_message = 12;
+  string clinic_name=11;
+  string clinic_building=12;
+  string doctor_status = 13;
+  string doctor_message = 14;
 }
 //update doctor by Id
 message UpdateDoctorRequest{
@@ -134,8 +141,10 @@ message UpdateDoctorResponse{
   string clinic_address = 8;
   double latitude = 9;
   double longitude = 10;
-  string doctor_status = 11;
-  string doctor_message = 12;
+  string clinic_name=11;
+  string clinic_building=12;
+  string doctor_status = 13;
+  string doctor_message = 14;
 }
 // get doctor by location
 message LocationRequest{

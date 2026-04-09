@@ -22,8 +22,8 @@ public class DoctorGrpcHelper {
                 .address(doctorRequest.getDoctorAddress())
                 .specialization(doctorRequest.getSpecialization())
                 .clinicAddress(doctorRequest.getClinicAddress())
-                .latitude(doctorRequest.getLatitude())
-                .longitude(doctorRequest.getLongitude())
+                .clinicName(doctorRequest.getClinicName())
+                .clinicBuilding(doctorRequest.getClinicBuilding())
                 .build();
     }
 
@@ -41,8 +41,11 @@ public class DoctorGrpcHelper {
                 .setClinicAddress(doctor.clinicAddress())
                 .setLatitude(doctor.latitude())
                 .setLongitude(doctor.longitude())
+                .setClinicName(doctor.clinicName())
+                .setClinicBuilding(doctor.clinicBuilding())
                 .setDoctorStatus(status)
                 .setDoctorMessage(message)
+
                 .build();
     }
 
@@ -57,6 +60,9 @@ public class DoctorGrpcHelper {
                 .address(request.getDoctorAddress())
                 .specialization(request.getSpecialization())
                 .clinicAddress(request.getClinicAddress())
+                .clinicName(request.getClinicName())
+                .clinicBuilding(request.getClinicBuilding())
+                .dailyLimit(request.getDailyLimit())
                 .build();
     }
 
@@ -70,6 +76,10 @@ public class DoctorGrpcHelper {
                 .setDoctorAddress(model.address())
                 .setSpecialization(model.specialization())
                 .setClinicAddress(model.clinicAddress())
+                .setLatitude(model.latitude())
+                .setLongitude(model.longitude())
+                .setClinicName(model.clinicName())
+                .setClinicBuilding(model.clinicBuilding())
                 .setDoctorStatus(status)
                 .setDoctorMessage(message)
                 .build();
@@ -106,6 +116,8 @@ public class DoctorGrpcHelper {
                 .setClinicAddress(doctor.clinicAddress())
                 .setLatitude(doctor.latitude())
                 .setLongitude(doctor.longitude())
+                .setClinicName(doctor.clinicName())
+                .setClinicBuilding(doctor.clinicBuilding())
                 .setDoctorStatus(status)
                 .setDoctorMessage(message)
                 .build();
@@ -126,6 +138,8 @@ public class DoctorGrpcHelper {
                 .setClinicAddress(doctor.clinicAddress())
                 .setLatitude(doctor.latitude())
                 .setLongitude(doctor.longitude())
+                .setClinicName(doctor.clinicName())
+                .setClinicBuilding(doctor.clinicBuilding())
                 .setDoctorStatus(status)
                 .setDoctorMessage(message)
                 .build();
