@@ -63,7 +63,7 @@ public class AppointmentGrpcHelper {
             AppointmentServiceCancelRequest request) {
         return AppointmentRequest.builder()
                 .appointmentId(UUID.fromString(request.getAppointmentServiceId()))
-                .cancelledBy(request.getCancelledBy())
+                .patientId(UUID.fromString(request.getPatientId()))
                 .reason(request.getReason())
                 .build();
     }
@@ -90,6 +90,16 @@ public class AppointmentGrpcHelper {
                 .setDate(appointment.appointment_date())
                 .setStatus(appointment.status())
                 .setNotes(appointment.notes() != null ? appointment.notes() : "")
+                .build();
+    }
+
+    public static AppointmentRequest fromRescheduleRequest(
+            AppointmentRescheduleRequest request) {
+        return AppointmentRequest.builder()
+                .appointmentId(UUID.fromString(request.getAppointmentServiceId()))
+                .doctorId(UUID.fromString(request.getDoctorId()))
+                .appointment_date(request.getNewDate())
+                .reason(request.getReason())
                 .build();
     }
 }

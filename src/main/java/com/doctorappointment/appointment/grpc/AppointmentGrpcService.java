@@ -2,6 +2,7 @@ package com.doctorappointment.appointment.grpc;
 
 import com.doctorappointment.*;
 import com.doctorappointment.appointment.dto.AppointmentModel;
+import com.doctorappointment.appointment.dto.AppointmentRequest;
 import com.doctorappointment.appointment.exception.UnauthorizedAccessException;
 import com.doctorappointment.appointment.helper.AppointmentGrpcHelper;
 import com.doctorappointment.appointment.service.AppointmentService;
@@ -50,7 +51,7 @@ public class AppointmentGrpcService extends AppointmentServiceGrpc.AppointmentSe
                             .asRuntimeException());
         }
     }
-
+    @Override
     public void confirmAppointment
             (AppointmentActionRequest request, StreamObserver<AppointmentServiceResponse> responseObserver) {
         try {
@@ -90,8 +91,9 @@ public class AppointmentGrpcService extends AppointmentServiceGrpc.AppointmentSe
         try {
             UUID appointmentId = UUID.fromString(request.getAppointmentServiceId());
             UUID patientId=UUID.fromString(request.getPatientId());
+            AppointmentRequest cancelRequest=AppointmentGrpcHelper.fromCancelRequest(request);
             AppointmentModel appointment = service.cancelAppointment(
-                    appointmentId,
+                     cancelRequest.appointmentId(),
                     patientId,
                     request.getReason());
             responseObserver.onNext(

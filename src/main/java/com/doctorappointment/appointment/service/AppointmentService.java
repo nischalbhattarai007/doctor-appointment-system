@@ -3,7 +3,6 @@ package com.doctorappointment.appointment.service;
 import com.doctorappointment.appointment.constant.AppointmentStatus;
 import com.doctorappointment.appointment.dto.AppointmentModel;
 import com.doctorappointment.appointment.dto.AppointmentRequest;
-import com.doctorappointment.appointment.enums.CancelledAppointmentEnum;
 import com.doctorappointment.appointment.exception.UnauthorizedAccessException;
 import com.doctorappointment.appointment.repository.AppointmentRepoInterface;
 import com.doctorappointment.doctor.dto.DoctorModel;
@@ -31,6 +30,12 @@ public class AppointmentService {
 
     //request appointment
     public AppointmentModel requestAppointment(AppointmentRequest request) {
+        ValidateNewAppointment.validateNewAppointment(
+                request.patientId(),
+                request.doctorId(),
+                request.appointment_date(),
+                AppointmentStatus.PENDING);
+
         DoctorModel doctor = doctorRepo.getDoctorById(request.doctorId());
         if (doctor == null || doctor.isDeleted()) {
             throw new AppointmentNotFoundException("doctor not found");
@@ -65,7 +70,7 @@ public class AppointmentService {
         if (!existingAppointment.status().equals(AppointmentStatus.PENDING)) {
             throw new UnauthorizedAccessException("Only pending appointment is allowed. Current status is: " + existingAppointment.status());
         }
-        appointmentRepo.updateStatus(appointmentId, AppointmentStatus.CONFIRMED, "", "");
+        appointmentRepo.updateDateAndStatus(appointmentId, AppointmentStatus.CONFIRMED, "", "");
         log.info("Appointment {} confirmed by doctor {}", appointmentId, doctorId);
         return existingAppointment.toBuilder()
                 .status(AppointmentStatus.CONFIRMED)
@@ -95,7 +100,10 @@ public class AppointmentService {
             throw new UnauthorizedAccessException("Only the assigned patient is allowed");
         }
         //only pending and confirmed can be canceled
-
+        if(existingAppointment.status().equals(AppointmentStatus.REJECTED)
+        || existingAppointment.status().equals(AppointmentStatus.CANCELLED)){
+            throw new UnauthorizedAccessException("Cannot cancel the appointment with status"+   existingAppointment.status());
+        }
         appointmentRepo.updateStatus
                 (appointmentId, AppointmentStatus.CANCELLED, reason != null ? reason : "", AppointmentStatus.PATIENT);
         log.info("Appointment {} cancelled by patient {}", appointmentId, patientId);
@@ -108,6 +116,7 @@ public class AppointmentService {
 
     //reschedule -doctor only
     public AppointmentModel rescheduleAppointment(UUID appointmentId, UUID doctorId,String newDate, String reason) {
+        ValidateNewAppointment.validateDate(newDate);
         AppointmentModel existingAppointment = getExistingAppointment(appointmentId);
         if(!existingAppointment.doctorId().equals(doctorId)){
             throw new UnauthorizedAccessException("Only the assigned doctor is allowed");
@@ -116,7 +125,7 @@ public class AppointmentService {
                 || existingAppointment.status().equals(AppointmentStatus.CANCELLED)) {
             throw new UnauthorizedAccessException("Cannot cancel appointment with status " + existingAppointment.status());
         }
-        appointmentRepo.updateStatus(appointmentId,
+        appointmentRepo.updateDateAndStatus(appointmentId,
                 newDate,
                 AppointmentStatus.PENDING,
                 reason!=null ? reason:"");

@@ -22,37 +22,5 @@ public record AppointmentModel (
         String notes,
         String reason,
         String cancelledBy,
-        Instant createdAt)
-{
-    public AppointmentModel{
-        if(patientId == null){
-            throw new PatientIdNotFoundException("Patient Id is null");
-        }
-        if(doctorId == null){
-            throw new DoctorIdNotFoundException("Doctor Id is null");
-        }
-        if(isNullOrEmpty(appointment_date)){
-            throw new DateNotFoundException("appointment_date is null or empty");
-        }
-        try{
-            LocalDate localDate = LocalDate.parse(appointment_date);
-            if(localDate.isBefore(LocalDate.now())){
-                throw new DateValidationException(" Appointment appointment_date cannot be in the past");
-            }
-        }catch(DateTimeParseException e){
-            throw new DateValidationException("Invalid appointment_date format -use YYYY-MM-DD ");
-        }
-        if(isNullOrEmpty(status)){
-            throw new EmptyStatusValidationException("Status is null or empty");
-        }
-        if(!status.equals(AppointmentStatus.PENDING) &&
-                !status.equals(AppointmentStatus.CONFIRMED) &&
-                !status.equals(AppointmentStatus.REJECTED) &&
-                !status.equals(AppointmentStatus.CANCELLED)){
-            throw new InvalidStatusException("Invalid status" + status);
-        }
-    }
-    public static boolean isNullOrEmpty(String value){
-        return value == null || value.isEmpty();
-    }
+        Instant createdAt) {
 }
