@@ -3,6 +3,7 @@ package com.doctorappointment.appointment.service;
 import com.doctorappointment.appointment.constant.AppointmentStatus;
 import com.doctorappointment.appointment.dto.AppointmentModel;
 import com.doctorappointment.appointment.dto.AppointmentRequest;
+import com.doctorappointment.appointment.exception.AppointmentAlreadyActiveException;
 import com.doctorappointment.appointment.exception.UnauthorizedAccessException;
 import com.doctorappointment.appointment.repository.AppointmentRepoInterface;
 import com.doctorappointment.doctor.dto.DoctorModel;
@@ -18,7 +19,6 @@ import lombok.extern.slf4j.Slf4j;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.Flow;
 
 @Singleton
 @Slf4j
@@ -27,7 +27,8 @@ public class AppointmentService {
     private final DoctorRepoInterface doctorRepo;
     private final NotificationPublisher publisher;
 
-    public AppointmentService(AppointmentRepoInterface appointmentRepo, DoctorRepoInterface doctorRepo, NotificationPublisher publisher) {
+    public AppointmentService
+            (AppointmentRepoInterface appointmentRepo, DoctorRepoInterface doctorRepo, NotificationPublisher publisher) {
         this.appointmentRepo = appointmentRepo;
         this.doctorRepo = doctorRepo;
         this.publisher = publisher;
@@ -87,7 +88,8 @@ public class AppointmentService {
             throw new UnauthorizedAccessException("Only the assigned doctor is allowed");
         }
         if (!existingAppointment.status().equals(AppointmentStatus.PENDING)) {
-            throw new UnauthorizedAccessException("Only pending appointment is allowed. Current status is: " + existingAppointment.status());
+            throw new UnauthorizedAccessException
+                    ("Only pending appointment is allowed. Current status is: " + existingAppointment.status());
         }
         appointmentRepo.updateDateAndStatus(appointmentId, AppointmentStatus.CONFIRMED, "", "");
         publisher.publish(NotificationSubject.PATIENT_APPOINTMENT_CONFIRMED,

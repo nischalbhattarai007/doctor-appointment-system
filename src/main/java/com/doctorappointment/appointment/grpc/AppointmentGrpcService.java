@@ -3,6 +3,7 @@ package com.doctorappointment.appointment.grpc;
 import com.doctorappointment.*;
 import com.doctorappointment.appointment.dto.AppointmentModel;
 import com.doctorappointment.appointment.dto.AppointmentRequest;
+import com.doctorappointment.appointment.exception.AppointmentAlreadyActiveException;
 import com.doctorappointment.appointment.exception.UnauthorizedAccessException;
 import com.doctorappointment.appointment.helper.AppointmentGrpcHelper;
 import com.doctorappointment.appointment.service.AppointmentService;
@@ -51,6 +52,7 @@ public class AppointmentGrpcService extends AppointmentServiceGrpc.AppointmentSe
                             .asRuntimeException());
         }
     }
+
     @Override
     public void confirmAppointment
             (AppointmentActionRequest request, StreamObserver<AppointmentServiceResponse> responseObserver) {
@@ -75,6 +77,12 @@ public class AppointmentGrpcService extends AppointmentServiceGrpc.AppointmentSe
                             .withDescription(e.getMessage())
                             .asRuntimeException()
             );
+        } catch (AppointmentAlreadyActiveException e) {
+            responseObserver.onError(
+                    Status.ALREADY_EXISTS
+                            .withDescription(e.getMessage())
+                            .asRuntimeException()
+            );
         } catch (Exception e) {
             responseObserver.onError(
                     Status.INTERNAL
@@ -89,11 +97,11 @@ public class AppointmentGrpcService extends AppointmentServiceGrpc.AppointmentSe
     public void cancelAppointment
     (AppointmentServiceCancelRequest request, StreamObserver<AppointmentServiceResponse> responseObserver) {
         try {
-            UUID appointmentId = UUID.fromString(request.getAppointmentServiceId());
-            UUID patientId=UUID.fromString(request.getPatientId());
-            AppointmentRequest cancelRequest=AppointmentGrpcHelper.fromCancelRequest(request);
+          //  UUID appointmentId = UUID.fromString(request.getAppointmentServiceId());
+            UUID patientId = UUID.fromString(request.getPatientId());
+            AppointmentRequest cancelRequest = AppointmentGrpcHelper.fromCancelRequest(request);
             AppointmentModel appointment = service.cancelAppointment(
-                     cancelRequest.appointmentId(),
+                    cancelRequest.appointmentId(),
                     patientId,
                     request.getReason());
             responseObserver.onNext(
@@ -138,17 +146,17 @@ public class AppointmentGrpcService extends AppointmentServiceGrpc.AppointmentSe
                             (appointment, "SUCCESS", "Appointment rescheduled successfully"));
             log.info("Appointment rescheduled successfully");
             responseObserver.onCompleted();
-        }catch (AppointmentNotFoundException e) {
+        } catch (AppointmentNotFoundException e) {
             responseObserver.onError(
                     Status.NOT_FOUND
                             .withDescription(e.getMessage())
                             .asRuntimeException());
-        }catch (UnauthorizedAccessException e) {
+        } catch (UnauthorizedAccessException e) {
             responseObserver.onError(
                     Status.PERMISSION_DENIED
                             .withDescription(e.getMessage())
                             .asRuntimeException());
-        }catch (Exception e) {
+        } catch (Exception e) {
             responseObserver.onError(
                     Status.INTERNAL
                             .withDescription(e.getMessage())
@@ -251,7 +259,7 @@ public class AppointmentGrpcService extends AppointmentServiceGrpc.AppointmentSe
             (GetByDoctorIdRequest request, StreamObserver<AppointmentListResponse> responseObserver) {
         try {
             UUID DoctorId = UUID.fromString(request.getDoctorId());
-            List<AppointmentModel> appointments = service.getDoctorAppointments(DoctorId,request.getDate());
+            List<AppointmentModel> appointments = service.getDoctorAppointments(DoctorId, request.getDate());
             responseObserver.onNext
                     (AppointmentGrpcHelper.toAppointmentListResponse
                             (appointments, "SUCCESS", "Appointment list successfully retrieved"));
@@ -274,7 +282,6 @@ public class AppointmentGrpcService extends AppointmentServiceGrpc.AppointmentSe
                             .asRuntimeException());
         }
     }
-
 
 
 }
