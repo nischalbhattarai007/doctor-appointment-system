@@ -48,7 +48,7 @@ public class BasicAuthInterceptor implements ServerInterceptor {
             }
             log.info("Authenticated: {}", credentials[0]);
 
-            // ← Store credentials in context so handler can use them
+            //  Store credentials in context so handler can use them
             Context context = Context.current()
                     .withValue(EMAIL_CONTEXT_KEY, credentials[0])
                     .withValue(PASSWORD_CONTEXT_KEY, credentials[1]);

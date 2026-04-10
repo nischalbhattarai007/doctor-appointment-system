@@ -84,7 +84,7 @@ public record DoctorModel(
     }
 
     public static boolean isNullOrEmpty(String value) {
-        return value == null || value.isEmpty();
+        return  value.isEmpty();
     }
     }
 

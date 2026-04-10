@@ -56,7 +56,7 @@ public class GeocodingService {
             String url = "?q=" + queryText.replace(" ", "+") + "&limit=1";
             log.info("Calling Photon with URL: {}", url);
 
-            String response = client             // ← response is declared here
+            String response = client
                     .toBlocking()
                     .retrieve(HttpRequest.GET(url));
             log.info("Photon raw response: {}", response);

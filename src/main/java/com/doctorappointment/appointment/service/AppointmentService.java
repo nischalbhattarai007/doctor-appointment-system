@@ -9,22 +9,28 @@ import com.doctorappointment.doctor.dto.DoctorModel;
 import com.doctorappointment.doctor.exception.AppointmentNotFoundException;
 import com.doctorappointment.doctor.exception.DoctorFullyBookedException;
 import com.doctorappointment.doctor.repository.DoctorRepoInterface;
+import com.doctorappointment.notification.AppointmentEvent;
+import com.doctorappointment.notification.NotificationPublisher;
+import com.doctorappointment.notification.NotificationSubject;
 import jakarta.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.Flow;
 
 @Singleton
 @Slf4j
 public class AppointmentService {
     private final AppointmentRepoInterface appointmentRepo;
     private final DoctorRepoInterface doctorRepo;
+    private final NotificationPublisher publisher;
 
-    public AppointmentService(AppointmentRepoInterface appointmentRepo, DoctorRepoInterface doctorRepo) {
+    public AppointmentService(AppointmentRepoInterface appointmentRepo, DoctorRepoInterface doctorRepo, NotificationPublisher publisher) {
         this.appointmentRepo = appointmentRepo;
         this.doctorRepo = doctorRepo;
+        this.publisher = publisher;
     }
 
 
@@ -56,9 +62,22 @@ public class AppointmentService {
                 .cancelledBy("")
                 .createdAt(Instant.now())
                 .build();
+//        return appointmentRepo.saveAppointment(appointment)
+
+        AppointmentModel saved = appointmentRepo.saveAppointment(appointment);
+        publisher.publish(NotificationSubject.DOCTOR_APPOINTMENT_REQUEST,
+                AppointmentEvent.builder()
+                        .appointmentId(saved.appointmentId().toString())
+                        .patientId(saved.patientId().toString())
+                        .doctorId(saved.doctorId().toString())
+                        .date(saved.appointment_date())
+                        .status(AppointmentStatus.PENDING)
+                        .recipientType("DOCTOR")
+                        .message("New appointment requested by patient for " + saved.appointment_date())
+                        .build());
         log.info(" Appoint request by patient id {} with doctor {} on {} ",
                 request.patientId(), request.doctorId(), request.appointment_date());
-        return appointmentRepo.saveAppointment(appointment);
+        return saved;
     }
 
     //confirm appointment
@@ -71,10 +90,18 @@ public class AppointmentService {
             throw new UnauthorizedAccessException("Only pending appointment is allowed. Current status is: " + existingAppointment.status());
         }
         appointmentRepo.updateDateAndStatus(appointmentId, AppointmentStatus.CONFIRMED, "", "");
-        log.info("Appointment {} confirmed by doctor {}", appointmentId, doctorId);
-        return existingAppointment.toBuilder()
-                .status(AppointmentStatus.CONFIRMED)
-                .build();
+        publisher.publish(NotificationSubject.PATIENT_APPOINTMENT_CONFIRMED,
+                AppointmentEvent.builder()
+                        .appointmentId(appointmentId.toString())
+                        .patientId(existingAppointment.patientId().toString())
+                        .doctorId(existingAppointment.doctorId().toString())
+                        .date(existingAppointment.appointment_date())
+                        .status(AppointmentStatus.CONFIRMED)
+                        .recipientType("PATIENT")
+                        .message("your appointment on " + existingAppointment.appointment_date() + "has been confirmed")
+                        .build());
+        return existingAppointment.toBuilder().status(AppointmentStatus.CONFIRMED).build();
+
     }
 
     //reject appointment
@@ -87,6 +114,16 @@ public class AppointmentService {
             throw new UnauthorizedAccessException("Only pending appointment is allowed. Current status is: " + existingAppointment.status());
         }
         appointmentRepo.updateStatus(appointmentId, AppointmentStatus.REJECTED, "", "");
+        publisher.publish(NotificationSubject.PATIENT_APPOINTMENT_REJECTED,
+                AppointmentEvent.builder()
+                        .appointmentId(appointmentId.toString())
+                        .patientId(existingAppointment.patientId().toString())
+                        .doctorId(existingAppointment.doctorId().toString())
+                        .status(AppointmentStatus.REJECTED)
+                        .recipientType("PATIENT")
+                        .message("your appointment on " + existingAppointment.appointment_date() + "has been rejected")
+                        .build());
+
         log.info("Appointment {} rejected by doctor {}", appointmentId, doctorId);
         return existingAppointment.toBuilder()
                 .status(AppointmentStatus.REJECTED)
@@ -96,16 +133,26 @@ public class AppointmentService {
     //cancel appointment
     public AppointmentModel cancelAppointment(UUID appointmentId, UUID patientId, String reason) {
         AppointmentModel existingAppointment = getExistingAppointment(appointmentId);
-        if(!existingAppointment.patientId().equals(patientId)){
+        if (!existingAppointment.patientId().equals(patientId)) {
             throw new UnauthorizedAccessException("Only the assigned patient is allowed");
         }
         //only pending and confirmed can be canceled
-        if(existingAppointment.status().equals(AppointmentStatus.REJECTED)
-        || existingAppointment.status().equals(AppointmentStatus.CANCELLED)){
-            throw new UnauthorizedAccessException("Cannot cancel the appointment with status"+   existingAppointment.status());
+        if (existingAppointment.status().equals(AppointmentStatus.REJECTED)
+                || existingAppointment.status().equals(AppointmentStatus.CANCELLED)) {
+            throw new UnauthorizedAccessException("Cannot cancel the appointment with status" + existingAppointment.status());
         }
         appointmentRepo.updateStatus
                 (appointmentId, AppointmentStatus.CANCELLED, reason != null ? reason : "", AppointmentStatus.PATIENT);
+        publisher.publish(NotificationSubject.DOCTOR_APPOINTMENT_CANCELLED,
+                AppointmentEvent.builder()
+                        .appointmentId(appointmentId.toString())
+                        .doctorId(existingAppointment.doctorId().toString())
+                        .patientId(existingAppointment.patientId().toString())
+                        .status(AppointmentStatus.CANCELLED)
+                        .recipientType("DOCTOR")
+                        .message("Appointment cancelled by patient on date" + existingAppointment.appointment_date())
+                        .build());
+
         log.info("Appointment {} cancelled by patient {}", appointmentId, patientId);
         return existingAppointment.toBuilder()
                 .status(AppointmentStatus.CANCELLED)
@@ -115,10 +162,10 @@ public class AppointmentService {
     }
 
     //reschedule -doctor only
-    public AppointmentModel rescheduleAppointment(UUID appointmentId, UUID doctorId,String newDate, String reason) {
+    public AppointmentModel rescheduleAppointment(UUID appointmentId, UUID doctorId, String newDate, String reason) {
         ValidateNewAppointment.validateDate(newDate);
         AppointmentModel existingAppointment = getExistingAppointment(appointmentId);
-        if(!existingAppointment.doctorId().equals(doctorId)){
+        if (!existingAppointment.doctorId().equals(doctorId)) {
             throw new UnauthorizedAccessException("Only the assigned doctor is allowed");
         }
         if (existingAppointment.status().equals(AppointmentStatus.REJECTED)
@@ -128,12 +175,21 @@ public class AppointmentService {
         appointmentRepo.updateDateAndStatus(appointmentId,
                 newDate,
                 AppointmentStatus.PENDING,
-                reason!=null ? reason:"");
+                reason != null ? reason : "");
+        //notification rescheduled
+        publisher.publish(NotificationSubject.PATIENT_APPOINTMENT_RESCHEDULED, AppointmentEvent.builder()
+                .appointmentId(appointmentId.toString())
+                .doctorId(existingAppointment.doctorId().toString())
+                .patientId(existingAppointment.patientId().toString())
+                .status(AppointmentStatus.RESCHEDULED)
+                .recipientType("PATIENT")
+                .message("Your appointment has been rescheduled " + newDate)
+                .build());
         log.info("Appointment {} rescheduled by doctor {}", appointmentId, doctorId);
         return existingAppointment.toBuilder()
                 .appointment_date(newDate)
                 .status(AppointmentStatus.PENDING)
-                .reason(reason!=null? reason:"")
+                .reason(reason != null ? reason : "")
                 .build();
     }
 

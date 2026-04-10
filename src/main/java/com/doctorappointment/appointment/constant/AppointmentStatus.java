@@ -6,4 +6,5 @@ public final class AppointmentStatus {
     public static final String REJECTED  = "REJECTED";
     public static final String CANCELLED = "CANCELLED";
     public static final String PATIENT = "PATIENT";
+    public static final String RESCHEDULED = "RESCHEDULED";
 }
