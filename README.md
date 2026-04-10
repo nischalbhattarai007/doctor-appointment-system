@@ -1,6 +1,6 @@
 # 🏥 Doctor Appointment Booking System
 
-A production-ready **gRPC-based microservice** for booking doctor appointments, built with **Java**, **Micronaut**, **ScyllaDB**, and **NATS** for real-time notifications.
+A **gRPC-based microservice** for booking doctor appointments, built with **Java**, **Micronaut**, **ScyllaDB**, and **NATS** for real-time notifications.
 
 ---
 
