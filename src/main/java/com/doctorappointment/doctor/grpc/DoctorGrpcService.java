@@ -10,6 +10,7 @@ import com.doctorappointment.doctor.exception.ValidationException;
 import com.doctorappointment.doctor.helper.DoctorGrpcHelper;
 import com.doctorappointment.doctor.service.DoctorService;
 import com.doctorappointment.doctor.service.GeocodingService;
+import io.grpc.Context;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import jakarta.inject.Singleton;
@@ -84,6 +85,16 @@ public class DoctorGrpcService extends DoctorServiceGrpc.DoctorServiceImplBase {
     @Override
     public void getDoctorById(GetDoctorByIdRequest request, StreamObserver<GetDoctorByIdResponse> responseObserver) {
         try {
+            String email= BasicAuthInterceptor.EMAIL_CONTEXT_KEY.get();
+            String password = BasicAuthInterceptor.PASSWORD_CONTEXT_KEY.get();
+            if(email==null || password==null){
+                responseObserver.onError(
+                        Status.UNAUTHENTICATED
+                                .withDescription("Missing authorization header")
+                                .asRuntimeException()
+                );
+                return;
+            }
             UUID uuid = UUID.fromString(request.getDoctorId());
             DoctorModel model = service.getDoctorById(uuid);
             responseObserver.onNext(
@@ -107,6 +118,16 @@ public class DoctorGrpcService extends DoctorServiceGrpc.DoctorServiceImplBase {
     @Override
     public void getDoctorByEmail(GetByDoctorEmailRequest request, StreamObserver<GetByDoctorEmailResponse> responseObserver) {
         try {
+            String  email = BasicAuthInterceptor.EMAIL_CONTEXT_KEY.get();
+            String password = BasicAuthInterceptor.PASSWORD_CONTEXT_KEY.get();
+            if(email==null || password==null){
+                responseObserver.onError(
+                        Status.UNAUTHENTICATED
+                                .withDescription("Missing authorization header")
+                                .asRuntimeException()
+                );
+                return;
+            }
             DoctorModel model = service.getDoctorByEmail(request.getDoctorEmail());
             responseObserver.onNext(
                     DoctorGrpcHelper.getDoctorByEmailResponse(model, "SUCCESS", "Doctor found successfully"));
@@ -129,6 +150,22 @@ public class DoctorGrpcService extends DoctorServiceGrpc.DoctorServiceImplBase {
     @Override
     public void updateDoctorById(UpdateDoctorRequest request, StreamObserver<UpdateDoctorResponse> responseObserver) {
         try {
+            String email= BasicAuthInterceptor.EMAIL_CONTEXT_KEY.get();
+            String password = BasicAuthInterceptor.PASSWORD_CONTEXT_KEY.get();
+            if(email==null || password==null){
+                responseObserver.onError(
+                        Status.UNAUTHENTICATED
+                                .withDescription(" Missing authentication context")
+                                .asRuntimeException());
+            }
+            DoctorModel authenticatedDoctor = service.getDoctorByEmail(email);
+            if(!authenticatedDoctor.doctorId().toString().equals(request.getDoctorId())) {
+                responseObserver.onError(
+                        Status.PERMISSION_DENIED
+                                .withDescription("Doctor ID doesn't match")
+                                .asRuntimeException()
+                );
+            }
             DoctorModel doctor = service.updateDoctor(
                     DoctorGrpcHelper.fromUpdateRequest(request));
             responseObserver.onNext(
@@ -152,6 +189,25 @@ public class DoctorGrpcService extends DoctorServiceGrpc.DoctorServiceImplBase {
     @Override
     public void deleteDoctorById(GetDoctorByIdRequest request, StreamObserver<DeleteDoctorResponse> responseObserver) {
         try {
+            String email= BasicAuthInterceptor.EMAIL_CONTEXT_KEY.get();
+            DoctorModel authenticatedDoctor=service.getDoctorByEmail(email);
+            if(email==null){
+                responseObserver.onError(
+                        Status.UNAUTHENTICATED
+                                .withDescription(" Missing authentication context")
+                                .asRuntimeException()
+                );
+                return;
+            }
+            if(!authenticatedDoctor.doctorId().toString().equals(request.getDoctorId())){
+                responseObserver.onError(
+                        Status.UNAUTHENTICATED
+                                .withDescription(" Unauthorized person access! ")
+                                .asRuntimeException()
+                );
+                return;
+            }
+
             UUID uuid = UUID.fromString(request.getDoctorId());
             service.deleteDoctorById(uuid);
             responseObserver.onNext(
@@ -175,7 +231,16 @@ public class DoctorGrpcService extends DoctorServiceGrpc.DoctorServiceImplBase {
         @Override
         public void getDoctorsByLocation(LocationRequest request, StreamObserver<DoctorListResponse> responseObserver) {
             try {
-                log.info("location_name from request: '{}'", request.getLocationName());
+                String email=BasicAuthInterceptor.EMAIL_CONTEXT_KEY.get();
+                String password = BasicAuthInterceptor.PASSWORD_CONTEXT_KEY.get();
+                if(email==null || password==null){
+                    responseObserver.onError(
+                            Status.UNAUTHENTICATED
+                                    .withDescription(" Missing authentication context")
+                                    .asRuntimeException()
+                    );
+                    return;
+                }
                 double[] coords = geocodingService.getCoordinates(request.getLocationName());
                 double latitude  = coords[0];
                 double longitude = coords[1];
@@ -205,6 +270,16 @@ public class DoctorGrpcService extends DoctorServiceGrpc.DoctorServiceImplBase {
     @Override
     public void getNearestDoctor(NearestLocationRequest request, StreamObserver<NearestDoctorListResponse> responseObserver) {
         try {
+            String email=BasicAuthInterceptor.EMAIL_CONTEXT_KEY.get();
+            String password = BasicAuthInterceptor.PASSWORD_CONTEXT_KEY.get();
+            if(email==null || password==null){
+                responseObserver.onError(
+                        Status.UNAUTHENTICATED
+                                .withDescription(" Missing authentication context")
+                                .asRuntimeException()
+                );
+                return;
+            }
             double[] coords=geocodingService.getCoordinates(request.getLocationName());
             double latitude=coords[0];
             double longitude=coords[1];
@@ -249,6 +324,16 @@ public class DoctorGrpcService extends DoctorServiceGrpc.DoctorServiceImplBase {
     @Override
     public void getDoctorAvailability(DoctorAvailabilityRequest request,StreamObserver<DoctorAvailabilityResponse> responseObserver) {
         try {
+            String  email=BasicAuthInterceptor.EMAIL_CONTEXT_KEY.get();
+            String password = BasicAuthInterceptor.PASSWORD_CONTEXT_KEY.get();
+            if(email==null || password==null){
+                responseObserver.onError(
+                        Status.UNAUTHENTICATED
+                                .withDescription(" Missing authentication context")
+                                .asRuntimeException()
+                );
+                return;
+            }
             UUID uuid = UUID.fromString(request.getDoctorId());
             DoctorModel doctor = service.getDoctorAvailability(uuid);
             //book count will come from appointment service

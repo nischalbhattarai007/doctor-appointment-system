@@ -32,6 +32,7 @@ public class DoctorService {
 //            throw new InvalidPasswordException("Password too short");
 //        }
         String normalizedBuilding=normalizeBuilding(doctor.clinicBuilding());
+
         if(!normalizedBuilding.isBlank() && doctorRepo.existsByClinicBuilding(normalizedBuilding)) {
             throw new ClinicLocationValidataionException("A clinic already exists at '" + doctor.clinicBuilding() + "'. " +
                     "If you practice at the same location, contact support.");
@@ -244,7 +245,7 @@ public class DoctorService {
     private boolean isBlank(String value) {
         return value == null || value.isBlank();
     }
-
+//add a private helper class
     private String normalizeBuilding(String clinicBuilding) {
         if (clinicBuilding == null || clinicBuilding.isBlank()) return "";
         return clinicBuilding.trim()
