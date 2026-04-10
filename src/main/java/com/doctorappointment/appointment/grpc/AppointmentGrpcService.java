@@ -7,8 +7,13 @@ import com.doctorappointment.appointment.exception.AppointmentAlreadyActiveExcep
 import com.doctorappointment.appointment.exception.UnauthorizedAccessException;
 import com.doctorappointment.appointment.helper.AppointmentGrpcHelper;
 import com.doctorappointment.appointment.service.AppointmentService;
+import com.doctorappointment.auth.BasicAuthInterceptor;
+import com.doctorappointment.doctor.dto.DoctorModel;
 import com.doctorappointment.doctor.exception.AppointmentNotFoundException;
 import com.doctorappointment.doctor.exception.DoctorFullyBookedException;
+import com.doctorappointment.doctor.service.DoctorService;
+import com.doctorappointment.patient.dto.PatientModel;
+import com.doctorappointment.patient.service.PatientService;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import jakarta.inject.Singleton;
@@ -21,14 +26,27 @@ import java.util.UUID;
 @Singleton
 public class AppointmentGrpcService extends AppointmentServiceGrpc.AppointmentServiceImplBase {
     private final AppointmentService service;
+    private final DoctorService doctorService;
+    private final PatientService patientService;
 
-    public AppointmentGrpcService(AppointmentService service) {
+    public AppointmentGrpcService(AppointmentService service, DoctorService doctorService, PatientService patientService) {
         this.service = service;
+        this.doctorService = doctorService;
+        this.patientService = patientService;
     }
 
     @Override
     public void requestAppointment(AppointmentServiceCreateRequest request, StreamObserver<AppointmentServiceResponse> responseObserver) {
         try {
+            String email= BasicAuthInterceptor.EMAIL_CONTEXT_KEY.get();
+            String password = BasicAuthInterceptor.PASSWORD_CONTEXT_KEY.get();
+            if(email==null || password==null){
+                responseObserver.onError(
+                        Status.UNAUTHENTICATED
+                                .withDescription("Missing authorization header")
+                                .asRuntimeException()
+                );
+            }
             AppointmentModel model = service.requestAppointment(AppointmentGrpcHelper.fromAppointmentRequest(request));
             responseObserver.onNext(
                     AppointmentGrpcHelper.toAppointmentResponse
@@ -57,6 +75,17 @@ public class AppointmentGrpcService extends AppointmentServiceGrpc.AppointmentSe
     public void confirmAppointment
             (AppointmentActionRequest request, StreamObserver<AppointmentServiceResponse> responseObserver) {
         try {
+            String email=BasicAuthInterceptor.EMAIL_CONTEXT_KEY.get();
+            DoctorModel authenticatedDoctor=doctorService.getDoctorByEmail(email);
+            //check valid doctor or not
+            if(!authenticatedDoctor.doctorId().toString().equals(request.getDoctorId())){
+                responseObserver.onError(
+                        Status.PERMISSION_DENIED
+                                .withDescription("You only confirm your own appointment")
+                                .asRuntimeException()
+                );
+                return;
+            }
             UUID appointmentId = UUID.fromString(request.getAppointmentServiceId());
             UUID doctorId = UUID.fromString(request.getDoctorId());
             AppointmentModel model = service.confirmAppointment(appointmentId, doctorId);
@@ -98,6 +127,17 @@ public class AppointmentGrpcService extends AppointmentServiceGrpc.AppointmentSe
     (AppointmentServiceCancelRequest request, StreamObserver<AppointmentServiceResponse> responseObserver) {
         try {
           //  UUID appointmentId = UUID.fromString(request.getAppointmentServiceId());
+            String email=BasicAuthInterceptor.EMAIL_CONTEXT_KEY.get();
+            PatientModel authenticatedPatient=patientService.getPatientByEmail(email);
+            //check valid patient or not
+            if(!authenticatedPatient.patientId().toString().equals(request.getPatientId())){
+                responseObserver.onError(
+                        Status.PERMISSION_DENIED
+                                .withDescription("Patient with id not matched")
+                                .asRuntimeException()
+                );
+                return;
+            }
             UUID patientId = UUID.fromString(request.getPatientId());
             AppointmentRequest cancelRequest = AppointmentGrpcHelper.fromCancelRequest(request);
             AppointmentModel appointment = service.cancelAppointment(
@@ -134,6 +174,16 @@ public class AppointmentGrpcService extends AppointmentServiceGrpc.AppointmentSe
     public void rescheduleAppointment
     (AppointmentRescheduleRequest request, StreamObserver<AppointmentServiceResponse> responseObserver) {
         try {
+            String email=BasicAuthInterceptor.EMAIL_CONTEXT_KEY.get();
+            DoctorModel authenticatedDoctor=doctorService.getDoctorByEmail(email);
+            if(!authenticatedDoctor.doctorId().toString().equals(request.getDoctorId())){
+                responseObserver.onError(
+                        Status.PERMISSION_DENIED
+                                .withDescription("Doctor with id not matched")
+                                .asRuntimeException()
+                );
+                return;
+            }
             UUID appointmentId = UUID.fromString(request.getAppointmentServiceId());
             UUID doctorId = UUID.fromString(request.getDoctorId());
             AppointmentModel appointment = service.rescheduleAppointment(
@@ -168,6 +218,16 @@ public class AppointmentGrpcService extends AppointmentServiceGrpc.AppointmentSe
     public void rejectAppointment
             (AppointmentActionRequest request, StreamObserver<AppointmentServiceResponse> responseObserver) {
         try {
+            String email=BasicAuthInterceptor.EMAIL_CONTEXT_KEY.get();
+            DoctorModel authenticatedDoctor=doctorService.getDoctorByEmail(email);
+            if(!authenticatedDoctor.doctorId().toString().equals(request.getDoctorId())){
+                responseObserver.onError(
+                        Status.PERMISSION_DENIED
+                                .withDescription("Doctor with id not matched")
+                                .asRuntimeException()
+                );
+                return;
+            }
             UUID appointmentId = UUID.fromString(request.getAppointmentServiceId());
             UUID doctorId = UUID.fromString(request.getDoctorId());
             AppointmentModel model = service.rejectAppointment(appointmentId, doctorId);
@@ -199,6 +259,16 @@ public class AppointmentGrpcService extends AppointmentServiceGrpc.AppointmentSe
     public void getAppointmentById
     (GetAppointmentByIdRequest request, StreamObserver<AppointmentServiceResponse> responseObserver) {
         try {
+            String email=BasicAuthInterceptor.EMAIL_CONTEXT_KEY.get();
+            String password=BasicAuthInterceptor.PASSWORD_CONTEXT_KEY.get();
+            if(email==null || password==null){
+                responseObserver.onError(
+                        Status.UNAUTHENTICATED
+                                .withDescription("Missing authorization header")
+                                .asRuntimeException()
+                );
+                return;
+            }
             UUID appointmentId = UUID.fromString(request.getAppointmentServiceId());
             AppointmentModel appointment = service.getAppointmentById(appointmentId);
             responseObserver.onNext(
@@ -229,6 +299,16 @@ public class AppointmentGrpcService extends AppointmentServiceGrpc.AppointmentSe
     public void getPatientAppointments
     (GetByPatientIdRequest request, StreamObserver<AppointmentListResponse> responseObserver) {
         try {
+            String email=BasicAuthInterceptor.EMAIL_CONTEXT_KEY.get();
+            String password=BasicAuthInterceptor.PASSWORD_CONTEXT_KEY.get();
+            if(email==null || password==null){
+                responseObserver.onError(
+                        Status.UNAUTHENTICATED
+                                .withDescription("Missing authorization header")
+                                .asRuntimeException()
+                );
+                return;
+            }
             UUID patientId = UUID.fromString(request.getPatientId());
             List<AppointmentModel> appointments = service.getPatientAppointments(patientId);
             responseObserver.onNext
@@ -258,6 +338,16 @@ public class AppointmentGrpcService extends AppointmentServiceGrpc.AppointmentSe
     public void getDoctorAppointments
             (GetByDoctorIdRequest request, StreamObserver<AppointmentListResponse> responseObserver) {
         try {
+            String email=BasicAuthInterceptor.EMAIL_CONTEXT_KEY.get();
+            String password=BasicAuthInterceptor.PASSWORD_CONTEXT_KEY.get();
+            if(email==null || password==null){
+                responseObserver.onError(
+                        Status.UNAUTHENTICATED
+                                .withDescription("Missing authorization header")
+                                .asRuntimeException()
+                );
+                return;
+            }
             UUID DoctorId = UUID.fromString(request.getDoctorId());
             List<AppointmentModel> appointments = service.getDoctorAppointments(DoctorId, request.getDate());
             responseObserver.onNext

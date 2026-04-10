@@ -1,6 +1,7 @@
 package com.doctorappointment.doctor.grpc;
 
 import com.doctorappointment.*;
+import com.doctorappointment.appointment.repository.AppointmentRepoInterface;
 import com.doctorappointment.auth.BasicAuthInterceptor;
 import com.doctorappointment.doctor.dto.DoctorModel;
 import com.doctorappointment.doctor.exception.DoctorEmailNotFoundException;
@@ -8,6 +9,7 @@ import com.doctorappointment.doctor.exception.DoctorIdNotFoundException;
 import com.doctorappointment.doctor.exception.EmailAlreadyExistsException;
 import com.doctorappointment.doctor.exception.ValidationException;
 import com.doctorappointment.doctor.helper.DoctorGrpcHelper;
+import com.doctorappointment.doctor.repository.DoctorRepoInterface;
 import com.doctorappointment.doctor.service.DoctorService;
 import com.doctorappointment.doctor.service.GeocodingService;
 import io.grpc.Context;
@@ -25,10 +27,12 @@ import java.util.stream.Collectors;
 public class DoctorGrpcService extends DoctorServiceGrpc.DoctorServiceImplBase {
     private final DoctorService service;
     private final GeocodingService  geocodingService;
+    private final AppointmentRepoInterface  appointmentRepo;
 
-    public DoctorGrpcService(DoctorService service, GeocodingService geocodingService) {
+    public DoctorGrpcService(DoctorService service, GeocodingService geocodingService, AppointmentRepoInterface appointmentRepo) {
         this.service = service;
         this.geocodingService = geocodingService;
+        this.appointmentRepo = appointmentRepo;
     }
 
     //register doctor
@@ -337,8 +341,8 @@ public class DoctorGrpcService extends DoctorServiceGrpc.DoctorServiceImplBase {
             UUID uuid = UUID.fromString(request.getDoctorId());
             DoctorModel doctor = service.getDoctorAvailability(uuid);
             //book count will come from appointment service
-            int bookCount=0;
-            int maxCapacity=10;
+            int bookCount=(int)appointmentRepo.countByDoctorAndDate(uuid,request.getDate());
+            int maxCapacity=doctor.dailyLimit();
             boolean isAvailable=bookCount < maxCapacity;
             responseObserver.onNext(
                     DoctorGrpcHelper.toAvailabilityResponse(
