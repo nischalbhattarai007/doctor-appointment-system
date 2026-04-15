@@ -44,9 +44,16 @@ public class AppointmentGrpcService extends AppointmentServiceGrpc.AppointmentSe
                 responseObserver.onError(
                         Status.UNAUTHENTICATED
                                 .withDescription("Missing authorization header")
-                                .asRuntimeException()
+                                 .asRuntimeException()
                 );
             }
+            PatientModel patient=patientService.getPatientByEmail(email);
+            AppointmentRequest appointmentRequest=AppointmentRequest.builder()
+                    .patientId(patient.patientId())
+                    .doctorId(UUID.fromString(request.getDoctorId()))
+                    .appointment_date(request.getDate())
+                    .notes(request.getNotes())
+                    .build();
             AppointmentModel model = service.requestAppointment(AppointmentGrpcHelper.fromAppointmentRequest(request));
             responseObserver.onNext(
                     AppointmentGrpcHelper.toAppointmentResponse

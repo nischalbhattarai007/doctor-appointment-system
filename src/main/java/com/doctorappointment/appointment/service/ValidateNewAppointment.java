@@ -3,9 +3,11 @@ package com.doctorappointment.appointment.service;
 import com.doctorappointment.appointment.exception.*;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.UUID;
 
 public class ValidateNewAppointment {
+    private static final ZoneId NEPAL_ZONE = ZoneId.of("Asia/Kathmandu");
     public static void validateNewAppointment(UUID patientId, UUID doctorId,
                                               String date, String status) {
         if (patientId == null) {
@@ -27,8 +29,13 @@ public class ValidateNewAppointment {
         }
         try {
             LocalDate localDate = LocalDate.parse(date);
-            if (localDate.isBefore(LocalDate.now())) {
-                throw new DateValidationException("Appointment date cannot be in the past");
+            LocalDate now = LocalDate.now(NEPAL_ZONE);
+            LocalDate maxDate = now.plusMonths(3);
+            if(localDate.isBefore(now)){
+                throw new DateValidationException("Appointment date cannot be in past.");
+            }
+            if(localDate.isAfter(maxDate)){
+                throw new DateValidationException("Appointment date cannot be more then 3 months in advance.");
             }
         } catch (DateTimeParseException e) {
             throw new DateValidationException("Invalid date format — use YYYY-MM-DD");
