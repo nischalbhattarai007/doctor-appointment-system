@@ -153,13 +153,11 @@ class AppointmentRepository implements AppointmentRepoInterface {
 
     @Override
     public void updateDateAndStatus(UUID appointmentId, String newDate, String reason, String status) {
-        cqlSession.execute(updateDateAndStatus.bind
-                (
+        cqlSession.execute(updateDateAndStatus.bind(
                         newDate,
                         status,
                         reason,
-                        appointmentId
-                ));
+                        appointmentId));
         log.info(" Appointment {} reschedule to {} with status {}", appointmentId, newDate, status);
     }
 

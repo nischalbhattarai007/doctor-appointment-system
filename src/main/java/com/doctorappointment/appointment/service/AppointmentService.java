@@ -52,6 +52,8 @@ public class AppointmentService {
             throw new DoctorFullyBookedException
                     ("appointment limit reached for " + request.appointment_date() + " daily limit: " + doctor.dailyLimit());
         }
+        //validate data
+        ValidateNewAppointment.validateDate(request.appointment_date());
         AppointmentModel appointment = AppointmentModel.builder()
                 .appointmentId(UUID.randomUUID())
                 .patientId(request.patientId())
