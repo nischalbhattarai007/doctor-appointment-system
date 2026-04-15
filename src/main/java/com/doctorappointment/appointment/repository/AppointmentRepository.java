@@ -48,7 +48,7 @@ class AppointmentRepository implements AppointmentRepoInterface {
         this.insertByPatient = cqlSession.prepare(AppointmentQuery.INSERT_BY_PATIENT);
         this.findByPatient = cqlSession.prepare(AppointmentQuery.FIND_BY_PATIENT);
         this.updateStatusByPatient = cqlSession.prepare(AppointmentQuery.UPDATE_STATUS_BY_PATIENT);
-        this.updateDateAndStatus=cqlSession.prepare(AppointmentQuery.UPDATE_DATE_AND_STATUS);
+        this.updateDateAndStatus = cqlSession.prepare(AppointmentQuery.UPDATE_DATE_AND_STATUS);
     }
 
     @Override
@@ -152,7 +152,7 @@ class AppointmentRepository implements AppointmentRepoInterface {
     }
 
     @Override
-    public void updateDateAndStatus(UUID appointmentId, String newDate,String reason,String status) {
+    public void updateDateAndStatus(UUID appointmentId, String newDate, String reason, String status) {
         cqlSession.execute(updateDateAndStatus.bind
                 (
                         newDate,
