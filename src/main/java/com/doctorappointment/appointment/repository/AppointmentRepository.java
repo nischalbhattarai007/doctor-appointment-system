@@ -149,7 +149,6 @@ class AppointmentRepository implements AppointmentRepoInterface {
         BoundStatement bs = countByDoctorDate.bind(doctorId, appointment_date);
         Row row = cqlSession.execute(bs).one();
         return row == null ? 0 : row.getLong(0);
-
     }
 
     @Override
