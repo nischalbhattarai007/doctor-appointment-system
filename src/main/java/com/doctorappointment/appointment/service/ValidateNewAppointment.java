@@ -41,4 +41,5 @@ public class ValidateNewAppointment {
             throw new DateValidationException("Invalid date format — use YYYY-MM-DD");
         }
     }
+
 }
