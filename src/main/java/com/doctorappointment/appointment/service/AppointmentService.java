@@ -4,6 +4,7 @@ import com.doctorappointment.appointment.constant.AppointmentStatus;
 import com.doctorappointment.appointment.dto.AppointmentModel;
 import com.doctorappointment.appointment.dto.AppointmentRequest;
 import com.doctorappointment.appointment.exception.AppointmentAlreadyActiveException;
+import com.doctorappointment.appointment.exception.DuplicateAppointmentRequestException;
 import com.doctorappointment.appointment.exception.UnauthorizedAccessException;
 import com.doctorappointment.appointment.repository.AppointmentRepoInterface;
 import com.doctorappointment.doctor.dto.DoctorModel;
@@ -54,6 +55,12 @@ public class AppointmentService {
         }
         //validate data
         ValidateNewAppointment.validateDate(request.appointment_date());
+        //prevent duplicate request
+//        long patientBookingCount=appointmentRepo.countByPatientAndDoctor
+//                (request.patientId(),request.doctorId(),request.appointment_date());
+//        if(patientBookingCount>0){
+//            throw new DuplicateAppointmentRequestException("Duplicate appointment request");
+//        }
         AppointmentModel appointment = AppointmentModel.builder()
                 .appointmentId(UUID.randomUUID())
                 .patientId(request.patientId())
@@ -93,7 +100,7 @@ public class AppointmentService {
             throw new UnauthorizedAccessException
                     ("Only pending appointment is allowed. Current status is: " + existingAppointment.status());
         }
-        appointmentRepo.updateDateAndStatus(appointmentId, AppointmentStatus.CONFIRMED, "", "");
+        appointmentRepo.updateDateAndStatus(appointmentId, AppointmentStatus.CONFIRMED, AppointmentStatus.CONFIRMED, "");
         publisher.publish(NotificationSubject.PATIENT_APPOINTMENT_CONFIRMED,
                 AppointmentEvent.builder()
                         .appointmentId(appointmentId.toString())
@@ -178,8 +185,8 @@ public class AppointmentService {
         }
         appointmentRepo.updateDateAndStatus(appointmentId,
                 newDate,
-                AppointmentStatus.PENDING,
-                reason != null ? reason : "");
+                reason,
+                AppointmentStatus.PENDING);
         //notification rescheduled
         publisher.publish(NotificationSubject.PATIENT_APPOINTMENT_RESCHEDULED, AppointmentEvent.builder()
                 .appointmentId(appointmentId.toString())

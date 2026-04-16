@@ -48,12 +48,12 @@ public class AppointmentGrpcService extends AppointmentServiceGrpc.AppointmentSe
                 );
             }
             PatientModel patient=patientService.getPatientByEmail(email);
-            AppointmentRequest appointmentRequest=AppointmentRequest.builder()
-                    .patientId(patient.patientId())
-                    .doctorId(UUID.fromString(request.getDoctorId()))
-                    .appointment_date(request.getDate())
-                    .notes(request.getNotes())
-                    .build();
+//            AppointmentRequest appointmentRequest=AppointmentRequest.builder()
+//                    .patientId(patient.patientId())
+//                    .doctorId(UUID.fromString(request.getDoctorId()))
+//                    .appointment_date(request.getDate())
+//                    .notes(request.getNotes())
+//                    .build();
             AppointmentModel model = service.requestAppointment(AppointmentGrpcHelper.fromAppointmentRequest(request));
             responseObserver.onNext(
                     AppointmentGrpcHelper.toAppointmentResponse
@@ -136,6 +136,10 @@ public class AppointmentGrpcService extends AppointmentServiceGrpc.AppointmentSe
           //  UUID appointmentId = UUID.fromString(request.getAppointmentServiceId());
             String email=BasicAuthInterceptor.EMAIL_CONTEXT_KEY.get();
             PatientModel authenticatedPatient=patientService.getPatientByEmail(email);
+            log.info("auth patient id: {}",authenticatedPatient.patientId());
+            log.info("Request patient id: {}", request.getPatientId());
+            var id=authenticatedPatient.patientId();
+            log.info("id check : {} ", id);
             //check valid patient or not
             if(!authenticatedPatient.patientId().toString().equals(request.getPatientId())){
                 responseObserver.onError(

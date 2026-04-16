@@ -28,7 +28,7 @@ public class NotificationSubscriber {
         try{
             AppointmentEvent event=objectMapper.readValue(data, AppointmentEvent.class);
 
-            log.info("Received appointment event for {}",event.doctorId());
+            log.info("Received appointment event  {}",event);
         }catch (Exception e){
             log.error("Error while processing appointment event",e);
         }

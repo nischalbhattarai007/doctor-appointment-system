@@ -8,6 +8,7 @@ public class AppointmentSchema {
     public static final String APPOINTMENTS_TABLE = KEYSPACE + ".appointments";
     public static final String APPOINTMENTS_BY_DOCTOR_TABLE = KEYSPACE + ".appointments_by_doctor";
     public static final String APPOINTMENTS_BY_PATIENT_TABLE = KEYSPACE + ".appointments_by_patient";
+    public static final String APPOINTMENTS_BY_PATIENT_DOCTOR_DATE = KEYSPACE + ".appointments_by_patient_doctor_date";
 
     //column
     public static final String APPOINTMENT_ID = "appointment_id";

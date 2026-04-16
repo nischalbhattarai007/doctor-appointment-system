@@ -14,4 +14,5 @@ public interface AppointmentRepoInterface {
     List<AppointmentModel> getAppointmentByPatient(UUID patientId);
     long countByDoctorAndDate(UUID doctorId,String date);
     void updateDateAndStatus(UUID appointmentId, String newDate, String status, String reason);
+//    long countByPatientAndDoctor(UUID patientId, UUID doctorId, String date);
 }

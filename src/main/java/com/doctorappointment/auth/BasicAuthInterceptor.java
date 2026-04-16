@@ -47,7 +47,7 @@ public class BasicAuthInterceptor implements ServerInterceptor {
             if (!basicAuthValidator.validate(credentials[0], credentials[1])) {
                 return reject(call, "Invalid email or password(log from interceptor)");
             }
-            log.info("Authenticated: {}", credentials[0]);
+            log.info("Authenticated : {}", credentials[0]);
 
             //  Store credentials in context so handler can use them
             Context context = Context.current()

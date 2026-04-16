@@ -1,6 +1,7 @@
 package com.doctorappointment.patient.dto;
 
 import com.doctorappointment.patient.exception.InvalidEmailException;
+import com.doctorappointment.patient.exception.InvalidPasswordException;
 import com.doctorappointment.patient.exception.InvalidPhoneNumberException;
 import io.micronaut.core.annotation.Introspected;
 import io.micronaut.serde.annotation.Serdeable;

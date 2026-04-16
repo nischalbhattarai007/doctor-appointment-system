@@ -29,6 +29,7 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     implementation("io.micronaut.security:micronaut-security")
     //used to hash password
+
     // Source: https://mvnrepository.com/artifact/org.mindrot/jbcrypt
     implementation("org.mindrot:jbcrypt:0.4")
     //used to make http request
