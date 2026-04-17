@@ -46,6 +46,7 @@ public class AppointmentGrpcService extends AppointmentServiceGrpc.AppointmentSe
                                 .withDescription("Missing authorization header")
                                  .asRuntimeException()
                 );
+                return;
             }
 //            PatientModel patient=patientService.getPatientByEmail(email);
 //            AppointmentRequest appointmentRequest=AppointmentRequest.builder()
