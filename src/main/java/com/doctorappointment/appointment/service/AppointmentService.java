@@ -5,6 +5,7 @@ import com.doctorappointment.appointment.dto.AppointmentModel;
 import com.doctorappointment.appointment.dto.AppointmentRequest;
 //import com.doctorappointment.appointment.exception.AppointmentAlreadyActiveException;
 //import com.doctorappointment.appointment.exception.DuplicateAppointmentRequestException;
+import com.doctorappointment.appointment.exception.SameDateRescheduleNotAllowedException;
 import com.doctorappointment.appointment.exception.UnauthorizedAccessException;
 import com.doctorappointment.appointment.repository.AppointmentRepoInterface;
 import com.doctorappointment.doctor.dto.DoctorModel;
@@ -17,6 +18,7 @@ import com.doctorappointment.notification.NotificationSubject;
 import jakarta.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -180,6 +182,10 @@ public class AppointmentService {
         if (existingAppointment.status().equals(AppointmentStatus.REJECTED)
                 || existingAppointment.status().equals(AppointmentStatus.CANCELLED)) {
             throw new UnauthorizedAccessException("Cannot reschedule appointment with status " + existingAppointment.status());
+        }
+        LocalDate parsedDate = LocalDate.parse(newDate);
+        if(parsedDate.isEqual(LocalDate.now())) {
+            throw new SameDateRescheduleNotAllowedException("Can't reschedule appointment to the same data");
         }
         appointmentRepo.updateDateAndStatus(appointmentId,
                 newDate,
