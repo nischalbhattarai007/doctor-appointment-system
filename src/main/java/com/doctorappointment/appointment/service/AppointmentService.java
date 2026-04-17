@@ -16,7 +16,6 @@ import com.doctorappointment.notification.NotificationPublisher;
 import com.doctorappointment.notification.NotificationSubject;
 import jakarta.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
-
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -29,7 +28,7 @@ public class AppointmentService {
     private final NotificationPublisher publisher;
 
     public AppointmentService
-            (AppointmentRepoInterface appointmentRepo, DoctorRepoInterface doctorRepo, NotificationPublisher publisher) {
+            (AppointmentRepoInterface appointmentRepo, DoctorRepoInterface doctorRepo, NotificationPublisher publisher){
         this.appointmentRepo = appointmentRepo;
         this.doctorRepo = doctorRepo;
         this.publisher = publisher;
@@ -181,7 +180,7 @@ public class AppointmentService {
         }
         if (existingAppointment.status().equals(AppointmentStatus.REJECTED)
                 || existingAppointment.status().equals(AppointmentStatus.CANCELLED)) {
-            throw new UnauthorizedAccessException("Cannot cancel appointment with status " + existingAppointment.status());
+            throw new UnauthorizedAccessException("Cannot reschedule appointment with status " + existingAppointment.status());
         }
         appointmentRepo.updateDateAndStatus(appointmentId,
                 newDate,
