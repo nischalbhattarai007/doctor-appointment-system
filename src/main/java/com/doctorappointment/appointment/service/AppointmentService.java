@@ -34,7 +34,6 @@ public class AppointmentService {
         this.publisher = publisher;
     }
 
-
     //request appointment
     public AppointmentModel requestAppointment(AppointmentRequest request) {
         ValidateNewAppointment.validateNewAppointment(

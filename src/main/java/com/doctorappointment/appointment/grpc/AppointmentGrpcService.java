@@ -94,10 +94,10 @@ public class AppointmentGrpcService extends AppointmentServiceGrpc.AppointmentSe
                 return;
             }
             UUID appointmentId = UUID.fromString(request.getAppointmentServiceId());
-            UUID doctorId = UUID.fromString(request.getDoctorId());
+            UUID doctorId =authenticatedDoctor.doctorId();
             AppointmentModel model = service.confirmAppointment(appointmentId, doctorId);
-            responseObserver.onNext(
-                    AppointmentGrpcHelper.toAppointmentServiceResponse(model, "SUCCESS", "Appointment confirmed successfully")
+            responseObserver.onNext
+                    (AppointmentGrpcHelper.toAppointmentServiceResponse(model, "SUCCESS","Appointment confirmed successfully")
             );
             log.info("Appointment confirmed successfully");
             responseObserver.onCompleted();
@@ -149,7 +149,7 @@ public class AppointmentGrpcService extends AppointmentServiceGrpc.AppointmentSe
                 );
                 return;
             }
-            UUID patientId = UUID.fromString(request.getPatientId());
+            UUID patientId = authenticatedPatient.patientId();
             AppointmentRequest cancelRequest = AppointmentGrpcHelper.fromCancelRequest(request);
             AppointmentModel appointment = service.cancelAppointment(
                     cancelRequest.appointmentId(),
@@ -196,7 +196,7 @@ public class AppointmentGrpcService extends AppointmentServiceGrpc.AppointmentSe
                 return;
             }
             UUID appointmentId = UUID.fromString(request.getAppointmentServiceId());
-            UUID doctorId = UUID.fromString(request.getDoctorId());
+            UUID doctorId = authenticatedDoctor.doctorId();
             AppointmentModel appointment = service.rescheduleAppointment(
                     appointmentId,
                     doctorId,
@@ -240,7 +240,7 @@ public class AppointmentGrpcService extends AppointmentServiceGrpc.AppointmentSe
                 return;
             }
             UUID appointmentId = UUID.fromString(request.getAppointmentServiceId());
-            UUID doctorId = UUID.fromString(request.getDoctorId());
+            UUID doctorId = authenticatedDoctor.doctorId();
             AppointmentModel model = service.rejectAppointment(appointmentId, doctorId);
             responseObserver.onNext(
                     AppointmentGrpcHelper.toAppointmentResponse(model, "SUCCESS", "Appointment rejected successfully")
