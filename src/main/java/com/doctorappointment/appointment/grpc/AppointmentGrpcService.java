@@ -47,7 +47,7 @@ public class AppointmentGrpcService extends AppointmentServiceGrpc.AppointmentSe
                                  .asRuntimeException()
                 );
             }
-            PatientModel patient=patientService.getPatientByEmail(email);
+//            PatientModel patient=patientService.getPatientByEmail(email);
 //            AppointmentRequest appointmentRequest=AppointmentRequest.builder()
 //                    .patientId(patient.patientId())
 //                    .doctorId(UUID.fromString(request.getDoctorId()))
