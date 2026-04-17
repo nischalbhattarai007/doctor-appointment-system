@@ -136,8 +136,6 @@ public class AppointmentGrpcService extends AppointmentServiceGrpc.AppointmentSe
           //  UUID appointmentId = UUID.fromString(request.getAppointmentServiceId());
             String email=BasicAuthInterceptor.EMAIL_CONTEXT_KEY.get();
             PatientModel authenticatedPatient=patientService.getPatientByEmail(email);
-            log.info("auth patient id: {}",authenticatedPatient.patientId());
-            log.info("Request patient id: {}", request.getPatientId());
             var id=authenticatedPatient.patientId();
             log.info("id check : {} ", id);
             //check valid patient or not
