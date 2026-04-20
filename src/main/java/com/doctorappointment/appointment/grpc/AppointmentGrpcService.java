@@ -4,6 +4,7 @@ import com.doctorappointment.*;
 import com.doctorappointment.appointment.dto.AppointmentModel;
 import com.doctorappointment.appointment.dto.AppointmentRequest;
 import com.doctorappointment.appointment.exception.AppointmentAlreadyActiveException;
+import com.doctorappointment.appointment.exception.DuplicateAppointmentRequestException;
 import com.doctorappointment.appointment.exception.UnauthorizedAccessException;
 import com.doctorappointment.appointment.helper.AppointmentGrpcHelper;
 import com.doctorappointment.appointment.service.AppointmentService;
@@ -48,13 +49,6 @@ public class AppointmentGrpcService extends AppointmentServiceGrpc.AppointmentSe
                 );
                 return;
             }
-//            PatientModel patient=patientService.getPatientByEmail(email);
-//            AppointmentRequest appointmentRequest=AppointmentRequest.builder()
-//                    .patientId(patient.patientId())
-//                    .doctorId(UUID.fromString(request.getDoctorId()))
-//                    .appointment_date(request.getDate())
-//                    .notes(request.getNotes())
-//                    .build();
             AppointmentModel model = service.requestAppointment(AppointmentGrpcHelper.fromAppointmentRequest(request));
             responseObserver.onNext(
                     AppointmentGrpcHelper.toAppointmentResponse
@@ -71,7 +65,13 @@ public class AppointmentGrpcService extends AppointmentServiceGrpc.AppointmentSe
                     Status.NOT_FOUND
                             .withDescription(e.getMessage())
                             .asRuntimeException());
-        } catch (Exception e) {
+        }catch (DuplicateAppointmentRequestException e){
+            responseObserver.onError(
+                    Status.ALREADY_EXISTS
+                            .withDescription(e.getMessage())
+                            .asRuntimeException());
+        }
+        catch (Exception e) {
             responseObserver.onError(
                     Status.INVALID_ARGUMENT
                             .withDescription(e.getMessage())

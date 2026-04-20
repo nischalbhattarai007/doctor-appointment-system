@@ -35,8 +35,9 @@ class AppointmentRepository implements AppointmentRepoInterface {
     private final PreparedStatement updateStatusByPatient;
     //reschedule appointment by doctor
     private final PreparedStatement updateDateAndStatus;
-//    private final PreparedStatement countByPatientAndDoctor;
-//    private final PreparedStatement insertApointment;
+    private final PreparedStatement countByPatientAndDoctor;
+    private final PreparedStatement insertAppointment;
+    private final PreparedStatement deleteUniqueness;
 
     AppointmentRepository(ScyllaDbConfig config) {
         this.cqlSession = config.getSession();
@@ -51,8 +52,9 @@ class AppointmentRepository implements AppointmentRepoInterface {
         this.findByPatient = cqlSession.prepare(AppointmentQuery.FIND_BY_PATIENT);
         this.updateStatusByPatient = cqlSession.prepare(AppointmentQuery.UPDATE_STATUS_BY_PATIENT);
         this.updateDateAndStatus = cqlSession.prepare(AppointmentQuery.UPDATE_DATE_AND_STATUS);
-//        this.countByPatientAndDoctor=cqlSession.prepare(AppointmentQuery.COUNT_BY_APPOINTMENT);
-//        this.insertApointment=cqlSession.prepare(AppointmentQuery.INSERT_BY_DOCTOR_PATIENT_DATE);
+        this.countByPatientAndDoctor=cqlSession.prepare(AppointmentQuery.COUNT_BY_APPOINTMENT);
+        this.insertAppointment=cqlSession.prepare(AppointmentQuery.INSERT_BY_DOCTOR_PATIENT_DATE);
+        this.deleteUniqueness=cqlSession.prepare(AppointmentQuery.DELETE_UNIQUENESS);
     }
 
     @Override
@@ -80,12 +82,6 @@ class AppointmentRepository implements AppointmentRepoInterface {
                 appointment.appointment_date(),
                 appointment.status()
         ));
-//        cqlSession.execute(countByPatientAndDoctor.bind(
-//                appointment.patientId(),
-//                appointment.doctorId(),
-//                appointment.appointment_date(),
-//                appointment.appointmentId()
-//        ));
         log.info(" Appointment saved : {}", appointment.appointmentId());
         return appointment;
     }
@@ -171,14 +167,18 @@ class AppointmentRepository implements AppointmentRepoInterface {
         log.info(" Appointment {} reschedule to {} with status {}", appointmentId, newDate, status);
     }
 
-//    @Override
-//    public long countByPatientAndDoctor(UUID patientId, UUID doctorId, String date) {
-//       ResultSet rs=cqlSession.execute(countByPatientAndDoctor.bind(patientId, doctorId, date));
-//       Row row=rs.one();
-//       long count=(row!=null)?row.getLong(0):0;
-//       log.info("Count appointment per person per date: {}->{}={}",patientId,doctorId,date);
-//       return count;
-//    }
+    @Override
+    public boolean countByPatientAndDoctor(UUID patientId, UUID doctorId, String date,UUID appointmentId) {
+      ResultSet rs=cqlSession.execute(insertAppointment.bind(
+              patientId,doctorId,date,appointmentId));
+      return rs.wasApplied(); //false=duplicate exists
+    }
+
+    @Override
+    public void deleteUniqueness(UUID patientId, UUID doctorId, String date) {
+        cqlSession.execute(deleteUniqueness.bind(patientId,doctorId,date));
+    }
+
 
     //helper method
     private AppointmentModel mapRow(Row row) {

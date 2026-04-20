@@ -8,7 +8,7 @@ public class AppointmentSchema {
     public static final String APPOINTMENTS_TABLE = KEYSPACE + ".appointments";
     public static final String APPOINTMENTS_BY_DOCTOR_TABLE = KEYSPACE + ".appointments_by_doctor";
     public static final String APPOINTMENTS_BY_PATIENT_TABLE = KEYSPACE + ".appointments_by_patient";
-    //public static final String APPOINTMENTS_BY_PATIENT_DOCTOR_DATE = KEYSPACE + ".appointments_by_patient_doctor_date";
+    public static final String UNIQUENESS_TABLE = KEYSPACE + ".appointment_uniqueness";
 
     //column
     public static final String APPOINTMENT_ID = "appointment_id";
@@ -20,4 +20,7 @@ public class AppointmentSchema {
     public static final String REASON = "reason";
     public static final String CANCELLED_BY = "cancelled_by";
     public static final String CREATED_AT = "created_at";
+
+    //in appointment uniqueness table appointment date is set as appt_date
+    public static final String APPT_DATE = "appt_date";
 }

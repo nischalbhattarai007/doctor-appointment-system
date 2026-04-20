@@ -5,6 +5,7 @@ import com.doctorappointment.appointment.dto.AppointmentModel;
 import com.doctorappointment.appointment.dto.AppointmentRequest;
 //import com.doctorappointment.appointment.exception.AppointmentAlreadyActiveException;
 //import com.doctorappointment.appointment.exception.DuplicateAppointmentRequestException;
+import com.doctorappointment.appointment.exception.DuplicateAppointmentRequestException;
 import com.doctorappointment.appointment.exception.SameDateRescheduleNotAllowedException;
 import com.doctorappointment.appointment.exception.UnauthorizedAccessException;
 import com.doctorappointment.appointment.repository.AppointmentRepoInterface;
@@ -43,7 +44,8 @@ public class AppointmentService {
                 request.doctorId(),
                 request.appointment_date(),
                 AppointmentStatus.PENDING);
-
+        //validate date
+        ValidateNewAppointment.validateDate(request.appointment_date());
         DoctorModel doctor = doctorRepo.getDoctorById(request.doctorId());
         if (doctor == null || doctor.isDeleted()) {
             throw new AppointmentNotFoundException("doctor not found");
@@ -53,14 +55,6 @@ public class AppointmentService {
             throw new DoctorFullyBookedException
                     ("appointment limit reached for " + request.appointment_date() + " daily limit: " + doctor.dailyLimit());
         }
-        //validate data
-        ValidateNewAppointment.validateDate(request.appointment_date());
-        //prevent duplicate request
-//        long patientBookingCount=appointmentRepo.countByPatientAndDoctor
-//                (request.patientId(),request.doctorId(),request.appointment_date());
-//        if(patientBookingCount>0){
-//            throw new DuplicateAppointmentRequestException("Duplicate appointment request");
-//        }
         AppointmentModel appointment = AppointmentModel.builder()
                 .appointmentId(UUID.randomUUID())
                 .patientId(request.patientId())
@@ -73,6 +67,14 @@ public class AppointmentService {
                 .createdAt(Instant.now())
                 .build();
 //        return appointmentRepo.saveAppointment(appointment)
+        boolean inserted=appointmentRepo.countByPatientAndDoctor(
+                appointment.patientId(),
+                appointment.doctorId(),
+                appointment.appointment_date(),
+                appointment.appointmentId());
+        if(!inserted){
+            throw new DuplicateAppointmentRequestException("Duplicate appointment request");
+        }
 
         AppointmentModel saved = appointmentRepo.saveAppointment(appointment);
         publisher.publish(NotificationSubject.DOCTOR_APPOINTMENT_REQUEST,
@@ -100,7 +102,7 @@ public class AppointmentService {
             throw new UnauthorizedAccessException
                     ("Only pending appointment is allowed. Current status is: " + existingAppointment.status());
         }
-        appointmentRepo.updateDateAndStatus(appointmentId, AppointmentStatus.CONFIRMED, AppointmentStatus.CONFIRMED, "");
+        appointmentRepo.updateStatus(appointmentId, AppointmentStatus.CONFIRMED,"", "");
         publisher.publish(NotificationSubject.PATIENT_APPOINTMENT_CONFIRMED,
                 AppointmentEvent.builder()
                         .appointmentId(appointmentId.toString())
@@ -143,6 +145,12 @@ public class AppointmentService {
 
     //cancel appointment
     public AppointmentModel cancelAppointment(UUID appointmentId, UUID patientId, String reason) {
+        //check appointment exists or not
+        AppointmentModel existing=appointmentRepo.getAppointmentById(appointmentId);
+        if(existing==null){
+            throw new AppointmentNotFoundException("Appointment with id " + appointmentId + " does not exist");
+        }
+        //validate only authorized patient is allowed to cancel appointment
         AppointmentModel existingAppointment = getExistingAppointment(appointmentId);
         if (!existingAppointment.patientId().equals(patientId)) {
             throw new UnauthorizedAccessException("Only the assigned patient is allowed");
@@ -154,6 +162,17 @@ public class AppointmentService {
         }
         appointmentRepo.updateStatus
                 (appointmentId, AppointmentStatus.CANCELLED, reason != null ? reason : "", AppointmentStatus.PATIENT);
+        /*
+        delete appointment request
+            from uniqueness table when
+                patient cancel the request
+          */
+        appointmentRepo.deleteUniqueness(
+                existingAppointment.patientId(),
+                existingAppointment.doctorId(),
+                existingAppointment.appointment_date());
+
+        //notification
         publisher.publish(NotificationSubject.DOCTOR_APPOINTMENT_CANCELLED,
                 AppointmentEvent.builder()
                         .appointmentId(appointmentId.toString())

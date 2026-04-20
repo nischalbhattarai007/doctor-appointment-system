@@ -91,17 +91,22 @@ public class AppointmentQuery {
                     " WHERE " + APPOINTMENT_ID + " = ?";
 
     //to prevent duplicate appointment request
-//    public static final String INSERT_BY_DOCTOR_PATIENT_DATE =
-//            "INSERT INTO " + APPOINTMENTS_BY_PATIENT_DOCTOR_DATE +
-//                    " (" +
-//                    PATIENT_ID + ", " +
-//                    DOCTOR_ID + ", " +
-//                    APPOINTMENT_DATE + ", " +
-//                    APPOINTMENT_ID +
-//                    ") VALUES (?,?,?,?)";
-//
+    public static final String INSERT_BY_DOCTOR_PATIENT_DATE =
+            "INSERT INTO " + UNIQUENESS_TABLE +
+                    " (" +
+                    PATIENT_ID + ", " +
+                    DOCTOR_ID + ", " +
+                    APPT_DATE + ", " +
+                    APPOINTMENT_ID +
+                    ") VALUES (?,?,?,?) IF NOT EXISTS";
+
 //    //get appointment count per person to prevent duplicate request appointment per doctor
-//    public static final String COUNT_BY_APPOINTMENT=
-//            "SELECT COUNT(*) FROM " + APPOINTMENTS_BY_PATIENT_DOCTOR_DATE + " WHERE "
-//            + PATIENT_ID + " =? AND " + DOCTOR_ID + " =? AND " + APPOINTMENT_DATE + " =?";
+    public static final String COUNT_BY_APPOINTMENT=
+            "SELECT COUNT(*) FROM " + UNIQUENESS_TABLE + " WHERE "
+            + PATIENT_ID + " =? AND " + DOCTOR_ID + " =? AND " + APPT_DATE + " =?";
+
+    //delete when appointment is canceled
+    public static final String DELETE_UNIQUENESS=
+            "DELETE FROM " + UNIQUENESS_TABLE + " WHERE " + PATIENT_ID + " =? AND " +
+                    DOCTOR_ID + " =? AND " + APPT_DATE + " =?" ;
 }
