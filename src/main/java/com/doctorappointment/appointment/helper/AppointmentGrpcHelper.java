@@ -35,14 +35,6 @@ public class AppointmentGrpcHelper {
                 .build();
     }
 
-    //confirm appointment request
-    public static AppointmentRequest fromAppointmentActionRequest(AppointmentActionRequest request) {
-        return AppointmentRequest.builder()
-                .appointmentId(UUID.fromString(request.getAppointmentServiceId()))
-                .doctorId(UUID.fromString(request.getDoctorId()))
-                .reason(request.getReason())
-                .build();
-    }
     //confirm appointment response
     public static AppointmentServiceResponse  toAppointmentServiceResponse
             (AppointmentModel appointment, String status, String message) {
@@ -90,16 +82,6 @@ public class AppointmentGrpcHelper {
                 .setDate(appointment.appointment_date())
                 .setStatus(appointment.status())
                 .setNotes(appointment.notes() != null ? appointment.notes() : "")
-                .build();
-    }
-
-    public static AppointmentRequest fromRescheduleRequest(
-            AppointmentRescheduleRequest request) {
-        return AppointmentRequest.builder()
-                .appointmentId(UUID.fromString(request.getAppointmentServiceId()))
-                .doctorId(UUID.fromString(request.getDoctorId()))
-                .appointment_date(request.getNewDate())
-                .reason(request.getReason())
                 .build();
     }
 }

@@ -4,6 +4,7 @@ import com.doctorappointment.appointment.exception.*;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.format.DateTimeParseException;
 import java.util.UUID;
 
 public class ValidateNewAppointment {
@@ -38,7 +39,7 @@ public class ValidateNewAppointment {
                 throw new DateValidationException("Appointment date cannot be more then 3 months in advance.");
             }
         } catch (DateTimeParseException e) {
-            throw new DateValidationException("Invalid date format — use YYYY-MM-DD");
+            throw new DateValidationException("Invalid date format. Expected format: YYYY-MM-DD (example: 2026-07-20)");
         }
     }
 

@@ -100,11 +100,6 @@ public class AppointmentQuery {
                     APPOINTMENT_ID +
                     ") VALUES (?,?,?,?) IF NOT EXISTS";
 
-//    //get appointment count per person to prevent duplicate request appointment per doctor
-    public static final String COUNT_BY_APPOINTMENT=
-            "SELECT COUNT(*) FROM " + UNIQUENESS_TABLE + " WHERE "
-            + PATIENT_ID + " =? AND " + DOCTOR_ID + " =? AND " + APPT_DATE + " =?";
-
     //delete when appointment is canceled
     public static final String DELETE_UNIQUENESS=
             "DELETE FROM " + UNIQUENESS_TABLE + " WHERE " + PATIENT_ID + " =? AND " +

@@ -50,6 +50,7 @@ public class AppointmentGrpcService extends AppointmentServiceGrpc.AppointmentSe
                 return;
             }
             PatientModel authenticatedPatient=patientService.getPatientByEmail(email);
+
             UUID requestPatientId=UUID.fromString(request.getPatientId());
             if(!authenticatedPatient.patientId().equals(requestPatientId)){
                 responseObserver.onError(
@@ -145,8 +146,13 @@ public class AppointmentGrpcService extends AppointmentServiceGrpc.AppointmentSe
             //  UUID appointmentId = UUID.fromString(request.getAppointmentServiceId());
             String email = BasicAuthInterceptor.EMAIL_CONTEXT_KEY.get();
             PatientModel authenticatedPatient = patientService.getPatientByEmail(email);
-            var id = authenticatedPatient.patientId();
-            log.info("id check : {} ", id);
+            if(authenticatedPatient==null){
+                responseObserver.onError(
+                        Status.PERMISSION_DENIED
+                                .withDescription("Only patient are authorized to cancel appointments")
+                                .asRuntimeException());
+                return;
+            }
             //check valid patient or not
             if (!authenticatedPatient.patientId().toString().equals(request.getPatientId())) {
                 responseObserver.onError(

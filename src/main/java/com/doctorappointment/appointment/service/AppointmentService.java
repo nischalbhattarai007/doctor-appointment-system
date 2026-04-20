@@ -129,11 +129,19 @@ public class AppointmentService {
             throw new UnauthorizedAccessException("Only pending appointment is allowed. Current status is: " + existingAppointment.status());
         }
         appointmentRepo.updateStatus(appointmentId, AppointmentStatus.REJECTED, "", "");
+
+        //free the uniqueness slot so patient can rebook the same doctor/date
+        appointmentRepo.deleteUniqueness(
+                existingAppointment.patientId(),
+                existingAppointment.doctorId(),
+                existingAppointment.appointment_date());
+
         publisher.publish(NotificationSubject.PATIENT_APPOINTMENT_REJECTED,
                 AppointmentEvent.builder()
                         .appointmentId(appointmentId.toString())
                         .patientId(existingAppointment.patientId().toString())
                         .doctorId(existingAppointment.doctorId().toString())
+                        .date(existingAppointment.appointment_date())
                         .status(AppointmentStatus.REJECTED)
                         .recipientType("PATIENT")
                         .message("your appointment on " + existingAppointment.appointment_date() + "has been rejected")
@@ -147,11 +155,6 @@ public class AppointmentService {
 
     //cancel appointment
     public AppointmentModel cancelAppointment(UUID appointmentId, UUID patientId, String reason) {
-        //check appointment exists or not
-        AppointmentModel existing = appointmentRepo.getAppointmentById(appointmentId);
-        if (existing == null) {
-            throw new AppointmentNotFoundException("Appointment with id " + appointmentId + " does not exist");
-        }
         //validate only authorized patient is allowed to cancel appointment
         AppointmentModel existingAppointment = getExistingAppointment(appointmentId);
         if (!existingAppointment.patientId().equals(patientId)) {
@@ -205,13 +208,18 @@ public class AppointmentService {
             throw new UnauthorizedAccessException("Cannot reschedule appointment with status " + existingAppointment.status());
         }
         LocalDate parsedDate = LocalDate.parse(newDate);
-        if (parsedDate.isEqual(LocalDate.now())) {
+        if (parsedDate.isEqual(LocalDate.parse(existingAppointment.appointment_date()))) {
             throw new SameDateRescheduleNotAllowedException("Can't reschedule appointment to the same data");
         }
         appointmentRepo.updateDateAndStatus(appointmentId,
                 newDate,
                 reason,
                 AppointmentStatus.PENDING);
+        //free the old date slot so the patient can re-book on it if they want
+        appointmentRepo.deleteUniqueness(
+                existingAppointment.patientId(),
+                existingAppointment.doctorId(),
+                existingAppointment.appointment_date());
         //notification rescheduled
         publisher.publish(NotificationSubject.PATIENT_APPOINTMENT_RESCHEDULED, AppointmentEvent.builder()
                 .appointmentId(appointmentId.toString())
@@ -240,6 +248,7 @@ public class AppointmentService {
 
     //get doctor appointment
     public List<AppointmentModel> getDoctorAppointments(UUID doctorId, String appointment_date) {
+        ValidateNewAppointment.validateDate(appointment_date);
         if (doctorId == null) {
             throw new AppointmentNotFoundException("doctor id is required");
         }
