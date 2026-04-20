@@ -49,6 +49,15 @@ public class AppointmentGrpcService extends AppointmentServiceGrpc.AppointmentSe
                 );
                 return;
             }
+            PatientModel authenticatedPatient=patientService.getPatientByEmail(email);
+            UUID requestPatientId=UUID.fromString(request.getPatientId());
+            if(!authenticatedPatient.patientId().equals(requestPatientId)){
+                responseObserver.onError(
+                        Status.PERMISSION_DENIED
+                                .withDescription(" You are not allowed to request appointment for other patient")
+                                .asRuntimeException());
+                return;
+            }
             AppointmentModel model = service.requestAppointment(AppointmentGrpcHelper.fromAppointmentRequest(request));
             responseObserver.onNext(
                     AppointmentGrpcHelper.toAppointmentResponse

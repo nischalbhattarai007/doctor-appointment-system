@@ -47,6 +47,7 @@ public class AppointmentService {
                 AppointmentStatus.PENDING);
         //validate date
         ValidateNewAppointment.validateDate(request.appointment_date());
+
         DoctorModel doctor = doctorRepo.getDoctorById(request.doctorId());
         if (doctor == null || doctor.isDeleted()) {
             throw new AppointmentNotFoundException("doctor not found");
