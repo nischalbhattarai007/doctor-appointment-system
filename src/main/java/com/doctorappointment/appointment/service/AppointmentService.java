@@ -18,6 +18,7 @@ import com.doctorappointment.notification.NotificationPublisher;
 import com.doctorappointment.notification.NotificationSubject;
 import jakarta.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
+
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
@@ -31,7 +32,7 @@ public class AppointmentService {
     private final NotificationPublisher publisher;
 
     public AppointmentService
-            (AppointmentRepoInterface appointmentRepo, DoctorRepoInterface doctorRepo, NotificationPublisher publisher){
+            (AppointmentRepoInterface appointmentRepo, DoctorRepoInterface doctorRepo, NotificationPublisher publisher) {
         this.appointmentRepo = appointmentRepo;
         this.doctorRepo = doctorRepo;
         this.publisher = publisher;
@@ -66,16 +67,16 @@ public class AppointmentService {
                 .cancelledBy("")
                 .createdAt(Instant.now())
                 .build();
-//        return appointmentRepo.saveAppointment(appointment)
-        boolean inserted=appointmentRepo.countByPatientAndDoctor(
+        //add request appointment in appointment uniqueness table
+        boolean inserted = appointmentRepo.countByPatientAndDoctor(
                 appointment.patientId(),
                 appointment.doctorId(),
                 appointment.appointment_date(),
                 appointment.appointmentId());
-        if(!inserted){
+        if (!inserted) {
             throw new DuplicateAppointmentRequestException("Duplicate appointment request");
         }
-
+        //save the appointment request in all appointment table
         AppointmentModel saved = appointmentRepo.saveAppointment(appointment);
         publisher.publish(NotificationSubject.DOCTOR_APPOINTMENT_REQUEST,
                 AppointmentEvent.builder()
@@ -102,7 +103,7 @@ public class AppointmentService {
             throw new UnauthorizedAccessException
                     ("Only pending appointment is allowed. Current status is: " + existingAppointment.status());
         }
-        appointmentRepo.updateStatus(appointmentId, AppointmentStatus.CONFIRMED,"", "");
+        appointmentRepo.updateStatus(appointmentId, AppointmentStatus.CONFIRMED, "", "");
         publisher.publish(NotificationSubject.PATIENT_APPOINTMENT_CONFIRMED,
                 AppointmentEvent.builder()
                         .appointmentId(appointmentId.toString())
@@ -146,8 +147,8 @@ public class AppointmentService {
     //cancel appointment
     public AppointmentModel cancelAppointment(UUID appointmentId, UUID patientId, String reason) {
         //check appointment exists or not
-        AppointmentModel existing=appointmentRepo.getAppointmentById(appointmentId);
-        if(existing==null){
+        AppointmentModel existing = appointmentRepo.getAppointmentById(appointmentId);
+        if (existing == null) {
             throw new AppointmentNotFoundException("Appointment with id " + appointmentId + " does not exist");
         }
         //validate only authorized patient is allowed to cancel appointment
@@ -203,7 +204,7 @@ public class AppointmentService {
             throw new UnauthorizedAccessException("Cannot reschedule appointment with status " + existingAppointment.status());
         }
         LocalDate parsedDate = LocalDate.parse(newDate);
-        if(parsedDate.isEqual(LocalDate.now())) {
+        if (parsedDate.isEqual(LocalDate.now())) {
             throw new SameDateRescheduleNotAllowedException("Can't reschedule appointment to the same data");
         }
         appointmentRepo.updateDateAndStatus(appointmentId,

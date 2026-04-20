@@ -35,7 +35,6 @@ class AppointmentRepository implements AppointmentRepoInterface {
     private final PreparedStatement updateStatusByPatient;
     //reschedule appointment by doctor
     private final PreparedStatement updateDateAndStatus;
-    private final PreparedStatement countByPatientAndDoctor;
     private final PreparedStatement insertAppointment;
     private final PreparedStatement deleteUniqueness;
 
@@ -52,9 +51,8 @@ class AppointmentRepository implements AppointmentRepoInterface {
         this.findByPatient = cqlSession.prepare(AppointmentQuery.FIND_BY_PATIENT);
         this.updateStatusByPatient = cqlSession.prepare(AppointmentQuery.UPDATE_STATUS_BY_PATIENT);
         this.updateDateAndStatus = cqlSession.prepare(AppointmentQuery.UPDATE_DATE_AND_STATUS);
-        this.countByPatientAndDoctor=cqlSession.prepare(AppointmentQuery.COUNT_BY_APPOINTMENT);
-        this.insertAppointment=cqlSession.prepare(AppointmentQuery.INSERT_BY_DOCTOR_PATIENT_DATE);
-        this.deleteUniqueness=cqlSession.prepare(AppointmentQuery.DELETE_UNIQUENESS);
+        this.insertAppointment = cqlSession.prepare(AppointmentQuery.INSERT_BY_DOCTOR_PATIENT_DATE);
+        this.deleteUniqueness = cqlSession.prepare(AppointmentQuery.DELETE_UNIQUENESS);
     }
 
     @Override
@@ -160,23 +158,23 @@ class AppointmentRepository implements AppointmentRepoInterface {
     @Override
     public void updateDateAndStatus(UUID appointmentId, String newDate, String reason, String status) {
         cqlSession.execute(updateDateAndStatus.bind(
-                        newDate,
-                        status,
-                        reason,
-                        appointmentId));
+                newDate,
+                status,
+                reason,
+                appointmentId));
         log.info(" Appointment {} reschedule to {} with status {}", appointmentId, newDate, status);
     }
 
     @Override
-    public boolean countByPatientAndDoctor(UUID patientId, UUID doctorId, String date,UUID appointmentId) {
-      ResultSet rs=cqlSession.execute(insertAppointment.bind(
-              patientId,doctorId,date,appointmentId));
-      return rs.wasApplied(); //false=duplicate exists
+    public boolean countByPatientAndDoctor(UUID patientId, UUID doctorId, String date, UUID appointmentId) {
+        ResultSet rs = cqlSession.execute(insertAppointment.bind(
+                patientId, doctorId, date, appointmentId));
+        return rs.wasApplied(); //false=duplicate exists
     }
 
     @Override
     public void deleteUniqueness(UUID patientId, UUID doctorId, String date) {
-        cqlSession.execute(deleteUniqueness.bind(patientId,doctorId,date));
+        cqlSession.execute(deleteUniqueness.bind(patientId, doctorId, date));
     }
 
 
