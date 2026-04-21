@@ -17,6 +17,8 @@ service DoctorService{
   rpc GetDoctorsByLocation(LocationRequest) returns (DoctorListResponse);
   rpc GetDoctorAvailability(DoctorAvailabilityRequest) returns (DoctorAvailabilityResponse);
   rpc GetNearestDoctor(NearestLocationRequest) returns (NearestDoctorListResponse);
+  rpc SetDoctorSchedule(SetScheduleRequest) returns (SetScheduleResponse);
+  rpc GetDoctorSchedule(GetScheduleRequest) returns (GetScheduleResponse);
 }
 //login request
 message DoctorLoginRequest{
@@ -194,5 +196,29 @@ message NearestDoctorListResponse {
   repeated DoctorSummary doctors = 1;
   string doctor_status = 2;
   string doctor_message = 3;
+}
+
+message SetScheduleRequest {
+  string doctor_id    = 1;
+  repeated string working_days = 2;  // ["MONDAY", "WEDNESDAY", "FRIDAY"]
+}
+
+message SetScheduleResponse {
+  string doctor_id    = 1;
+  repeated string working_days = 2;
+  string status       = 5;
+  string message      = 6;
+}
+
+// Get doctor schedule
+message GetScheduleRequest {
+  string doctor_id = 1;
+}
+
+message GetScheduleResponse {
+  string doctor_id    = 1;
+  repeated string working_days = 2;
+  string status       = 5;
+  string message      = 6;
 }
 

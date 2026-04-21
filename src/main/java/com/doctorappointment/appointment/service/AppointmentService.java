@@ -13,6 +13,7 @@ import com.doctorappointment.doctor.dto.DoctorModel;
 import com.doctorappointment.doctor.exception.AppointmentNotFoundException;
 import com.doctorappointment.doctor.exception.DoctorFullyBookedException;
 import com.doctorappointment.doctor.repository.DoctorRepoInterface;
+import com.doctorappointment.doctor.service.ScheduleService;
 import com.doctorappointment.notification.AppointmentEvent;
 import com.doctorappointment.notification.NotificationPublisher;
 import com.doctorappointment.notification.NotificationSubject;
@@ -30,12 +31,14 @@ public class AppointmentService {
     private final AppointmentRepoInterface appointmentRepo;
     private final DoctorRepoInterface doctorRepo;
     private final NotificationPublisher publisher;
+    private final ScheduleService  scheduleService;
 
     public AppointmentService
-            (AppointmentRepoInterface appointmentRepo, DoctorRepoInterface doctorRepo, NotificationPublisher publisher) {
+            (AppointmentRepoInterface appointmentRepo, DoctorRepoInterface doctorRepo, NotificationPublisher publisher, ScheduleService scheduleService) {
         this.appointmentRepo = appointmentRepo;
         this.doctorRepo = doctorRepo;
         this.publisher = publisher;
+        this.scheduleService = scheduleService;
     }
 
     //request appointment
@@ -47,6 +50,9 @@ public class AppointmentService {
                 AppointmentStatus.PENDING);
         //validate date
         ValidateNewAppointment.validateDate(request.appointment_date());
+
+        //check doctor working days
+        scheduleService.assertWorkingDays(request.doctorId(), request.appointment_date());
 
         DoctorModel doctor = doctorRepo.getDoctorById(request.doctorId());
         if (doctor == null || doctor.isDeleted()) {
@@ -209,8 +215,12 @@ public class AppointmentService {
         }
         LocalDate parsedDate = LocalDate.parse(newDate);
         if (parsedDate.isEqual(LocalDate.parse(existingAppointment.appointment_date()))) {
-            throw new SameDateRescheduleNotAllowedException("Can't reschedule appointment to the same data");
+            throw new SameDateRescheduleNotAllowedException("Can't reschedule appointment to the same date");
         }
+
+        //check working days before reschedule
+        scheduleService.assertWorkingDays(doctorId, newDate);
+
         appointmentRepo.updateDateAndStatus(appointmentId,
                 newDate,
                 reason,

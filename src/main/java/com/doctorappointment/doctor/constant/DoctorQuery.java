@@ -25,7 +25,7 @@ public class DoctorQuery {
                     CLINIC_BUILDING +
                     ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
-    //find by id
+    //find by doctor id
     public static final String FIND_BY_ID =
             "SELECT * FROM " + DOCTORS_TABLE +
                     " WHERE " + DOCTOR_ID + " =?";
@@ -72,4 +72,10 @@ public class DoctorQuery {
             "SELECT " + DOCTOR_ID + ", " + CLINIC_BUILDING +
                     " FROM " + DOCTORS_TABLE +
                     " WHERE " + CLINIC_BUILDING + " = ?";
+
+    //doctor schedule table insert query
+    public static final String INSERT_INTO_DOCTOR_SCHEDULE=
+            "INSERT INTO " + DOCTORS_TABLE_SCHEDULE + " (" + DOCTOR_ID + ", " + WORKING_DAYS + ")" +
+                    " VALUES (?, ?)";
+
 }

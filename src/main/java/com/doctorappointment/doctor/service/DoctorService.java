@@ -124,8 +124,8 @@ public class DoctorService {
         {
             if (clinicChanged) {
                 String addressForGeo = isBlank(newClinicAddress) ? existing.clinicAddress() : newClinicAddress;
-                String nameForGeo    = isBlank(newClinicName)    ? existing.clinicName()    : newClinicName;
-                String buildingForGeo= isBlank(newClinicBuilding)? existing.clinicBuilding(): newClinicBuilding;
+                String nameForGeo = isBlank(newClinicName) ? existing.clinicName() : newClinicName;
+                String buildingForGeo = isBlank(newClinicBuilding) ? existing.clinicBuilding() : newClinicBuilding;
                 double[] coords = geocodingService.getCoordinates(nameForGeo, buildingForGeo, addressForGeo);
                 latitude = coords[0];
                 longitude = coords[1];
@@ -250,6 +250,6 @@ public class DoctorService {
         if (clinicBuilding == null || clinicBuilding.isBlank()) return "";
         return clinicBuilding.trim()
                 .toLowerCase()
-                .replaceAll("\\s*,\\s*", ","); // "White Building , First Floor" → "white building,first floor"
+                .replaceAll("\\s*,\\s*", ","); // "White Building , First Floor" -> "white building,first floor"
     }
 }

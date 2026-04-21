@@ -4,8 +4,10 @@ public class DoctorSchema {
     //keyspace
     public static final String KEYSPACE = "doctor_appointment";
 
-    //merger keyspace with database table
+    //merge keyspace with database table
     public static final String DOCTORS_TABLE = KEYSPACE + ".doctors";
+    //doctor schedule table
+    public static final String DOCTORS_TABLE_SCHEDULE = KEYSPACE + ".doctor_schedules";
 
     //column
     public static final String DOCTOR_ID = "doctor_id";
@@ -19,8 +21,9 @@ public class DoctorSchema {
     public static final String CLINIC_ADDRESS = "clinic_address";
     public static final String LATITUDE = "latitude";
     public static final String LONGITUDE = "longitude";
-    public static final String DAILY_LIMIT="daily_limit";
+    public static final String DAILY_LIMIT = "daily_limit";
     public static final String IS_DELETED = "is_deleted";
-    public static final String CLINIC_NAME="clinic_name";
-    public static final String CLINIC_BUILDING="clinic_building";
+    public static final String CLINIC_NAME = "clinic_name";
+    public static final String CLINIC_BUILDING = "clinic_building";
+    public static final String WORKING_DAYS = "working_days";
 }
