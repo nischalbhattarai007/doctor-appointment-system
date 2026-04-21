@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
     public DoctorScheduleRepository(ScyllaDbConfig config) {
         this.session=config.getSession();
         this.upsert=session.prepare(DoctorQuery.INSERT_INTO_DOCTOR_SCHEDULE);
-        this.findByDoctorId=session.prepare(DoctorQuery.FIND_BY_ID);
+        this.findByDoctorId=session.prepare(DoctorQuery.FIND_BY_ID_FROM_DOCTOR_SCHEDULE);
     }
 
     @Override

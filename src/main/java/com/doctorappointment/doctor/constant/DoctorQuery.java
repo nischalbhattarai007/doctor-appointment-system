@@ -78,4 +78,9 @@ public class DoctorQuery {
             "INSERT INTO " + DOCTORS_TABLE_SCHEDULE + " (" + DOCTOR_ID + ", " + WORKING_DAYS + ")" +
                     " VALUES (?, ?)";
 
+    //find by doctor id from doctor schedule table\
+    public static final String FIND_BY_ID_FROM_DOCTOR_SCHEDULE=
+            "SELECT * FROM " + DOCTORS_TABLE_SCHEDULE +
+                    " WHERE " + DOCTOR_ID + " =?";
+
 }
