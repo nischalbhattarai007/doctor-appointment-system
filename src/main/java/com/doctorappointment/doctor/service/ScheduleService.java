@@ -14,6 +14,7 @@ import jakarta.inject.Singleton;
 import java.time.LocalDate;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Singleton
 public class ScheduleService {
@@ -51,11 +52,14 @@ public class ScheduleService {
            throw new ScheduleNotFoundException("Doctor has not set a schedule yet. Booking is not available");
         }
         LocalDate localDate = LocalDate.parse(date);
-        String dayName=localDate.getDayOfWeek().name();
+        Day requestedDay=Day.valueOf(localDate.getDayOfWeek().name());
 
-        if(!schedule.working_days().contains(dayName)){
-            throw new DoctorNotAvailableException( "Doctor does not work on " + localDate.getDayOfWeek()
-                    + ". Working days: " + schedule.working_days());
+        if(!schedule.working_days().contains(requestedDay)){
+            String workingDays=schedule.working_days().stream()
+                    .map(Enum::name)
+                    .collect(Collectors.joining(","));
+            throw new DoctorNotAvailableException( "Doctor does not work on " + requestedDay
+                    + ". Working days: " + workingDays);
         }
     }
     private void validateDays(Set<Day> days) {
