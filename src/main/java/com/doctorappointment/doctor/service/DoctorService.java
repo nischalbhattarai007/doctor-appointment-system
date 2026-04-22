@@ -32,9 +32,14 @@ public class DoctorService {
 //            throw new InvalidPasswordException("Password too short");
 //        }
         String normalizedBuilding=normalizeBuilding(doctor.clinicBuilding());
+        String normalizedAddress=normalizeAddress(doctor.clinicAddress());
 
-        if(!normalizedBuilding.isBlank() && doctorRepo.existsByClinicBuilding(normalizedBuilding)) {
-            throw new ClinicLocationValidataionException("A clinic already exists at '" + doctor.clinicBuilding() + "'. " +
+
+        if (!normalizedAddress.isBlank()
+                && !normalizedBuilding.isBlank()
+                && doctorRepo.existsByClinicAddressAndBuilding(normalizedAddress,normalizedBuilding)) {
+            throw new ClinicLocationValidataionException
+                    ("A clinic already exists at '" +doctor.clinicAddress() + " with " + doctor.clinicBuilding() + "'. " +
                     "If you practice at the same location, contact support.");
         }
         String hashedPassword = BCrypt.hashpw(doctor.password(), BCrypt.gensalt());
@@ -64,6 +69,7 @@ public class DoctorService {
                 .clinicName(doctor.clinicName())
                 .clinicBuilding(normalizedBuilding)
                 .build();
+
         log.info("Doctor with email {} register successfully", doctor.email());
         return doctorRepo.addDoctor(model);
     }
@@ -252,4 +258,11 @@ public class DoctorService {
                 .toLowerCase()
                 .replaceAll("\\s*,\\s*", ","); // "White Building , First Floor" -> "white building,first floor"
     }
+    private String normalizeAddress(String clinicAddress) {
+        if (clinicAddress == null || clinicAddress.isBlank()) return "";
+        return clinicAddress.trim()
+                .toLowerCase()
+                .replaceAll("\\s*,\\s*", ",");
+    }
+
 }

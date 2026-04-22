@@ -1,19 +1,17 @@
 package com.doctorappointment.doctor.repository;
 
 import com.datastax.oss.driver.api.core.CqlSession;
-import com.datastax.oss.driver.api.core.cql.BoundStatement;
-import com.datastax.oss.driver.api.core.cql.PreparedStatement;
-import com.datastax.oss.driver.api.core.cql.ResultSet;
-import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.core.cql.*;
 import com.doctorappointment.doctor.constant.DoctorQuery;
 import com.doctorappointment.doctor.constant.DoctorSchema;
 import com.doctorappointment.doctor.dto.DoctorModel;
+import com.doctorappointment.doctor.exception.DoctorCreationFailedException;
 import jakarta.inject.Singleton;
-
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
 @Singleton
 class DoctorRepository implements DoctorRepoInterface {
     private final CqlSession session;
@@ -24,7 +22,10 @@ class DoctorRepository implements DoctorRepoInterface {
     private final PreparedStatement updateDoctor;
     private final PreparedStatement softDeleteDoctor;
     private final PreparedStatement existsDoctorByEmail;
-    private final PreparedStatement findByClinicBuilding;
+    //    private final PreparedStatement findByClinicBuilding;
+    private final PreparedStatement insertClinicAddress;
+    private final PreparedStatement findByClinicAddressAndBuilding;
+    private final PreparedStatement deleteFromUniquenessAddress;
 
     DoctorRepository(CqlSession session) {
         this.session = session;
@@ -35,7 +36,10 @@ class DoctorRepository implements DoctorRepoInterface {
         this.softDeleteDoctor = session.prepare(DoctorQuery.SOFT_DELETE);
         this.existsDoctorByEmail = session.prepare(DoctorQuery.EXISTS_BY_EMAIL);
         this.getAllDoctors = session.prepare(DoctorQuery.GET_ALL_DOCTORS);
-        this.findByClinicBuilding = session.prepare(DoctorQuery.FIND_BY_CLINIC_BUILDING);
+        //this.findByClinicBuilding = session.prepare(DoctorQuery.FIND_BY_CLINIC_BUILDING);
+        this.insertClinicAddress = session.prepare(DoctorQuery.INSERT_UNIQUENESS_DOCTOR_ADDRESS);
+        this.findByClinicAddressAndBuilding = session.prepare(DoctorQuery.FIND_BY_CLINIC_ADDRESS_BUILDING);
+        this.deleteFromUniquenessAddress = session.prepare(DoctorQuery.DELETE_BY_CLINIC_ADDRESS_BUILDING);
     }
 
     @Override
@@ -57,8 +61,22 @@ class DoctorRepository implements DoctorRepoInterface {
                 doctor.clinicName(),
                 doctor.clinicBuilding()
         );
+        BoundStatement bs2 = insertClinicAddress.bind(
+                doctor.doctorId(),
+                doctor.clinicAddress(),
+                doctor.clinicBuilding());
+        ResultSet rs = session.execute(bs2);
+        Row row = rs.one();
+        if (row == null || !row.getBoolean("[applied]")) {
+            throw new DoctorCreationFailedException("Doctor already exists");
+        }
+        try{
         session.execute(bs);
-        return doctor;
+        }catch(Exception e){
+            session.execute(deleteFromUniquenessAddress.bind(doctor.clinicAddress(),doctor.clinicBuilding()));
+            throw e;
+        }
+        return  doctor;
     }
 
     @Override
@@ -124,9 +142,15 @@ class DoctorRepository implements DoctorRepoInterface {
         return doctors;
     }
 
+//    @Override
+//    public boolean existsByClinicBuilding(String clinicBuilding) {
+//        BoundStatement bs=findByClinicBuilding.bind(clinicBuilding.trim().toLowerCase());
+//        return session.execute(bs).one() != null;
+//    }
+
     @Override
-    public boolean existsByClinicBuilding(String clinicBuilding) {
-        BoundStatement bs=findByClinicBuilding.bind(clinicBuilding.trim().toLowerCase());
+    public boolean existsByClinicAddressAndBuilding(String clinicAddress, String building) {
+        BoundStatement bs = findByClinicAddressAndBuilding.bind(clinicAddress.trim().toLowerCase(), building.trim().toLowerCase());
         return session.execute(bs).one() != null;
     }
 

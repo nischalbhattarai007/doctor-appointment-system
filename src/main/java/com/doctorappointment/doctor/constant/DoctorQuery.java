@@ -68,10 +68,10 @@ public class DoctorQuery {
             "SELECT * FROM " + DOCTORS_TABLE;
 
     //find by clinic building
-    public static final String FIND_BY_CLINIC_BUILDING =
-            "SELECT " + DOCTOR_ID + ", " + CLINIC_BUILDING +
-                    " FROM " + DOCTORS_TABLE +
-                    " WHERE " + CLINIC_BUILDING + " = ?";
+//    public static final String FIND_BY_CLINIC_BUILDING =
+//            "SELECT " + DOCTOR_ID + ", " + CLINIC_BUILDING +
+//                    " FROM " + DOCTORS_TABLE +
+//                    " WHERE " + CLINIC_BUILDING + " = ?";
 
     //doctor schedule table insert query
     public static final String INSERT_INTO_DOCTOR_SCHEDULE=
@@ -82,5 +82,22 @@ public class DoctorQuery {
     public static final String FIND_BY_ID_FROM_DOCTOR_SCHEDULE=
             "SELECT * FROM " + DOCTORS_TABLE_SCHEDULE +
                     " WHERE " + DOCTOR_ID + " =?";
+
+    //query to check doctor address to prevent duplicate address
+    public static final String INSERT_UNIQUENESS_DOCTOR_ADDRESS=
+            "INSERT INTO " + DOCTORS_UNIQUENESS_ADDRESS + " (" + DOCTOR_ID + ", "+ CLINIC_ADDRESS + ", "+ CLINIC_BUILDING + ")" +
+                    " VALUES (?,?,?) IF NOT EXISTS";
+
+    //query to check address and building
+    public static final String FIND_BY_CLINIC_ADDRESS_BUILDING=
+            "SELECT " + DOCTOR_ID + " FROM " + DOCTORS_UNIQUENESS_ADDRESS +
+                    " WHERE " + CLINIC_ADDRESS + " =? AND " + CLINIC_BUILDING + " =?";
+
+    //delete from uniqueness table while inserting failed in main table
+    public static final String DELETE_BY_CLINIC_ADDRESS_BUILDING =
+            "DELETE FROM " +
+                    DOCTORS_UNIQUENESS_ADDRESS +
+                    " WHERE " + CLINIC_ADDRESS +
+                    " =? AND " + CLINIC_BUILDING + " =?";
 
 }

@@ -13,5 +13,6 @@ public interface DoctorRepoInterface {
     DoctorModel updateDoctor(DoctorModel doctor);
     boolean existsDoctorByEmail(String email);
     List<DoctorModel> getAllDoctors();
-    boolean existsByClinicBuilding(String clinicBuilding);
+    //boolean existsByClinicBuilding(String clinicBuilding);
+    boolean existsByClinicAddressAndBuilding(String clinicAddress,String building);
 }

@@ -8,6 +8,8 @@ public class DoctorSchema {
     public static final String DOCTORS_TABLE = KEYSPACE + ".doctors";
     //doctor schedule table
     public static final String DOCTORS_TABLE_SCHEDULE = KEYSPACE + ".doctor_schedules";
+    // uniqueness doctor table to prevent duplicate address for clinic and location
+    public static final String DOCTORS_UNIQUENESS_ADDRESS= KEYSPACE + ".clinic_by_location";
 
     //column
     public static final String DOCTOR_ID = "doctor_id";

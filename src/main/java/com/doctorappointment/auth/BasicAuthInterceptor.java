@@ -36,7 +36,6 @@ public class BasicAuthInterceptor implements ServerInterceptor {
     interceptCall(ServerCall<ReqT, RespT> call, Metadata metadata, ServerCallHandler<ReqT, RespT> next) {
 
         String method = call.getMethodDescriptor().getFullMethodName();
-        log.info("Incoming method: {}", method);
 
         if (PUBLIC_METHODS.contains(method)) {
             return Contexts.interceptCall(Context.current(), call, metadata, next);
