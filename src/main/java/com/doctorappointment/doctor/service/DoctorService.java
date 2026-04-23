@@ -42,7 +42,11 @@ public class DoctorService {
                     ("A clinic already exists at '" +doctor.clinicAddress() + " with " + doctor.clinicBuilding() + "'. " +
                     "If you practice at the same location, contact support.");
         }
-        String hashedPassword = BCrypt.hashpw(doctor.password(), BCrypt.gensalt());
+        String saltPassword=BCrypt.gensalt(12);
+        String hashedPassword = BCrypt.hashpw(doctor.password(), saltPassword);
+        log.info("SaltPassword hashed password is {}", saltPassword);
+//        String hashedPassword = BCrypt.hashpw(doctor.password(), BCrypt.gensalt());
+
 
         //get coordinates from clinic address
         double[] coordinates = geocodingService.getCoordinates
