@@ -21,6 +21,7 @@ public class GeocodingService {
     }
 
     // used for register/update doctor (full clinic detail)
+    //conversion between text to coordinates
     public double[] getCoordinates(String clinicName, String clinicBuilding, String clinicAddress) {
         try {
             StringBuilder query = new StringBuilder();
@@ -51,31 +52,37 @@ public class GeocodingService {
     }
 
     // shared private method — actual HTTP call happens here
+    //calls the Photon API, reads the JSON response, and extracts the coordinates.
     private double[] resolveCoordinates(String queryText) {
         try {
             String url = "?q=" + queryText.replace(" ", "+") + "&limit=1";
             log.info("Calling Photon with URL: {}", url);
 
             String response = client
+                    /*
+                        micronaut http client is non-blocking by default
+                        in here we have wait get api and then continue
+                        that is why blocking is used here.
+                    */
                     .toBlocking()
-                    .retrieve(HttpRequest.GET(url));
+                    .retrieve(HttpRequest.GET(url)); //send request and getback body as string
             log.info("Photon raw response: {}", response);
 
-            JsonNode root = objectMapper.readTree(response);
-            JsonNode features = root.get("features");
+            JsonNode root = objectMapper.readTree(response); //converts raw JSON string into a tree
+            JsonNode features = root.get("features"); //goes inside and grabs the feature array
 
             if (features == null || features.isEmpty()) {
                 log.warn("No coordinates found for query: '{}'", queryText);
                 return defaultKathmandu();
             }
-
+            //extract coordinates
             JsonNode coords = features.get(0)
                     .get("geometry")
                     .get("coordinates");
 
             // Photon returns [longitude, latitude]
             double longitude = coords.get(0).asDouble();
-            double latitude  = coords.get(1).asDouble();
+            double latitude = coords.get(1).asDouble();
 
             log.info("Resolved '{}' → lat={}, lon={}", queryText, latitude, longitude);
             return new double[]{latitude, longitude};
