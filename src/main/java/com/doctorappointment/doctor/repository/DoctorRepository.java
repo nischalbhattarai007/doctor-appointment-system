@@ -8,6 +8,7 @@ import com.doctorappointment.doctor.dto.DoctorModel;
 import com.doctorappointment.doctor.exception.DoctorCreationFailedException;
 import jakarta.inject.Singleton;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -65,7 +66,12 @@ class DoctorRepository implements DoctorRepoInterface {
                 doctor.doctorId(),
                 doctor.clinicAddress(),
                 doctor.clinicBuilding());
-        ResultSet rs = session.execute(bs2);
+        ResultSet rs;
+        try{
+        rs = session.execute(bs2);
+        }catch (Exception e){
+            throw new DoctorCreationFailedException(e.getMessage());
+        }
         Row row = rs.one();
         if (row == null || !row.getBoolean("[applied]")) {
             throw new DoctorCreationFailedException("Doctor already exists");
