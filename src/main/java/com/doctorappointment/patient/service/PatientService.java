@@ -22,11 +22,16 @@ public class PatientService {
     }
     //add patient
     public PatientModel addPatient(PatientRequest patient) {
+        ValidatePatient.validatePatient(
+                patient.firstName(),
+                patient.lastName(),
+                patient.email(),
+                patient.phoneNumber(),
+                patient.address()
+        );
+        ValidatePatient.validatePassword(patient.password());
         if(patientRepo.existsPatientByEmail(patient.email())) {
             throw new EmailAlreadyExistsException("Email already exists");
-        }
-        if(patient.password().length() < 8) {
-            throw new InvalidPasswordException("Password too short");
         }
         String hashedPassword= BCrypt.hashpw(patient.password(), BCrypt.gensalt());
         PatientModel patientModel=PatientModel.builder()
