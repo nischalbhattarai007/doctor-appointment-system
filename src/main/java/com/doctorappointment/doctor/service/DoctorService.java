@@ -8,6 +8,7 @@ import jakarta.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 import org.mindrot.jbcrypt.BCrypt;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -25,6 +26,18 @@ public class DoctorService {
 
     //register doctor
     public DoctorModel addDoctor(DoctorRequest doctor) {
+        ValidateDoctor.validateDoctor(
+                doctor.firstName(),
+                doctor.lastName(),
+                doctor.email(),
+                doctor.phoneNumber(),
+                doctor.specialization(),
+                doctor.address(),
+                doctor.clinicAddress(),
+                doctor.latitude(),
+                doctor.longitude()
+        );
+        ValidateDoctor.validatePassword(doctor.password());
         if (doctorRepo.existsDoctorByEmail(doctor.email())) {
             throw new EmailAlreadyExistsException("Email already exists");
         }
@@ -42,12 +55,7 @@ public class DoctorService {
                     ("A clinic already exists at '" +doctor.clinicAddress() + " with " + doctor.clinicBuilding() + "'. " +
                     "If you practice at the same location, contact support.");
         }
-        String saltPassword=BCrypt.gensalt(12);
-        String hashedPassword = BCrypt.hashpw(doctor.password(), saltPassword);
-        log.info("SaltPassword hashed password is {}", saltPassword);
-//        String hashedPassword = BCrypt.hashpw(doctor.password(), BCrypt.gensalt());
-
-
+        String hashedPassword = BCrypt.hashpw(doctor.password(), BCrypt.gensalt());
         //get coordinates from clinic address
         double[] coordinates = geocodingService.getCoordinates
                 (doctor.clinicName(),
@@ -112,6 +120,17 @@ public class DoctorService {
 
     //update doctor by id
     public DoctorModel updateDoctor(DoctorModel doctor) {
+        ValidateDoctor.validateDoctor(
+                doctor.firstName(),
+                doctor.lastName(),
+                doctor.email(),
+                doctor.phoneNumber(),
+                doctor.specialization(),
+                doctor.address(),
+                doctor.clinicAddress(),
+                doctor.latitude(),
+                doctor.longitude()
+        );
         if (doctor.doctorId() == null) {
             throw new DoctorIdNotFoundException("Doctor id is required");
         }
@@ -250,6 +269,11 @@ public class DoctorService {
     //get nearest doctor
     public List<DoctorModel> getNearestDoctors(double lat1, double lon1, double radiusKm, int limit) {
         return getDoctorsByLocation(lat1, lon1, radiusKm, limit);
+    }
+
+    //get all doctors
+    public List<DoctorModel> getAllDoctors() {
+        return doctorRepo.getAllDoctors();
     }
 
     private boolean isBlank(String value) {

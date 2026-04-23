@@ -19,6 +19,7 @@ service DoctorService{
   rpc GetNearestDoctor(NearestLocationRequest) returns (NearestDoctorListResponse);
   rpc SetDoctorSchedule(SetScheduleRequest) returns (SetScheduleResponse);
   rpc GetDoctorSchedule(GetScheduleRequest) returns (GetScheduleResponse);
+  rpc GetAllDoctorList(EmptyList) returns (DoctorList);
 }
 //login request
 message DoctorLoginRequest{
@@ -143,8 +144,8 @@ message UpdateDoctorResponse{
   string clinic_address = 8;
   double latitude = 9;
   double longitude = 10;
-  string clinic_name=11;
-  string clinic_building=12;
+  string clinic_name = 11;
+  string clinic_building = 12;
   string doctor_status = 13;
   string doctor_message = 14;
 }
@@ -199,15 +200,15 @@ message NearestDoctorListResponse {
 }
 
 message SetScheduleRequest {
-  string doctor_id    = 1;
+  string doctor_id = 1;
   repeated string working_days = 2;  // ["MONDAY", "WEDNESDAY", "FRIDAY"]
 }
 
 message SetScheduleResponse {
-  string doctor_id    = 1;
+  string doctor_id = 1;
   repeated string working_days = 2;
-  string status       = 5;
-  string message      = 6;
+  string status = 5;
+  string message = 6;
 }
 
 // Get doctor schedule
@@ -216,9 +217,29 @@ message GetScheduleRequest {
 }
 
 message GetScheduleResponse {
-  string doctor_id    = 1;
+  string doctor_id = 1;
   repeated string working_days = 2;
-  string status       = 5;
-  string message      = 6;
+  string status = 5;
+  string message = 6;
+}
+
+//get all doctors
+message EmptyList{
+
+}
+message DoctorList{
+  repeated DoctorResponse doctors=1;
+}
+//doctor list response
+message DoctorResponse{
+  string doctor_id = 1;
+  string doctor_first_name = 2;
+  string doctor_last_name = 3;
+  string specialization = 4;
+  string clinic_address = 6;
+  string doctor_phone_number = 7;
+  string clinic_building= 8;
+  string clinic_name = 9;
+  string doctor_email=10;
 }
 

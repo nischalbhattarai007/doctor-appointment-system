@@ -5,6 +5,7 @@ import com.datastax.oss.driver.api.core.cql.*;
 import com.doctorappointment.doctor.constant.DoctorQuery;
 import com.doctorappointment.doctor.constant.DoctorSchema;
 import com.doctorappointment.doctor.dto.DoctorModel;
+import com.doctorappointment.doctor.dto.DoctorRequest;
 import com.doctorappointment.doctor.exception.DoctorCreationFailedException;
 import jakarta.inject.Singleton;
 

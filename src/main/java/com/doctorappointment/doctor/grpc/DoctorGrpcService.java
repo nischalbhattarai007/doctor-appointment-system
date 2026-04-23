@@ -4,6 +4,7 @@ import com.doctorappointment.*;
 import com.doctorappointment.appointment.repository.AppointmentRepoInterface;
 import com.doctorappointment.auth.BasicAuthInterceptor;
 import com.doctorappointment.doctor.dto.DoctorModel;
+import com.doctorappointment.doctor.dto.DoctorRequest;
 import com.doctorappointment.doctor.dto.DoctorScheduleModel;
 import com.doctorappointment.doctor.enums.Day;
 import com.doctorappointment.doctor.exception.*;
@@ -15,6 +16,8 @@ import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import jakarta.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -27,12 +30,14 @@ public class DoctorGrpcService extends DoctorServiceGrpc.DoctorServiceImplBase {
     private final GeocodingService geocodingService;
     private final AppointmentRepoInterface appointmentRepo;
     private final ScheduleService scheduleService;
+    private final DoctorService doctorService;
 
-    public DoctorGrpcService(DoctorService service, GeocodingService geocodingService, AppointmentRepoInterface appointmentRepo, ScheduleService scheduleService) {
+    public DoctorGrpcService(DoctorService service, GeocodingService geocodingService, AppointmentRepoInterface appointmentRepo, ScheduleService scheduleService, DoctorService doctorService) {
         this.service = service;
         this.geocodingService = geocodingService;
         this.appointmentRepo = appointmentRepo;
         this.scheduleService = scheduleService;
+        this.doctorService = doctorService;
     }
 
     //register doctor
@@ -455,6 +460,36 @@ public class DoctorGrpcService extends DoctorServiceGrpc.DoctorServiceImplBase {
                     Status.NOT_FOUND
                             .withDescription(e.getMessage())
                             .asRuntimeException());
+        }catch (Exception e){
+            responseObserver.onError(
+                    Status.INTERNAL
+                            .withDescription(e.getMessage())
+                            .asException());
+        }
+    }
+
+    @Override
+    public void getAllDoctorList(EmptyList request, StreamObserver<DoctorList>responseObserver) {
+        try{
+            List<DoctorModel> doctors=doctorService.getAllDoctors();
+            List<DoctorResponse> doctorLists=doctors.stream()
+                    .map(doctor->DoctorResponse.newBuilder()
+                            .setDoctorId(doctor.doctorId().toString())
+                            .setDoctorFirstName(doctor.firstName())
+                            .setDoctorLastName(doctor.lastName())
+                            .setDoctorEmail(doctor.email())
+                            .setSpecialization(doctor.specialization())
+                            .setClinicAddress(doctor.clinicAddress())
+                            .setDoctorPhoneNumber(doctor.phoneNumber())
+                            .setClinicBuilding(doctor.clinicBuilding())
+                            .setClinicName(doctor.clinicName())
+                            .build())
+                    .toList();
+            DoctorList response=DoctorList.newBuilder()
+                    .addAllDoctors(doctorLists)
+                    .build();
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
         }catch (Exception e){
             responseObserver.onError(
                     Status.INTERNAL
