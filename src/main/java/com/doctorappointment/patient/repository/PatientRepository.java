@@ -75,10 +75,8 @@ class PatientRepository implements PatientRepoInterface {
     }
     @Override
     public PatientModel getPatientByEmail(String email) {
-        log.info("Searching for email {}",email);
        BoundStatement bs=getPatientByEmail.bind(email);
         Row row = session.execute(bs).one();
-        log.info("Row found: {}",row);
         if(row==null){
             return null;
         }
