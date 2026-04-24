@@ -4,8 +4,6 @@ import com.doctorappointment.patient.exception.InvalidEmailException;
 import com.doctorappointment.patient.exception.InvalidPasswordException;
 import com.doctorappointment.patient.exception.InvalidPhoneNumberException;
 import jakarta.validation.ValidationException;
-
-import java.util.UUID;
 import java.util.regex.Pattern;
 
 public class ValidatePatient {
