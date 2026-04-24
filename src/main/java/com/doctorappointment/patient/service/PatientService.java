@@ -80,15 +80,15 @@ public class PatientService {
             throw new PatientNotFoundException("Patient not found");
         }
         PatientModel updated = existingPatient.toBuilder()
-                .firstName(patient.firstName()!=null ? patient.firstName():existingPatient.firstName())
-                .lastName(patient.lastName()!=null?patient.lastName():existingPatient.lastName())
-                .phoneNumber(patient.phoneNumber()!=null ? patient.phoneNumber():existingPatient.phoneNumber())
-                .address(patient.address()!=null ? patient.address():existingPatient.address())
-                .email(patient.email()!=null ? patient.email():existingPatient.email())
+                .firstName(patient.firstName() != null ? patient.firstName() : existingPatient.firstName())
+                .lastName(patient.lastName() != null ? patient.lastName() : existingPatient.lastName())
+                .phoneNumber(patient.phoneNumber() != null ? patient.phoneNumber() : existingPatient.phoneNumber())
+                .address(patient.address() != null ? patient.address() : existingPatient.address())
+                .email(patient.email() != null ? patient.email() : existingPatient.email())
                 .build();
-        PatientModel result=patientRepo.updatePatient(updated);
+        PatientModel result = patientRepo.updatePatient(updated);
         log.info("Patient updated with this ID {}", patient.patientId());
-        return  result;
+        return result;
     }
     //delete patients by ID
     public void deletePatient(UUID id) {
