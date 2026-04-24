@@ -1,7 +1,10 @@
 package com.doctorappointment.doctor.repository;
 
 import com.datastax.oss.driver.api.core.CqlSession;
-import com.datastax.oss.driver.api.core.cql.*;
+import com.datastax.oss.driver.api.core.cql.BoundStatement;
+import com.datastax.oss.driver.api.core.cql.PreparedStatement;
+import com.datastax.oss.driver.api.core.cql.ResultSet;
+import com.datastax.oss.driver.api.core.cql.Row;
 import com.doctorappointment.doctor.constant.DoctorQuery;
 import com.doctorappointment.doctor.constant.DoctorSchema;
 import com.doctorappointment.doctor.dto.DoctorModel;
@@ -65,22 +68,22 @@ class DoctorRepository implements DoctorRepoInterface {
                 doctor.clinicAddress(),
                 doctor.clinicBuilding());
         ResultSet rs;
-        try{
-        rs = session.execute(bs2);
-        }catch (Exception e){
+        try {
+            rs = session.execute(bs2);
+        } catch (Exception e) {
             throw new DoctorCreationFailedException(e.getMessage());
         }
         Row row = rs.one();
-        if (row == null || !row.getBoolean("[applied]")) {
+        if (!row.getBoolean("[applied]")) {
             throw new DoctorCreationFailedException("Doctor already exists");
         }
-        try{
-        session.execute(bs);
-        }catch(Exception e){
-            session.execute(deleteFromUniquenessAddress.bind(doctor.clinicAddress(),doctor.clinicBuilding()));
+        try {
+            session.execute(bs);
+        } catch (Exception e) {
+            session.execute(deleteFromUniquenessAddress.bind(doctor.clinicAddress(), doctor.clinicBuilding()));
             throw e;
         }
-        return  doctor;
+        return doctor;
     }
 
     @Override
@@ -117,14 +120,15 @@ class DoctorRepository implements DoctorRepoInterface {
                 doctor.lastName(),
                 doctor.phoneNumber(),
                 doctor.address(),
+                doctor.email(),
                 doctor.specialization(),
                 doctor.clinicAddress(),
                 doctor.latitude(),
                 doctor.longitude(),
                 doctor.dailyLimit(),
-                doctor.doctorId(),
                 doctor.clinicName(),
-                doctor.clinicBuilding()
+                doctor.clinicBuilding(),
+                doctor.doctorId()
         );
         session.execute(bs);
         return doctor;

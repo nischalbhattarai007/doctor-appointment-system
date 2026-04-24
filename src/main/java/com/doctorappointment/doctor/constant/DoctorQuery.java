@@ -43,6 +43,7 @@ public class DoctorQuery {
                     LAST_NAME + " =?, " +
                     PHONE_NUMBER + " =?, " +
                     ADDRESS + " =?, " +
+                    EMAIL + " =?, " +
                     SPECIALIZATION + " =?, " +
                     CLINIC_ADDRESS + " =?, " +
                     LATITUDE + " =?, " +

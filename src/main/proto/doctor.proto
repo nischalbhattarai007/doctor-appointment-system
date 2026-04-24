@@ -131,6 +131,7 @@ message UpdateDoctorRequest{
   int32 daily_limit = 8;
   string clinic_name = 9;
   string clinic_building = 10;
+  string doctor_email=11;
 }
 //update doctor by Id response
 message UpdateDoctorResponse{

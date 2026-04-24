@@ -8,7 +8,6 @@ import jakarta.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 import org.mindrot.jbcrypt.BCrypt;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -26,41 +25,35 @@ public class DoctorService {
 
     //register doctor
     public DoctorModel addDoctor(DoctorRequest doctor) {
-        ValidateDoctor.validateDoctor(
-                doctor.firstName(),
-                doctor.lastName(),
-                doctor.email(),
-                doctor.phoneNumber(),
-                doctor.specialization(),
-                doctor.address(),
-                doctor.clinicAddress(),
-                doctor.latitude(),
-                doctor.longitude()
-        );
+        ValidateDoctor.validateName(doctor.firstName(), doctor.lastName());
+        ValidateDoctor.validateEmail(doctor.email());
+        ValidateDoctor.validateAddress(doctor.address());
+        ValidateDoctor.validatePhone(doctor.phoneNumber());
+        ValidateDoctor.validateSpecialization(doctor.specialization());
+        ValidateDoctor.validateClinicAddress(doctor.clinicAddress());
+        ValidateDoctor.validateLatLon(doctor.latitude(), doctor.longitude());
         ValidateDoctor.validatePassword(doctor.password());
         if (doctorRepo.existsDoctorByEmail(doctor.email())) {
             throw new EmailAlreadyExistsException("Email already exists");
         }
-//        if(doctor.password().length() < 8) {
-//            throw new InvalidPasswordException("Password too short");
-//        }
-        String normalizedBuilding=normalizeBuilding(doctor.clinicBuilding());
-        String normalizedAddress=normalizeAddress(doctor.clinicAddress());
+
+        String normalizedBuilding = normalizeBuilding(doctor.clinicBuilding());
+        String normalizedAddress = normalizeAddress(doctor.clinicAddress());
 
 
         if (!normalizedAddress.isBlank()
                 && !normalizedBuilding.isBlank()
-                && doctorRepo.existsByClinicAddressAndBuilding(normalizedAddress,normalizedBuilding)) {
+                && doctorRepo.existsByClinicAddressAndBuilding(normalizedAddress, normalizedBuilding)) {
             throw new ClinicLocationValidataionException
-                    ("A clinic already exists at '" +doctor.clinicAddress() + " with " + doctor.clinicBuilding() + "'. " +
-                    "If you practice at the same location, contact support.");
+                    ("A clinic already exists at '" + doctor.clinicAddress() + " with " + doctor.clinicBuilding() + "'. " +
+                            "If you practice at the same location, contact support.");
         }
         String hashedPassword = BCrypt.hashpw(doctor.password(), BCrypt.gensalt());
         //get coordinates from clinic address
         double[] coordinates = geocodingService.getCoordinates
                 (doctor.clinicName(),
-                doctor.clinicBuilding(),
-                doctor.clinicAddress());
+                        doctor.clinicBuilding(),
+                        doctor.clinicAddress());
 
         double latitude = coordinates[0];
         double longitude = coordinates[1];
@@ -120,17 +113,9 @@ public class DoctorService {
 
     //update doctor by id
     public DoctorModel updateDoctor(DoctorModel doctor) {
-        ValidateDoctor.validateDoctor(
-                doctor.firstName(),
-                doctor.lastName(),
-                doctor.email(),
-                doctor.phoneNumber(),
-                doctor.specialization(),
-                doctor.address(),
-                doctor.clinicAddress(),
-                doctor.latitude(),
-                doctor.longitude()
-        );
+        ValidateDoctor.validateEmail(doctor.email());
+        ValidateDoctor.validatePhone(doctor.phoneNumber());
+        ValidateDoctor.validateLatLon(doctor.latitude(), doctor.longitude());
         if (doctor.doctorId() == null) {
             throw new DoctorIdNotFoundException("Doctor id is required");
         }
@@ -141,39 +126,42 @@ public class DoctorService {
         if (existing.isDeleted()) {
             throw new DoctorIdNotFoundException("Doctor account is deactivated");
         }
-        double latitude=existing.latitude();
-        double longitude=existing.longitude();
-        String newClinicAddress=doctor.clinicAddress();
-        String newClinicName=doctor.clinicName();
-        String newClinicBuilding=doctor.clinicBuilding();
+        double latitude = existing.latitude();
+        double longitude = existing.longitude();
+        String newClinicAddress = doctor.clinicAddress();
+        String newClinicName = doctor.clinicName();
+        String newClinicBuilding = doctor.clinicBuilding();
 
         boolean clinicChanged = (!isBlank(newClinicAddress) && !newClinicAddress.equals(existing.clinicAddress()))
                 || (!isBlank(newClinicName) && !newClinicName.equals(existing.clinicName()))
                 || (!isBlank(newClinicBuilding) && !newClinicBuilding.equals(existing.clinicBuilding()));
-        {
-            if (clinicChanged) {
+        if (clinicChanged) {
+            try {
                 String addressForGeo = isBlank(newClinicAddress) ? existing.clinicAddress() : newClinicAddress;
                 String nameForGeo = isBlank(newClinicName) ? existing.clinicName() : newClinicName;
                 String buildingForGeo = isBlank(newClinicBuilding) ? existing.clinicBuilding() : newClinicBuilding;
                 double[] coords = geocodingService.getCoordinates(nameForGeo, buildingForGeo, addressForGeo);
                 latitude = coords[0];
                 longitude = coords[1];
-                log.info("Clinic changed -> re-geocoded: lat={}, lon={}", latitude, longitude);
+            } catch (Exception e) {
+                log.warn("Geocoding failed,Keeping old coordinates", e);
             }
+            log.info("Clinic changed -> re-geocoded: lat={}, lon={}", latitude, longitude);
         }
         DoctorModel updated = DoctorModel.builder()
                 .doctorId(existing.doctorId())
-                .firstName(existing.firstName())
-                .lastName(existing.lastName())
-                .phoneNumber(existing.phoneNumber())
-                .address(existing.address())
-                .specialization(existing.specialization())
-                .clinicAddress(existing.clinicAddress())
-                .clinicName(existing.clinicName())
-                .clinicBuilding(existing.clinicBuilding())
+                .firstName(isBlank(doctor.firstName()) ? existing.firstName() : doctor.firstName())
+                .lastName(isBlank(doctor.lastName()) ? existing.lastName() : doctor.lastName())
+                .phoneNumber(isBlank(doctor.phoneNumber()) ? existing.phoneNumber() : doctor.phoneNumber())
+                .address(isBlank(doctor.address()) ? existing.address() : doctor.address())
+                .email(isBlank(doctor.email()) ? existing.email() : doctor.email())
+                .specialization(isBlank(doctor.specialization()) ? existing.specialization() : doctor.specialization())
+                .clinicAddress(isBlank(doctor.clinicAddress()) ? existing.clinicAddress() : doctor.clinicAddress())
+                .clinicName(isBlank(doctor.clinicName()) ? existing.clinicName() : doctor.clinicName())
+                .clinicBuilding(isBlank(doctor.clinicBuilding()) ? existing.clinicBuilding() : doctor.clinicBuilding())
                 .latitude(latitude)
                 .longitude(longitude)
-                .dailyLimit(existing.dailyLimit())
+                .dailyLimit(doctor.dailyLimit() == 0 ? existing.dailyLimit() : doctor.dailyLimit())
                 .build();
         log.info("Updating doctor with ID {} ", doctor.doctorId());
         return doctorRepo.updateDoctor(updated);
@@ -233,7 +221,7 @@ public class DoctorService {
 
     //calculate distance using haversine formula
     public double calculateDistance(double lat1, double lon1,
-                                     double lat2, double lon2) {
+                                    double lat2, double lon2) {
         final int EARTH_RADIUS_KM = 6371;
 
         double latDistance = Math.toRadians(lat2 - lat1);
@@ -279,13 +267,15 @@ public class DoctorService {
     private boolean isBlank(String value) {
         return value == null || value.isBlank();
     }
-//add a private helper class
+
+    //add a private helper class
     private String normalizeBuilding(String clinicBuilding) {
         if (clinicBuilding == null || clinicBuilding.isBlank()) return "";
         return clinicBuilding.trim()
                 .toLowerCase()
                 .replaceAll("\\s*,\\s*", ","); // "White Building , First Floor" -> "white building,first floor"
     }
+
     private String normalizeAddress(String clinicAddress) {
         if (clinicAddress == null || clinicAddress.isBlank()) return "";
         return clinicAddress.trim()
