@@ -51,6 +51,7 @@ public class PatientGrpcHelper {
                 .lastName(request.getLastName())
                 .phoneNumber(request.getPhoneNumber())
                 .address(request.getAddress())
+                .email(request.getEmail())
                 .build();
     }
     public static UpdatePatientResponse toUpdateResponse(PatientModel patient,

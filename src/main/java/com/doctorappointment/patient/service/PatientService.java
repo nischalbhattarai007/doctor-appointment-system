@@ -63,6 +63,12 @@ public class PatientService {
     }
     //update patient by ID
     public PatientModel updatePatient(PatientRequest patient) {
+        ValidatePatient.validatePatient(
+                patient.firstName(),
+                patient.lastName(),
+                patient.email(),
+                patient.phoneNumber(),
+                patient.address());
         if(patient.patientId() == null) {
             throw new PatientNotFoundException("Patient id is required");
         }
@@ -74,16 +80,17 @@ public class PatientService {
             throw new PatientNotFoundException("Patient not found");
         }
         PatientModel updated = existingPatient.toBuilder()
-                .patientId(existingPatient.patientId())
-                .firstName(patient.firstName())
-                .lastName(patient.lastName())
-                .phoneNumber(patient.phoneNumber())
-                .address(patient.address())
+                .firstName(patient.firstName()!=null ? patient.firstName():existingPatient.firstName())
+                .lastName(patient.lastName()!=null?patient.lastName():existingPatient.lastName())
+                .phoneNumber(patient.phoneNumber()!=null ? patient.phoneNumber():existingPatient.phoneNumber())
+                .address(patient.address()!=null ? patient.address():existingPatient.address())
+                .email(patient.email()!=null ? patient.email():existingPatient.email())
                 .build();
+        PatientModel result=patientRepo.updatePatient(updated);
         log.info("Patient updated with this ID {}", patient.patientId());
-        return  patientRepo.updatePatient(updated);
+        return  result;
     }
-    //delete patients by Id
+    //delete patients by ID
     public void deletePatient(UUID id) {
         if(id == null) {
             throw new PatientNotFoundException("Patient id is required");

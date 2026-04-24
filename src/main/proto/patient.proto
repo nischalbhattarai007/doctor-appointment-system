@@ -84,6 +84,7 @@ message UpdatePatientRequest {
   string last_name = 3;
   string phone_number = 4;
   string address = 5;
+  string email=6;
 }
 
 message UpdatePatientResponse {
