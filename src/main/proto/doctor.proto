@@ -46,9 +46,9 @@ message RegisterDoctorRequest{
   string doctor_phone_number = 5;
   string doctor_address = 6;
   string specialization = 7;
-  string clinic_address = 8;
-  double latitude = 9;
-  double longitude = 10;
+  string street=8;
+  string area=9;
+  string city=10;
   string clinic_name = 11;
   string clinic_building= 12;
 }
@@ -61,13 +61,15 @@ message RegisterDoctorResponse{
   string doctor_phone_number = 5;
   string doctor_address = 6;
   string specialization = 7;
-  string clinic_address = 8;
-  double latitude = 9;
-  double longitude = 10;
-  string clinic_name=11;
-  string clinic_building=12;
-  string doctor_status = 13;
-  string doctor_message = 14;
+  string street=8;
+  string area=9;
+  string city=10;
+  double latitude = 11;
+  double longitude = 12;
+  string clinic_name=13;
+  string clinic_building=14;
+  string doctor_status = 15;
+  string doctor_message = 16;
 
 }
 //get by id
@@ -83,13 +85,15 @@ message GetDoctorByIdResponse{
   string doctor_phone_number = 5;
   string doctor_address = 6;
   string specialization = 7;
-  string clinic_address = 8;
-  double latitude = 9;
-  double longitude = 10;
-  string clinic_name=11;
-  string clinic_building=12;
-  string doctor_status = 13;
-  string doctor_message = 14;
+  string street=8;
+  string area=9;
+  string city=10;
+  double latitude = 11;
+  double longitude = 12;
+  string clinic_name=13;
+  string clinic_building=14;
+  string doctor_status = 15;
+  string doctor_message = 16;
 }
 //delete doctor by id response
 message DeleteDoctorResponse{
@@ -111,13 +115,15 @@ message GetByDoctorEmailResponse{
   string doctor_phone_number = 5;
   string doctor_address = 6;
   string specialization = 7;
-  string clinic_address = 8;
-  double latitude = 9;
-  double longitude = 10;
-  string clinic_name=11;
-  string clinic_building=12;
-  string doctor_status = 13;
-  string doctor_message = 14;
+  string street=8;
+  string area=9;
+  string city=10;
+  double latitude = 11;
+  double longitude = 12;
+  string clinic_name=13;
+  string clinic_building=14;
+  string doctor_status = 15;
+  string doctor_message = 16;
 }
 //update doctor by Id
 message UpdateDoctorRequest{
@@ -127,11 +133,13 @@ message UpdateDoctorRequest{
   string doctor_phone_number = 4;
   string doctor_address = 5;
   string specialization = 6;
-  string clinic_address = 7;
-  int32 daily_limit = 8;
-  string clinic_name = 9;
-  string clinic_building = 10;
-  string doctor_email=11;
+  string street=7;
+  string area=8;
+  string city=9;
+  int32 daily_limit = 10;
+  string clinic_name = 11;
+  string clinic_building = 12;
+  string doctor_email=13;
 }
 //update doctor by Id response
 message UpdateDoctorResponse{
@@ -142,13 +150,15 @@ message UpdateDoctorResponse{
   string doctor_phone_number = 5;
   string doctor_address = 6;
   string specialization = 7;
-  string clinic_address = 8;
-  double latitude = 9;
-  double longitude = 10;
-  string clinic_name = 11;
-  string clinic_building = 12;
-  string doctor_status = 13;
-  string doctor_message = 14;
+  string street=8;
+  string area=9;
+  string city=10;
+  double latitude = 11;
+  double longitude = 12;
+  string clinic_name = 13;
+  string clinic_building = 14;
+  string doctor_status = 15;
+  string doctor_message = 16;
 }
 // get doctor by location
 message LocationRequest{
@@ -169,8 +179,10 @@ message DoctorSummary {
   string doctor_last_name = 3;
   string specialization = 4;
   double distance_km = 5;
-  string clinic_address = 6;
   string doctor_phone_number = 7;
+  string street=8;
+  string area=9;
+  string city=10;
 }
 //doctor availability
 message DoctorAvailabilityRequest {
@@ -237,10 +249,12 @@ message DoctorResponse{
   string doctor_first_name = 2;
   string doctor_last_name = 3;
   string specialization = 4;
-  string clinic_address = 6;
-  string doctor_phone_number = 7;
-  string clinic_building= 8;
-  string clinic_name = 9;
-  string doctor_email=10;
+  string street=5;
+  string area=6;
+  string city=7;
+  string doctor_phone_number = 8;
+  string clinic_building= 9;
+  string clinic_name = 10;
+  string doctor_email=11;
 }
 

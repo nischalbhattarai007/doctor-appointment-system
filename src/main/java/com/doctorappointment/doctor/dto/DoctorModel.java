@@ -24,13 +24,17 @@ public record DoctorModel(
         String phoneNumber,
         String address,
         String specialization,
-        String clinicAddress,
+       // String clinicAddress,
         double latitude,
         double longitude,
         int dailyLimit,
         boolean isDeleted,
         String clinicName,
-        String clinicBuilding)
+        String clinicBuilding,
+        String geoHash,
+        String street,
+        String area,
+        String city)
 {}
 
 

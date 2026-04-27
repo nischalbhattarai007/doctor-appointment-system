@@ -21,24 +21,13 @@ public class GeocodingService {
     }
 
     // used for register/update doctor (full clinic detail)
-    //conversion between text to coordinates
-    public double[] getCoordinates(String clinicName, String clinicBuilding, String clinicAddress) {
-        try {
-            StringBuilder query = new StringBuilder();
-            if (clinicName != null && !clinicName.isBlank()) {
-                query.append(clinicName.trim()).append(", ");
-            }
-            if (clinicBuilding != null && !clinicBuilding.isBlank()) {
-                query.append(clinicBuilding.trim()).append(", ");
-            }
-            query.append(clinicAddress.trim());
-
-            return resolveCoordinates(query.toString());
-
-        } catch (Exception e) {
-            log.error("Geocoding failed: {}", e.getMessage());
-            return defaultKathmandu();
-        }
+    // conversion between text to coordinates
+    // all three fields are required and validated before calling this
+    public double[] getCoordinates(String street, String area, String city) {
+        // build query in specific-to-general order for best Photon accuracy
+        // e.g. "Gyaneshwor Marga, Nepaltar, Kathmandu, Nepal"
+        String query = street.trim() + ", " + area.trim() + ", " + city.trim() + ", Nepal";
+        return resolveCoordinates(query);
     }
 
     // used for location search (GetNearestDoctor, GetDoctorsByLocation)
@@ -52,7 +41,7 @@ public class GeocodingService {
     }
 
     // shared private method — actual HTTP call happens here
-    //calls the Photon API, reads the JSON response, and extracts the coordinates.
+    // calls the Photon API, reads the JSON response, and extracts the coordinates.
     private double[] resolveCoordinates(String queryText) {
         try {
             String url = "?q=" + queryText.replace(" ", "+") + "&limit=1";
@@ -61,26 +50,25 @@ public class GeocodingService {
             String response = client
                     /*
                         micronaut http client is non-blocking by default
-                        in here we have wait get api and then continue
+                        in here we have to wait for the api response and then continue
                         that is why blocking is used here.
                     */
                     .toBlocking()
-                    .retrieve(HttpRequest.GET(url)); //send request and getback body as string
+                    .retrieve(HttpRequest.GET(url)); // send request and get back body as string
             log.info("Photon raw response: {}", response);
 
-            JsonNode root = objectMapper.readTree(response); //converts raw JSON string into a tree
-            JsonNode features = root.get("features"); //goes inside and grabs the feature array
+            JsonNode root = objectMapper.readTree(response); // converts raw JSON string into a tree
+            JsonNode features = root.get("features"); // goes inside and grabs the feature array
 
             if (features == null || features.isEmpty()) {
                 log.warn("No coordinates found for query: '{}'", queryText);
                 return defaultKathmandu();
             }
-            //extract coordinates
-            JsonNode coords = features.get(0)
-                    .get("geometry")
-                    .get("coordinates");
 
-            // Photon returns [longitude, latitude]
+            // extract coordinates
+            JsonNode coords = features.get(0).get("geometry").get("coordinates");
+
+            // Photon returns [longitude, latitude] — note the reversed order
             double longitude = coords.get(0).asDouble();
             double latitude = coords.get(1).asDouble();
 

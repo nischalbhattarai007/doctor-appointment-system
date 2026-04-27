@@ -29,13 +29,14 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     implementation("io.micronaut.security:micronaut-security")
     //used to hash password
-
     // Source: https://mvnrepository.com/artifact/org.mindrot/jbcrypt
     implementation("org.mindrot:jbcrypt:0.4")
     //used to make http request
     implementation("io.micronaut:micronaut-http-client")
     //used for json serialization and deserialization
     implementation("io.micronaut:micronaut-jackson-databind")
+    // Source: https://mvnrepository.com/artifact/ch.hsr/geohash
+    implementation("ch.hsr:geohash:1.4.0")
 }
 
 

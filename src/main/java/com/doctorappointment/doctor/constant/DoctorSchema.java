@@ -10,6 +10,8 @@ public class DoctorSchema {
     public static final String DOCTORS_TABLE_SCHEDULE = KEYSPACE + ".doctor_schedules";
     // uniqueness doctor table to prevent duplicate address for clinic and location
     public static final String DOCTORS_UNIQUENESS_ADDRESS= KEYSPACE + ".clinic_by_location";
+    //geohash store table
+    public static final String GEOHASH_TABLE = KEYSPACE + ".doctors_by_geohash";
 
     //column
     public static final String DOCTOR_ID = "doctor_id";
@@ -20,7 +22,6 @@ public class DoctorSchema {
     public static final String PHONE_NUMBER = "phone_number";
     public static final String ADDRESS = "address";
     public static final String SPECIALIZATION = "specialization";
-    public static final String CLINIC_ADDRESS = "clinic_address";
     public static final String LATITUDE = "latitude";
     public static final String LONGITUDE = "longitude";
     public static final String DAILY_LIMIT = "daily_limit";
@@ -28,4 +29,10 @@ public class DoctorSchema {
     public static final String CLINIC_NAME = "clinic_name";
     public static final String CLINIC_BUILDING = "clinic_building";
     public static final String WORKING_DAYS = "working_days";
+    public static final String GEOHASH = "geohash";
+    public static final String AREA = "area";
+    public static final String CITY = "city";
+    public static final String STREET = "street";
+    //for geohash table
+    public static final String GEOHASH_PREFIX = "geohash_prefix";
 }

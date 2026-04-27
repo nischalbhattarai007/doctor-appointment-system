@@ -14,10 +14,14 @@ public record DoctorRequest(
         String phoneNumber,
         String address,
         String specialization,
-        String clinicAddress,
+       // String clinicAddress,
         double latitude,
         double longitude,
         String clinicName,
-        String clinicBuilding) {
+        String clinicBuilding,
+        String geoHash,
+        String street,
+        String area,
+        String city) {
 
 }

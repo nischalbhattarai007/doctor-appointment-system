@@ -42,9 +42,9 @@ public class ValidateDoctor {
         }
     }
 
-    public static void validateAddress(String address) {
-        if (isNullOrEmpty(address)) {
-            throw new ValidationException("Address cannot be empty or null");
+    public static void validateStreet(String street) {
+        if (isNullOrEmpty(street)) {
+            throw new ValidationException("Street cannot be empty or null");
         }
     }
 
@@ -54,20 +54,17 @@ public class ValidateDoctor {
         }
     }
 
-    public static void validateClinicAddress(String clinicAddress) {
-        if (isNullOrEmpty(clinicAddress)) {
-            throw new ValidationException("Clinic address cannot be empty or null");
+    public static void validateCity(String city) {
+        if (isNullOrEmpty(city)) {
+            throw new ValidationException("City cannot be empty or null");
+        }
+    }
+    public static void validateArea(String area) {
+        if (isNullOrEmpty(area)) {
+            throw new ValidationException("Area cannot be empty or null");
         }
     }
 
-    public static void validateLatLon(double latitude, double longitude) {
-        if (latitude < -90 || latitude > 90) {
-            throw new ValidationException("Invalid latitude value");
-        }
-        if (longitude < -180 || longitude > 180) {
-            throw new ValidationException("Invalid longitude value");
-        }
-    }
 
     public static void validatePassword(String password) {
         if (isNullOrEmpty(password)) {

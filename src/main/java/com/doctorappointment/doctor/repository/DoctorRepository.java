@@ -12,6 +12,7 @@ import com.doctorappointment.doctor.exception.DoctorCreationFailedException;
 import jakarta.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Singleton
@@ -28,6 +29,9 @@ class DoctorRepository implements DoctorRepoInterface {
     private final PreparedStatement insertClinicAddress;
     private final PreparedStatement findByClinicAddressAndBuilding;
     private final PreparedStatement deleteFromUniquenessAddress;
+    private final PreparedStatement insertGeohash;
+    private final PreparedStatement deleteGeohash;
+    private final PreparedStatement findByGeohash;
 
     DoctorRepository(CqlSession session) {
         this.session = session;
@@ -42,6 +46,9 @@ class DoctorRepository implements DoctorRepoInterface {
         this.insertClinicAddress = session.prepare(DoctorQuery.INSERT_UNIQUENESS_DOCTOR_ADDRESS);
         this.findByClinicAddressAndBuilding = session.prepare(DoctorQuery.FIND_BY_CLINIC_ADDRESS_BUILDING);
         this.deleteFromUniquenessAddress = session.prepare(DoctorQuery.DELETE_BY_CLINIC_ADDRESS_BUILDING);
+        this.insertGeohash=session.prepare(DoctorQuery.INSERT_GEOHASH);
+        this.deleteGeohash=session.prepare(DoctorQuery.DELETE_GEOHASH);
+        this.findByGeohash=session.prepare(DoctorQuery.FIND_BY_GEOHASH_PREFIXES);
     }
 
     @Override
@@ -55,18 +62,26 @@ class DoctorRepository implements DoctorRepoInterface {
                 doctor.phoneNumber(),
                 doctor.address(),
                 doctor.specialization(),
-                doctor.clinicAddress(),
                 doctor.latitude(),
                 doctor.longitude(),
                 doctor.dailyLimit(),
                 false,
                 doctor.clinicName(),
-                doctor.clinicBuilding()
+                doctor.clinicBuilding(),
+                doctor.geoHash(),
+                doctor.area(),
+                doctor.city(),
+                doctor.street()
         );
         BoundStatement bs2 = insertClinicAddress.bind(
                 doctor.doctorId(),
-                doctor.clinicAddress(),
+                doctor.area(),
+                doctor.city(),
                 doctor.clinicBuilding());
+        BoundStatement bs3=insertGeohash.bind(
+                doctor.geoHash(),
+                doctor.doctorId()
+        );
         ResultSet rs;
         try {
             rs = session.execute(bs2);
@@ -79,8 +94,12 @@ class DoctorRepository implements DoctorRepoInterface {
         }
         try {
             session.execute(bs);
+            session.execute(bs3);
         } catch (Exception e) {
-            session.execute(deleteFromUniquenessAddress.bind(doctor.clinicAddress(), doctor.clinicBuilding()));
+            session.execute(deleteFromUniquenessAddress.bind(
+                    doctor.area(),
+                    doctor.city(),
+                    doctor.clinicBuilding()));
             throw e;
         }
         return doctor;
@@ -114,7 +133,7 @@ class DoctorRepository implements DoctorRepoInterface {
     }
 
     @Override
-    public DoctorModel updateDoctor(DoctorModel doctor) {
+    public DoctorModel updateDoctor(DoctorModel doctor,String oldGeohash) {
         BoundStatement bs = updateDoctor.bind(
                 doctor.firstName(),
                 doctor.lastName(),
@@ -122,15 +141,23 @@ class DoctorRepository implements DoctorRepoInterface {
                 doctor.address(),
                 doctor.email(),
                 doctor.specialization(),
-                doctor.clinicAddress(),
                 doctor.latitude(),
                 doctor.longitude(),
                 doctor.dailyLimit(),
                 doctor.clinicName(),
                 doctor.clinicBuilding(),
+                doctor.geoHash(),
+                doctor.area(),
+                doctor.city(),
+                doctor.street(),
                 doctor.doctorId()
         );
         session.execute(bs);
+        //sync geohash lookup table only if it changed
+        if(!doctor.geoHash().equals(oldGeohash)) {
+            session.execute(deleteGeohash.bind(oldGeohash,doctor.doctorId()));
+            session.execute(insertGeohash.bind(doctor.geoHash(),doctor.doctorId()));
+        }
         return doctor;
     }
 
@@ -157,10 +184,29 @@ class DoctorRepository implements DoctorRepoInterface {
 //    }
 
     @Override
-    public boolean existsByClinicAddressAndBuilding(String clinicAddress, String building) {
-        BoundStatement bs = findByClinicAddressAndBuilding.bind(clinicAddress.trim().toLowerCase(), building.trim().toLowerCase());
+    public boolean existsByClinicAddressAndBuilding(String area,String city, String building) {
+        BoundStatement bs = findByClinicAddressAndBuilding.bind(
+                city.trim().toLowerCase(),
+                area.trim().toLowerCase(),
+                building.trim().toLowerCase());
         return session.execute(bs).one() != null;
     }
+
+    @Override
+    public List<DoctorModel> findDoctorsByGeohashPrefixes(Set<String> prefixes) {
+        BoundStatement bs=findByGeohash.bind(new ArrayList<>(prefixes));
+        ResultSet rs = session.execute(bs);
+        List<DoctorModel> doctors = new ArrayList<>();
+        for (Row row : rs) {
+            UUID doctorId=row.getUuid(DoctorSchema.DOCTOR_ID);
+            DoctorModel doctor=getDoctorById(doctorId);
+            if (doctor != null) {
+                doctors.add(doctor);
+            }
+        }
+        return doctors;
+    }
+
 
     private DoctorModel mapRow(Row row) {
         return DoctorModel.builder()
@@ -172,13 +218,16 @@ class DoctorRepository implements DoctorRepoInterface {
                 .phoneNumber(row.getString(DoctorSchema.PHONE_NUMBER))
                 .address(row.getString(DoctorSchema.ADDRESS))
                 .specialization(row.getString(DoctorSchema.SPECIALIZATION))
-                .clinicAddress(row.getString(DoctorSchema.CLINIC_ADDRESS))
                 .latitude(row.getDouble(DoctorSchema.LATITUDE))
                 .longitude(row.getDouble(DoctorSchema.LONGITUDE))
                 .dailyLimit(row.getInt(DoctorSchema.DAILY_LIMIT))
                 .isDeleted(row.getBoolean(DoctorSchema.IS_DELETED))
                 .clinicBuilding(row.getString(DoctorSchema.CLINIC_BUILDING))
                 .clinicName(row.getString(DoctorSchema.CLINIC_NAME))
+                .geoHash(row.getString(DoctorSchema.GEOHASH))
+                .area(row.getString(DoctorSchema.AREA))
+                .city(row.getString(DoctorSchema.CITY))
+                .street(row.getString(DoctorSchema.STREET))
                 .build();
     }
 }

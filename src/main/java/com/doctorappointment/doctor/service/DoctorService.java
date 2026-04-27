@@ -1,16 +1,15 @@
 package com.doctorappointment.doctor.service;
-
 import com.doctorappointment.doctor.dto.DoctorModel;
 import com.doctorappointment.doctor.dto.DoctorRequest;
 import com.doctorappointment.doctor.exception.*;
 import com.doctorappointment.doctor.repository.DoctorRepoInterface;
+import com.doctorappointment.doctor.util.GeohashUtil;
 import jakarta.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 import org.mindrot.jbcrypt.BCrypt;
-
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Singleton
 @Slf4j
@@ -27,36 +26,42 @@ public class DoctorService {
     public DoctorModel addDoctor(DoctorRequest doctor) {
         ValidateDoctor.validateName(doctor.firstName(), doctor.lastName());
         ValidateDoctor.validateEmail(doctor.email());
-        ValidateDoctor.validateAddress(doctor.address());
+        ValidateDoctor.validateCity(doctor.city());
         ValidateDoctor.validatePhone(doctor.phoneNumber());
         ValidateDoctor.validateSpecialization(doctor.specialization());
-        ValidateDoctor.validateClinicAddress(doctor.clinicAddress());
-        ValidateDoctor.validateLatLon(doctor.latitude(), doctor.longitude());
+        ValidateDoctor.validateStreet(doctor.street());
+        ValidateDoctor.validateArea(doctor.area());
         ValidateDoctor.validatePassword(doctor.password());
         if (doctorRepo.existsDoctorByEmail(doctor.email())) {
             throw new EmailAlreadyExistsException("Email already exists");
         }
 
         String normalizedBuilding = normalizeBuilding(doctor.clinicBuilding());
-        String normalizedAddress = normalizeAddress(doctor.clinicAddress());
-
-
-        if (!normalizedAddress.isBlank()
+        // area + city together form a unique location key
+        String normalizedArea = normalizeArea(doctor.area());
+        String normalizedCity = normalizeCity(doctor.city());
+        if (!normalizedArea.isBlank()
+                && !normalizedCity.isBlank()
                 && !normalizedBuilding.isBlank()
-                && doctorRepo.existsByClinicAddressAndBuilding(normalizedAddress, normalizedBuilding)) {
-            throw new ClinicLocationValidataionException
-                    ("A clinic already exists at '" + doctor.clinicAddress() + " with " + doctor.clinicBuilding() + "'. " +
+                && doctorRepo.existsByClinicAddressAndBuilding(
+                        normalizedArea, normalizedCity, normalizedBuilding)) {
+            throw new ClinicLocationValidataionException(
+                    "A clinic already exists at '" + doctor.area() + ", " + doctor.city() +
+                            " with " + doctor.clinicBuilding() + "'. " +
                             "If you practice at the same location, contact support.");
         }
         String hashedPassword = BCrypt.hashpw(doctor.password(), BCrypt.gensalt());
         //get coordinates from clinic address
         double[] coordinates = geocodingService.getCoordinates
-                (doctor.clinicName(),
-                        doctor.clinicBuilding(),
-                        doctor.clinicAddress());
+                (
+                        doctor.street(),
+                        doctor.area(),
+                        doctor.city());
 
         double latitude = coordinates[0];
         double longitude = coordinates[1];
+        String geoHash= GeohashUtil.encode(latitude, longitude);
+        log.info("Doctor registered at lat={}, lon={} → geohash={}", latitude, longitude, geoHash);
         DoctorModel model = DoctorModel.builder()
                 .doctorId(UUID.randomUUID())
                 .firstName(doctor.firstName())
@@ -66,13 +71,16 @@ public class DoctorService {
                 .phoneNumber(doctor.phoneNumber())
                 .address(doctor.address())
                 .specialization(doctor.specialization())
-                .clinicAddress(doctor.clinicAddress())
-                .latitude(latitude)
-                .longitude(longitude)
+                .city(doctor.city())
+                .street(doctor.street())
+                .area(doctor.area())
                 .dailyLimit(10)
                 .isDeleted(false)
+                .latitude(latitude)
+                .longitude(longitude)
                 .clinicName(doctor.clinicName())
                 .clinicBuilding(normalizedBuilding)
+                .geoHash(geoHash)
                 .build();
 
         log.info("Doctor with email {} register successfully", doctor.email());
@@ -115,7 +123,6 @@ public class DoctorService {
     public DoctorModel updateDoctor(DoctorModel doctor) {
         ValidateDoctor.validateEmail(doctor.email());
         ValidateDoctor.validatePhone(doctor.phoneNumber());
-        ValidateDoctor.validateLatLon(doctor.latitude(), doctor.longitude());
         if (doctor.doctorId() == null) {
             throw new DoctorIdNotFoundException("Doctor id is required");
         }
@@ -126,28 +133,36 @@ public class DoctorService {
         if (existing.isDeleted()) {
             throw new DoctorIdNotFoundException("Doctor account is deactivated");
         }
+
+        // resolve effective clinic fields (new value if provided, else keep existing)
+        String effectiveStreet = isBlank(doctor.street()) ? existing.street() : doctor.street();
+        String effectiveArea = isBlank(doctor.area()) ? existing.area() : doctor.area();
+        String effectiveCity = isBlank(doctor.city()) ? existing.city() : doctor.city();
+        String effectiveBuilding = isBlank(doctor.clinicBuilding()) ? existing.clinicBuilding() : doctor.clinicBuilding();
+        String effectiveName = isBlank(doctor.clinicName()) ? existing.clinicName() : doctor.clinicName();
+
+        // check if any clinic location field actually changed
+        boolean clinicChanged = !effectiveStreet.equals(existing.street())
+                || !effectiveArea.equals(existing.area())
+                || !effectiveCity.equals(existing.city());
+
+        // declare lat/lon starting from existing values
         double latitude = existing.latitude();
         double longitude = existing.longitude();
-        String newClinicAddress = doctor.clinicAddress();
-        String newClinicName = doctor.clinicName();
-        String newClinicBuilding = doctor.clinicBuilding();
 
-        boolean clinicChanged = (!isBlank(newClinicAddress) && !newClinicAddress.equals(existing.clinicAddress()))
-                || (!isBlank(newClinicName) && !newClinicName.equals(existing.clinicName()))
-                || (!isBlank(newClinicBuilding) && !newClinicBuilding.equals(existing.clinicBuilding()));
         if (clinicChanged) {
             try {
-                String addressForGeo = isBlank(newClinicAddress) ? existing.clinicAddress() : newClinicAddress;
-                String nameForGeo = isBlank(newClinicName) ? existing.clinicName() : newClinicName;
-                String buildingForGeo = isBlank(newClinicBuilding) ? existing.clinicBuilding() : newClinicBuilding;
-                double[] coords = geocodingService.getCoordinates(nameForGeo, buildingForGeo, addressForGeo);
+                double[] coords = geocodingService.getCoordinates(effectiveStreet, effectiveArea, effectiveCity);
                 latitude = coords[0];
                 longitude = coords[1];
+                log.info("Clinic changed -> re-geocoded: lat={}, lon={}", latitude, longitude);
             } catch (Exception e) {
-                log.warn("Geocoding failed,Keeping old coordinates", e);
+                log.warn("Geocoding failed, keeping old coordinates", e);
             }
-            log.info("Clinic changed -> re-geocoded: lat={}, lon={}", latitude, longitude);
         }
+
+        String newGeohash = GeohashUtil.encode(latitude, longitude);
+
         DoctorModel updated = DoctorModel.builder()
                 .doctorId(existing.doctorId())
                 .firstName(isBlank(doctor.firstName()) ? existing.firstName() : doctor.firstName())
@@ -156,15 +171,19 @@ public class DoctorService {
                 .address(isBlank(doctor.address()) ? existing.address() : doctor.address())
                 .email(isBlank(doctor.email()) ? existing.email() : doctor.email())
                 .specialization(isBlank(doctor.specialization()) ? existing.specialization() : doctor.specialization())
-                .clinicAddress(isBlank(doctor.clinicAddress()) ? existing.clinicAddress() : doctor.clinicAddress())
-                .clinicName(isBlank(doctor.clinicName()) ? existing.clinicName() : doctor.clinicName())
-                .clinicBuilding(isBlank(doctor.clinicBuilding()) ? existing.clinicBuilding() : doctor.clinicBuilding())
+                .street(effectiveStreet)
+                .area(effectiveArea)
+                .city(effectiveCity)
+                .clinicName(effectiveName)
+                .clinicBuilding(effectiveBuilding)
                 .latitude(latitude)
                 .longitude(longitude)
                 .dailyLimit(doctor.dailyLimit() == 0 ? existing.dailyLimit() : doctor.dailyLimit())
+                .geoHash(newGeohash)
                 .build();
-        log.info("Updating doctor with ID {} ", doctor.doctorId());
-        return doctorRepo.updateDoctor(updated);
+
+        log.info("Updating doctor with ID {}", doctor.doctorId());
+        return doctorRepo.updateDoctor(updated, existing.geoHash());
     }
 
     //delete doctor by ID
@@ -241,17 +260,17 @@ public class DoctorService {
                                                   double longitude,
                                                   double radiusKm,
                                                   int limit) {
-        List<DoctorModel> all = doctorRepo.getAllDoctors();
-        return all.stream()
-                .filter(d -> !d.isDeleted())
-                .filter(d -> calculateDistance(
-                        latitude, longitude,
-                        d.latitude(), d.longitude()) <= radiusKm)
-                .sorted((a, b) -> Double.compare(
-                        calculateDistance(latitude, longitude, a.latitude(), a.longitude()),
-                        calculateDistance(latitude, longitude, b.latitude(), b.longitude())))
+        String centerHash=GeohashUtil.encode(latitude,longitude);
+        Set<String> prefixes=GeohashUtil.getNeighborAndSelf(centerHash);
+        return doctorRepo.findDoctorsByGeohashPrefixes(prefixes).stream()
+                .filter(d->!d.isDeleted())
+                .filter(d->calculateDistance(
+                        latitude,longitude,d.latitude(),d.longitude())<=radiusKm)
+                .sorted((a,b)->Double.compare(
+                        calculateDistance(latitude,longitude,a.latitude(),a.longitude()),
+                        calculateDistance(latitude,longitude,b.latitude(),b.longitude())))
                 .limit(limit)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     //get nearest doctor
@@ -276,11 +295,19 @@ public class DoctorService {
                 .replaceAll("\\s*,\\s*", ","); // "White Building , First Floor" -> "white building,first floor"
     }
 
-    private String normalizeAddress(String clinicAddress) {
-        if (clinicAddress == null || clinicAddress.isBlank()) return "";
-        return clinicAddress.trim()
+    private String normalizeArea(String area) {
+        if (area == null || area.isBlank()) return "";
+        return area.trim()
                 .toLowerCase()
                 .replaceAll("\\s*,\\s*", ",");
     }
+    private String normalizeCity(String city) {
+        if (city == null || city.isBlank()) return "";
+        return city.trim()
+                .toLowerCase()
+                .replaceAll("\\s*,\\s*", ",");
+    }
+
+
 
 }

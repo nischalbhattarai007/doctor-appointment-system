@@ -16,14 +16,17 @@ public class DoctorQuery {
                     PHONE_NUMBER + ", " +
                     ADDRESS + ", " +
                     SPECIALIZATION + ", " +
-                    CLINIC_ADDRESS + ", " +
                     LATITUDE + ", " +
                     LONGITUDE + ", " +
                     DAILY_LIMIT + ", " +
                     IS_DELETED + ", " +
                     CLINIC_NAME + ", " +
-                    CLINIC_BUILDING +
-                    ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                    CLINIC_BUILDING  + ", " +
+                    GEOHASH + ", " +
+                    AREA + ", " +
+                    CITY + ", " +
+                    STREET  +
+                    ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
     //find by doctor id
     public static final String FIND_BY_ID =
@@ -45,12 +48,15 @@ public class DoctorQuery {
                     ADDRESS + " =?, " +
                     EMAIL + " =?, " +
                     SPECIALIZATION + " =?, " +
-                    CLINIC_ADDRESS + " =?, " +
                     LATITUDE + " =?, " +
                     LONGITUDE + " =?, " +
                     DAILY_LIMIT + " =?, " +
                     CLINIC_NAME + " =?, " +
-                    CLINIC_BUILDING + " =? " +
+                    CLINIC_BUILDING + " =?, " +
+                    GEOHASH + " =?, " +
+                    AREA + " =?, " +
+                    CITY + " =?, " +
+                    STREET + " =? " +
                     " WHERE " + DOCTOR_ID + " =?";
 
     //soft delete doctor by id
@@ -86,19 +92,38 @@ public class DoctorQuery {
 
     //query to check doctor address to prevent duplicate address
     public static final String INSERT_UNIQUENESS_DOCTOR_ADDRESS=
-            "INSERT INTO " + DOCTORS_UNIQUENESS_ADDRESS + " (" + DOCTOR_ID + ", "+ CLINIC_ADDRESS + ", "+ CLINIC_BUILDING + ")" +
-                    " VALUES (?,?,?) IF NOT EXISTS";
+            "INSERT INTO " + DOCTORS_UNIQUENESS_ADDRESS + " (" +
+                    DOCTOR_ID + ", "+
+                    AREA + ", "+
+                    CITY + ", "+
+                    CLINIC_BUILDING + ")" +
+                    " VALUES (?,?,?,?) IF NOT EXISTS";
 
     //query to check address and building
     public static final String FIND_BY_CLINIC_ADDRESS_BUILDING=
             "SELECT " + DOCTOR_ID + " FROM " + DOCTORS_UNIQUENESS_ADDRESS +
-                    " WHERE " + CLINIC_ADDRESS + " =? AND " + CLINIC_BUILDING + " =?";
+                    " WHERE " + CITY + " =? AND " + AREA + " =? AND " + CLINIC_BUILDING + " =?";
 
     //delete from uniqueness table while inserting failed in main table
     public static final String DELETE_BY_CLINIC_ADDRESS_BUILDING =
             "DELETE FROM " +
                     DOCTORS_UNIQUENESS_ADDRESS +
-                    " WHERE " + CLINIC_ADDRESS +
+                    " WHERE " + CITY +
+                    " =? AND " + AREA +
                     " =? AND " + CLINIC_BUILDING + " =?";
 
+    //geohash table query
+    //insert query
+    public static final String INSERT_GEOHASH=
+            "INSERT INTO " + GEOHASH_TABLE + " (" + GEOHASH_PREFIX + ", " + DOCTOR_ID + ")"
+            + " VALUES (?, ?)";
+    //delete query
+    public static final String DELETE_GEOHASH=
+            "DELETE FROM " +
+                    GEOHASH_TABLE +
+                    " WHERE " + GEOHASH_PREFIX + " =? AND " + DOCTOR_ID + " =?";
+    //find by geohash prefix
+    public static final String FIND_BY_GEOHASH_PREFIXES=
+            "SELECT " + DOCTOR_ID + " FROM " + GEOHASH_TABLE +
+                    " WHERE " + GEOHASH_PREFIX + " IN ?";
 }
