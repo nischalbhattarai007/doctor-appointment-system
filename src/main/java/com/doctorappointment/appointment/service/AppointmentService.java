@@ -9,6 +9,7 @@ import com.doctorappointment.appointment.exception.DuplicateAppointmentRequestEx
 import com.doctorappointment.appointment.exception.SameDateRescheduleNotAllowedException;
 import com.doctorappointment.appointment.exception.UnauthorizedAccessException;
 import com.doctorappointment.appointment.repository.AppointmentRepoInterface;
+import com.doctorappointment.appointment.repository.AppointmentServiceInterface;
 import com.doctorappointment.doctor.dto.DoctorModel;
 import com.doctorappointment.doctor.exception.AppointmentNotFoundException;
 import com.doctorappointment.doctor.exception.DoctorFullyBookedException;
@@ -27,7 +28,7 @@ import java.util.UUID;
 
 @Singleton
 @Slf4j
-public class AppointmentService {
+public class AppointmentService implements AppointmentServiceInterface {
     private final AppointmentRepoInterface appointmentRepo;
     private final DoctorRepoInterface doctorRepo;
     private final NotificationPublisher publisher;
@@ -42,6 +43,7 @@ public class AppointmentService {
     }
 
     //request appointment
+    @Override
     public AppointmentModel requestAppointment(AppointmentRequest request) {
         ValidateNewAppointment.validateNewAppointment(
                 request.patientId(),
@@ -101,6 +103,7 @@ public class AppointmentService {
     }
 
     //confirm appointment
+    @Override
     public AppointmentModel confirmAppointment(UUID appointmentId, UUID doctorId) {
         AppointmentModel existingAppointment = getExistingAppointment(appointmentId);
         if (!existingAppointment.doctorId().equals(doctorId)) {
@@ -126,6 +129,7 @@ public class AppointmentService {
     }
 
     //reject appointment
+    @Override
     public AppointmentModel rejectAppointment(UUID appointmentId, UUID doctorId) {
         AppointmentModel existingAppointment = getExistingAppointment(appointmentId);
         if (!existingAppointment.doctorId().equals(doctorId)) {
@@ -160,6 +164,7 @@ public class AppointmentService {
     }
 
     //cancel appointment
+    @Override
     public AppointmentModel cancelAppointment(UUID appointmentId, UUID patientId, String reason) {
         //validate only authorized patient is allowed to cancel appointment
         AppointmentModel existingAppointment = getExistingAppointment(appointmentId);
@@ -203,6 +208,7 @@ public class AppointmentService {
     }
 
     //reschedule -doctor only
+    @Override
     public AppointmentModel rescheduleAppointment(UUID appointmentId, UUID doctorId, String newDate, String reason) {
         ValidateNewAppointment.validateDate(newDate);
         AppointmentModel existingAppointment = getExistingAppointment(appointmentId);
@@ -257,6 +263,7 @@ public class AppointmentService {
     }
 
     //get doctor appointment
+    @Override
     public List<AppointmentModel> getDoctorAppointments(UUID doctorId, String appointment_date) {
         ValidateNewAppointment.validateDate(appointment_date);
         if (doctorId == null) {
@@ -267,6 +274,7 @@ public class AppointmentService {
     }
 
     //get patient appointment
+    @Override
     public List<AppointmentModel> getPatientAppointments(UUID patientId) {
         if (patientId == null) {
             throw new AppointmentNotFoundException("patient id is required");

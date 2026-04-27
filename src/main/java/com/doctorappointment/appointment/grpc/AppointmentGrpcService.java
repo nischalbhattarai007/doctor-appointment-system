@@ -7,6 +7,7 @@ import com.doctorappointment.appointment.exception.AppointmentAlreadyActiveExcep
 import com.doctorappointment.appointment.exception.DuplicateAppointmentRequestException;
 import com.doctorappointment.appointment.exception.UnauthorizedAccessException;
 import com.doctorappointment.appointment.helper.AppointmentGrpcHelper;
+import com.doctorappointment.appointment.repository.AppointmentServiceInterface;
 import com.doctorappointment.appointment.service.AppointmentService;
 import com.doctorappointment.auth.BasicAuthInterceptor;
 import com.doctorappointment.doctor.dto.DoctorModel;
@@ -26,7 +27,7 @@ import java.util.UUID;
 @Slf4j
 @Singleton
 public class AppointmentGrpcService extends AppointmentServiceGrpc.AppointmentServiceImplBase {
-    private final AppointmentService service;
+    private final AppointmentServiceInterface service;
     private final DoctorService doctorService;
     private final PatientService patientService;
 
