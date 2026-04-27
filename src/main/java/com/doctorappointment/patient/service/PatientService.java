@@ -6,6 +6,7 @@ import com.doctorappointment.patient.exception.InvalidEmailPasswordException;
 import com.doctorappointment.patient.exception.InvalidPasswordException;
 import com.doctorappointment.patient.exception.PatientNotFoundException;
 import com.doctorappointment.patient.repository.PatientRepoInterface;
+import com.doctorappointment.patient.repository.PatientServiceInterface;
 import jakarta.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 import org.mindrot.jbcrypt.BCrypt;
@@ -14,13 +15,14 @@ import java.util.UUID;
 
 @Slf4j
 @Singleton
-public class PatientService {
+public class PatientService implements PatientServiceInterface {
    private final PatientRepoInterface patientRepo;
 
     public PatientService(PatientRepoInterface patientRepo) {
         this.patientRepo = patientRepo;
     }
     //add patient
+    @Override
     public PatientModel addPatient(PatientRequest patient) {
         ValidatePatient.validatePatient(
                 patient.firstName(),
@@ -47,6 +49,7 @@ public class PatientService {
         return patientRepo.addPatient(patientModel);
     }
     //get patient by ID
+    @Override
     public PatientModel getPatientById(UUID id) {
         if(id == null) {
             throw new PatientNotFoundException("Patient not found");
@@ -62,6 +65,7 @@ public class PatientService {
         return patientRepo.getPatientByEmail(email);
     }
     //update patient by ID
+    @Override
     public PatientModel updatePatient(PatientRequest patient) {
         ValidatePatient.validatePatient(
                 patient.firstName(),
@@ -91,6 +95,7 @@ public class PatientService {
         return result;
     }
     //delete patients by ID
+    @Override
     public void deletePatient(UUID id) {
         if(id == null) {
             throw new PatientNotFoundException("Patient id is required");
@@ -111,6 +116,7 @@ public class PatientService {
 //    }
 
     //login
+    @Override
     public PatientModel login(String email, String password) {
         log.info("Login email :{}, password :{}",email,password==null ? "null":password.isEmpty());
         if(email == null || password == null) {

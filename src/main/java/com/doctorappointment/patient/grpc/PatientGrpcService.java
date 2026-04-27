@@ -6,6 +6,7 @@ import com.doctorappointment.patient.dto.PatientModel;
 import com.doctorappointment.patient.exception.EmailAlreadyExistsException;
 import com.doctorappointment.patient.exception.PatientNotFoundException;
 import com.doctorappointment.patient.helper.PatientGrpcHelper;
+import com.doctorappointment.patient.repository.PatientServiceInterface;
 import com.doctorappointment.patient.service.PatientService;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
@@ -18,7 +19,7 @@ import java.util.UUID;
 @Slf4j
 @Singleton
 public class PatientGrpcService extends PatientServiceGrpc.PatientServiceImplBase {
-    private final PatientService service;
+    private final PatientServiceInterface service;
     public PatientGrpcService(PatientService service) {
         this.service = service;
     }
