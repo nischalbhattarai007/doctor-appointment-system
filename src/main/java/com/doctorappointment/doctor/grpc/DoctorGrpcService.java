@@ -8,9 +8,10 @@ import com.doctorappointment.doctor.dto.DoctorScheduleModel;
 import com.doctorappointment.doctor.enums.Day;
 import com.doctorappointment.doctor.exception.*;
 import com.doctorappointment.doctor.helper.DoctorGrpcHelper;
-import com.doctorappointment.doctor.service.DoctorService;
+import com.doctorappointment.doctor.repository.DoctorServiceInterface;
 import com.doctorappointment.doctor.service.GeocodingService;
 import com.doctorappointment.doctor.service.ScheduleService;
+import com.doctorappointment.doctor.util.GeoCalculateDistance;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import jakarta.inject.Singleton;
@@ -23,12 +24,12 @@ import java.util.stream.Collectors;
 @Singleton
 @Slf4j
 public class DoctorGrpcService extends DoctorServiceGrpc.DoctorServiceImplBase {
-    private final DoctorService service;
+    private final DoctorServiceInterface service;
     private final GeocodingService geocodingService;
     private final AppointmentRepoInterface appointmentRepo;
     private final ScheduleService scheduleService;
 
-    public DoctorGrpcService(DoctorService service, GeocodingService geocodingService, AppointmentRepoInterface appointmentRepo, ScheduleService scheduleService) {
+    public DoctorGrpcService(DoctorServiceInterface service, GeocodingService geocodingService, AppointmentRepoInterface appointmentRepo, ScheduleService scheduleService) {
         this.service = service;
         this.geocodingService = geocodingService;
         this.appointmentRepo = appointmentRepo;
@@ -256,7 +257,7 @@ public class DoctorGrpcService extends DoctorServiceGrpc.DoctorServiceImplBase {
                     request.getRadiusKm(),
                     request.getLimit());
             List<Double> distances = doctors.stream()
-                    .map(d -> service.calculateDistance(
+                    .map(d -> GeoCalculateDistance.calculateDistance(
                             latitude, longitude,
                             d.latitude(), d.longitude()))
                     .toList();
@@ -296,7 +297,7 @@ public class DoctorGrpcService extends DoctorServiceGrpc.DoctorServiceImplBase {
             );
 
             List<Double> distances = doctors.stream()
-                    .map(d -> service.calculateDistance(
+                    .map(d -> GeoCalculateDistance.calculateDistance(
                             latitude, longitude,
                             d.latitude(), d.longitude()))
                     .toList();

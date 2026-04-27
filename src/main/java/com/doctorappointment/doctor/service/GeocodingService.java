@@ -72,7 +72,7 @@ public class GeocodingService {
             double longitude = coords.get(0).asDouble();
             double latitude = coords.get(1).asDouble();
 
-            log.info("Resolved '{}' → lat={}, lon={}", queryText, latitude, longitude);
+            log.info("Resolved '{}' -> lat={}, lon={}", queryText, latitude, longitude);
             return new double[]{latitude, longitude};
 
         } catch (Exception e) {

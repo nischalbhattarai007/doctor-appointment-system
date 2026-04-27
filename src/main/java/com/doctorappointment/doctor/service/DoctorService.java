@@ -3,6 +3,8 @@ import com.doctorappointment.doctor.dto.DoctorModel;
 import com.doctorappointment.doctor.dto.DoctorRequest;
 import com.doctorappointment.doctor.exception.*;
 import com.doctorappointment.doctor.repository.DoctorRepoInterface;
+import com.doctorappointment.doctor.repository.DoctorServiceInterface;
+import com.doctorappointment.doctor.util.GeoCalculateDistance;
 import com.doctorappointment.doctor.util.GeohashUtil;
 import jakarta.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
@@ -13,7 +15,7 @@ import java.util.UUID;
 
 @Singleton
 @Slf4j
-public class DoctorService {
+public class DoctorService implements DoctorServiceInterface {
     private final DoctorRepoInterface doctorRepo;
     private final GeocodingService geocodingService;
 
@@ -23,6 +25,7 @@ public class DoctorService {
     }
 
     //register doctor
+    @Override
     public DoctorModel addDoctor(DoctorRequest doctor) {
         ValidateDoctor.validateName(doctor.firstName(), doctor.lastName());
         ValidateDoctor.validateEmail(doctor.email());
@@ -36,8 +39,8 @@ public class DoctorService {
             throw new EmailAlreadyExistsException("Email already exists");
         }
 
+        // area + city, building form a unique location key
         String normalizedBuilding = normalizeBuilding(doctor.clinicBuilding());
-        // area + city together form a unique location key
         String normalizedArea = normalizeArea(doctor.area());
         String normalizedCity = normalizeCity(doctor.city());
         if (!normalizedArea.isBlank()
@@ -61,7 +64,7 @@ public class DoctorService {
         double latitude = coordinates[0];
         double longitude = coordinates[1];
         String geoHash= GeohashUtil.encode(latitude, longitude);
-        log.info("Doctor registered at lat={}, lon={} → geohash={}", latitude, longitude, geoHash);
+        log.info("Doctor registered at lat={}, lon={} -> geohash={}", latitude, longitude, geoHash);
         DoctorModel model = DoctorModel.builder()
                 .doctorId(UUID.randomUUID())
                 .firstName(doctor.firstName())
@@ -88,6 +91,7 @@ public class DoctorService {
     }
 
     //get doctor by id
+    @Override
     public DoctorModel getDoctorById(UUID id) {
         if (id == null) {
             throw new DoctorIdNotFoundException("Doctor id is required");
@@ -104,6 +108,7 @@ public class DoctorService {
     }
 
     //get doctor by email
+    @Override
     public DoctorModel getDoctorByEmail(String email) {
         if (email == null || email.isEmpty()) {
             throw new DoctorEmailNotFoundException(" Doctor email is required");
@@ -120,6 +125,7 @@ public class DoctorService {
     }
 
     //update doctor by id
+    @Override
     public DoctorModel updateDoctor(DoctorModel doctor) {
         ValidateDoctor.validateEmail(doctor.email());
         ValidateDoctor.validatePhone(doctor.phoneNumber());
@@ -187,6 +193,7 @@ public class DoctorService {
     }
 
     //delete doctor by ID
+    @Override
     public void deleteDoctorById(UUID id) {
         if (id == null) {
             throw new DoctorIdNotFoundException("Doctor id is required");
@@ -203,6 +210,7 @@ public class DoctorService {
     }
 
     //login
+    @Override
     public DoctorModel login(String email, String password) {
         if (email == null || email.isEmpty() || password == null) {
             throw new EmailPasswordRequiredException("Email or password is required");
@@ -223,6 +231,7 @@ public class DoctorService {
     }
 
     //get doctor availability
+    @Override
     public DoctorModel getDoctorAvailability(UUID id) {
         if (id == null) {
             throw new DoctorIdNotFoundException("Doctor id is required");
@@ -238,24 +247,8 @@ public class DoctorService {
         return doctor;
     }
 
-    //calculate distance using haversine formula
-    public double calculateDistance(double lat1, double lon1,
-                                    double lat2, double lon2) {
-        final int EARTH_RADIUS_KM = 6371;
-
-        double latDistance = Math.toRadians(lat2 - lat1);
-        double lonDistance = Math.toRadians(lon2 - lon1);
-
-        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
-                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
-                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
-
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-        return EARTH_RADIUS_KM * c;
-    }
-
     //get doctors by location
+    @Override
     public List<DoctorModel> getDoctorsByLocation(double latitude,
                                                   double longitude,
                                                   double radiusKm,
@@ -264,21 +257,23 @@ public class DoctorService {
         Set<String> prefixes=GeohashUtil.getNeighborAndSelf(centerHash);
         return doctorRepo.findDoctorsByGeohashPrefixes(prefixes).stream()
                 .filter(d->!d.isDeleted())
-                .filter(d->calculateDistance(
+                .filter(d-> GeoCalculateDistance.calculateDistance(
                         latitude,longitude,d.latitude(),d.longitude())<=radiusKm)
                 .sorted((a,b)->Double.compare(
-                        calculateDistance(latitude,longitude,a.latitude(),a.longitude()),
-                        calculateDistance(latitude,longitude,b.latitude(),b.longitude())))
+                        GeoCalculateDistance.calculateDistance(latitude,longitude,a.latitude(),a.longitude()),
+                        GeoCalculateDistance.calculateDistance(latitude,longitude,b.latitude(),b.longitude())))
                 .limit(limit)
                 .toList();
     }
 
     //get nearest doctor
+    @Override
     public List<DoctorModel> getNearestDoctors(double lat1, double lon1, double radiusKm, int limit) {
         return getDoctorsByLocation(lat1, lon1, radiusKm, limit);
     }
 
     //get all doctors
+    @Override
     public List<DoctorModel> getAllDoctors() {
         return doctorRepo.getAllDoctors();
     }
