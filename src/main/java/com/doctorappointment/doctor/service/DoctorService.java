@@ -289,25 +289,17 @@ public class DoctorService {
 
     //add a private helper class
     private String normalizeBuilding(String clinicBuilding) {
-        if (clinicBuilding == null || clinicBuilding.isBlank()) return "";
-        return clinicBuilding.trim()
-                .toLowerCase()
-                .replaceAll("\\s*,\\s*", ","); // "White Building , First Floor" -> "white building,first floor"
+        return normalize(clinicBuilding);
     }
-
     private String normalizeArea(String area) {
-        if (area == null || area.isBlank()) return "";
-        return area.trim()
-                .toLowerCase()
-                .replaceAll("\\s*,\\s*", ",");
+       return normalize(area);
     }
     private String normalizeCity(String city) {
-        if (city == null || city.isBlank()) return "";
-        return city.trim()
-                .toLowerCase()
-                .replaceAll("\\s*,\\s*", ",");
+       return normalize(city);
     }
-
-
-
-}
+    private String normalize(String input){
+        if(input==null || input.isBlank()) return "";
+        return input.trim()
+                .toLowerCase()
+                .replaceAll("\\s*,\\s*",",");
+    }}
