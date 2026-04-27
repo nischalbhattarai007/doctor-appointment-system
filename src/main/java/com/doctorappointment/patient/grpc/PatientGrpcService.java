@@ -20,7 +20,7 @@ import java.util.UUID;
 @Singleton
 public class PatientGrpcService extends PatientServiceGrpc.PatientServiceImplBase {
     private final PatientServiceInterface service;
-    public PatientGrpcService(PatientService service) {
+    public PatientGrpcService(PatientServiceInterface service) {
         this.service = service;
     }
 

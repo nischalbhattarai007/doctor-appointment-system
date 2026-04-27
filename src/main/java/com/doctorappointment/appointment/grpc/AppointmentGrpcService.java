@@ -13,8 +13,10 @@ import com.doctorappointment.auth.BasicAuthInterceptor;
 import com.doctorappointment.doctor.dto.DoctorModel;
 import com.doctorappointment.doctor.exception.AppointmentNotFoundException;
 import com.doctorappointment.doctor.exception.DoctorFullyBookedException;
+import com.doctorappointment.doctor.repository.DoctorServiceInterface;
 import com.doctorappointment.doctor.service.DoctorService;
 import com.doctorappointment.patient.dto.PatientModel;
+import com.doctorappointment.patient.repository.PatientServiceInterface;
 import com.doctorappointment.patient.service.PatientService;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
@@ -28,10 +30,10 @@ import java.util.UUID;
 @Singleton
 public class AppointmentGrpcService extends AppointmentServiceGrpc.AppointmentServiceImplBase {
     private final AppointmentServiceInterface service;
-    private final DoctorService doctorService;
-    private final PatientService patientService;
+    private final DoctorServiceInterface doctorService;
+    private final PatientServiceInterface patientService;
 
-    public AppointmentGrpcService(AppointmentService service, DoctorService doctorService, PatientService patientService) {
+    public AppointmentGrpcService(AppointmentServiceInterface service, DoctorServiceInterface doctorService, PatientServiceInterface patientService) {
         this.service = service;
         this.doctorService = doctorService;
         this.patientService = patientService;
