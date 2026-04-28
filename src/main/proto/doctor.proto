@@ -36,6 +36,7 @@ message DoctorLoginResponse{
   string doctor_address = 6;
   string doctor_status = 7;
   string doctor_message = 8;
+  string token=9;
 }
 //register doctor
 message RegisterDoctorRequest{
