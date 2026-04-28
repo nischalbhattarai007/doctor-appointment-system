@@ -2,12 +2,12 @@ package com.doctorappointment.patient.grpc;
 
 import com.doctorappointment.*;
 import com.doctorappointment.auth.BasicAuthInterceptor;
+import com.doctorappointment.auth.util.JwtUtil;
 import com.doctorappointment.patient.dto.PatientModel;
 import com.doctorappointment.patient.exception.EmailAlreadyExistsException;
 import com.doctorappointment.patient.exception.PatientNotFoundException;
 import com.doctorappointment.patient.helper.PatientGrpcHelper;
 import com.doctorappointment.patient.repository.PatientServiceInterface;
-import com.doctorappointment.patient.service.PatientService;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import jakarta.inject.Singleton;
@@ -20,8 +20,11 @@ import java.util.UUID;
 @Singleton
 public class PatientGrpcService extends PatientServiceGrpc.PatientServiceImplBase {
     private final PatientServiceInterface service;
-    public PatientGrpcService(PatientServiceInterface service) {
+    private final JwtUtil jwtUtil;
+
+    public PatientGrpcService(PatientServiceInterface service, JwtUtil jwtUtil) {
         this.service = service;
+        this.jwtUtil = jwtUtil;
     }
 
     @Override
@@ -213,13 +216,13 @@ public class PatientGrpcService extends PatientServiceGrpc.PatientServiceImplBas
     @Override
     public void login
     (LoginRequest request, StreamObserver<LoginResponse> responseStreamObserver) {
-        log.info("Login email :{}, password:{}", request.getEmail(), request.getPassword());
         try {
             String email = BasicAuthInterceptor.EMAIL_CONTEXT_KEY.get();
             String password = BasicAuthInterceptor.PASSWORD_CONTEXT_KEY.get();
             log.info("Login attempt for email: {}", email);
 
             PatientModel patientModel = service.login(email, password);
+            String token=jwtUtil.generateToken(email,"PATIENT");
             LoginResponse response = LoginResponse.newBuilder()
                     .setPatientId(String.valueOf(patientModel.patientId()))
                     .setFirstName(patientModel.firstName())
@@ -227,6 +230,7 @@ public class PatientGrpcService extends PatientServiceGrpc.PatientServiceImplBas
                     .setAddress(patientModel.address())
                     .setEmail(patientModel.email())
                     .setPhoneNumber(patientModel.phoneNumber())
+                    .setToken(token)
                     .build();
             responseStreamObserver.onNext(response);
             log.info("Patient login successfully");

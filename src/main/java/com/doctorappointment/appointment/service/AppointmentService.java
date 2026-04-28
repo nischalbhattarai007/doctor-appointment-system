@@ -28,7 +28,7 @@ import java.util.UUID;
 
 @Singleton
 @Slf4j
-public class AppointmentService implements AppointmentServiceInterface {
+ class AppointmentService implements AppointmentServiceInterface {
     private final AppointmentRepoInterface appointmentRepo;
     private final DoctorRepoInterface doctorRepo;
     private final NotificationPublisher publisher;

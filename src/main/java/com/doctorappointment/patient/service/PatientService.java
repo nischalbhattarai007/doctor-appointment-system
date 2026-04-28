@@ -15,7 +15,7 @@ import java.util.UUID;
 
 @Slf4j
 @Singleton
-public class PatientService implements PatientServiceInterface {
+ class PatientService implements PatientServiceInterface {
    private final PatientRepoInterface patientRepo;
 
     public PatientService(PatientRepoInterface patientRepo) {
@@ -118,7 +118,6 @@ public class PatientService implements PatientServiceInterface {
     //login
     @Override
     public PatientModel login(String email, String password) {
-        log.info("Login email :{}, password :{}",email,password==null ? "null":password.isEmpty());
         if(email == null || password == null) {
             throw new PatientNotFoundException("Email is required");
         }

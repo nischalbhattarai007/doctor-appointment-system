@@ -1,4 +1,5 @@
 package com.doctorappointment.doctor.service;
+import com.doctorappointment.auth.BasicAuthInterceptor;
 import com.doctorappointment.doctor.dto.DoctorModel;
 import com.doctorappointment.doctor.dto.DoctorRequest;
 import com.doctorappointment.doctor.exception.*;
@@ -215,18 +216,18 @@ public class DoctorService implements DoctorServiceInterface {
         if (email == null || email.isEmpty() || password == null) {
             throw new EmailPasswordRequiredException("Email or password is required");
         }
+        String password_auth= BasicAuthInterceptor.PASSWORD_CONTEXT_KEY.get();
         DoctorModel doctor = doctorRepo.getDoctorByEmail(email);
         if (doctor == null) {
-            log.info("Doctor with email {} login successfully", email);
             throw new EmailPasswordRequiredException("Invalid email or password");
         }
         if (doctor.isDeleted()) {
             throw new DoctorIdNotFoundException("Doctor account is deactivated");
         }
         if (!BCrypt.checkpw(password, doctor.password())) {
-            throw new InvalidPasswordException("Invalid password");
+            throw new InvalidPasswordException("Invalid email or password");
         }
-        log.info("Logged in doctor with email {} successfully", email);
+        log.info("Logged successfully for email {} ", email);
         return doctor;
     }
 

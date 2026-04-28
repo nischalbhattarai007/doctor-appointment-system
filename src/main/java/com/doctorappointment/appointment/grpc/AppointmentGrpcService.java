@@ -8,16 +8,13 @@ import com.doctorappointment.appointment.exception.DuplicateAppointmentRequestEx
 import com.doctorappointment.appointment.exception.UnauthorizedAccessException;
 import com.doctorappointment.appointment.helper.AppointmentGrpcHelper;
 import com.doctorappointment.appointment.repository.AppointmentServiceInterface;
-import com.doctorappointment.appointment.service.AppointmentService;
 import com.doctorappointment.auth.BasicAuthInterceptor;
 import com.doctorappointment.doctor.dto.DoctorModel;
 import com.doctorappointment.doctor.exception.AppointmentNotFoundException;
 import com.doctorappointment.doctor.exception.DoctorFullyBookedException;
 import com.doctorappointment.doctor.repository.DoctorServiceInterface;
-import com.doctorappointment.doctor.service.DoctorService;
 import com.doctorappointment.patient.dto.PatientModel;
 import com.doctorappointment.patient.repository.PatientServiceInterface;
-import com.doctorappointment.patient.service.PatientService;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import jakarta.inject.Singleton;

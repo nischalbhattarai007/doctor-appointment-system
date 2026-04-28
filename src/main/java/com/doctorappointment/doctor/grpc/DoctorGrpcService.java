@@ -3,6 +3,7 @@ package com.doctorappointment.doctor.grpc;
 import com.doctorappointment.*;
 import com.doctorappointment.appointment.repository.AppointmentRepoInterface;
 import com.doctorappointment.auth.BasicAuthInterceptor;
+import com.doctorappointment.auth.util.JwtUtil;
 import com.doctorappointment.doctor.dto.DoctorModel;
 import com.doctorappointment.doctor.dto.DoctorScheduleModel;
 import com.doctorappointment.doctor.enums.Day;
@@ -28,12 +29,14 @@ public class DoctorGrpcService extends DoctorServiceGrpc.DoctorServiceImplBase {
     private final GeocodingService geocodingService;
     private final AppointmentRepoInterface appointmentRepo;
     private final ScheduleService scheduleService;
+    private final JwtUtil jwtUtil;
 
-    public DoctorGrpcService(DoctorServiceInterface service, GeocodingService geocodingService, AppointmentRepoInterface appointmentRepo, ScheduleService scheduleService) {
+    public DoctorGrpcService(DoctorServiceInterface service, GeocodingService geocodingService, AppointmentRepoInterface appointmentRepo, ScheduleService scheduleService, JwtUtil jwtUtil) {
         this.service = service;
         this.geocodingService = geocodingService;
         this.appointmentRepo = appointmentRepo;
         this.scheduleService = scheduleService;
+        this.jwtUtil = jwtUtil;
     }
 
     //register doctor
@@ -68,9 +71,11 @@ public class DoctorGrpcService extends DoctorServiceGrpc.DoctorServiceImplBase {
     public void doctorLogin(DoctorLoginRequest request, StreamObserver<DoctorLoginResponse> responseObserver) {
         try {
             String email = BasicAuthInterceptor.EMAIL_CONTEXT_KEY.get();
+            String password = BasicAuthInterceptor.PASSWORD_CONTEXT_KEY.get();
             DoctorModel model = service.getDoctorByEmail(email);
+            String token=jwtUtil.generateToken(email,"DOCTOR");
             responseObserver.onNext(
-                    DoctorGrpcHelper.toLoginResponse(model, "SUCCESS", "Doctor login successfully"));
+                    DoctorGrpcHelper.toLoginResponse(model, "SUCCESS", "Doctor login successfully",token));
             log.info("Doctor login successfully");
             responseObserver.onCompleted();
         } catch (DoctorEmailNotFoundException e) {
@@ -82,7 +87,7 @@ public class DoctorGrpcService extends DoctorServiceGrpc.DoctorServiceImplBase {
             responseObserver.onError(
                     Status.INTERNAL
                             .withDescription(e.getMessage())
-                            .asException());
+                            .asRuntimeException());
         }
     }
 

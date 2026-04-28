@@ -98,7 +98,8 @@ public class DoctorGrpcHelper {
     //login
     public static DoctorLoginResponse toLoginResponse(DoctorModel doctor,
                                                       String status,
-                                                      String message) {
+                                                      String message,
+                                                      String token) {
         return DoctorLoginResponse.newBuilder()
                 .setDoctorId(doctor.doctorId().toString())
                 .setDoctorFirstName(doctor.firstName())
@@ -108,6 +109,7 @@ public class DoctorGrpcHelper {
                 .setDoctorAddress(doctor.address())
                 .setDoctorStatus(status)
                 .setDoctorMessage(message)
+                .setToken(token)
                 .build();
     }
 
