@@ -45,8 +45,6 @@ public class GeocodingService {
     private double[] resolveCoordinates(String queryText) {
         try {
             String url = "?q=" + queryText.replace(" ", "+") + "&limit=1";
-            log.info("Calling Photon with URL: {}", url);
-
             String response = client
                     /*
                         micronaut http client is non-blocking by default
@@ -55,8 +53,6 @@ public class GeocodingService {
                     */
                     .toBlocking()
                     .retrieve(HttpRequest.GET(url)); // send request and get back body as string
-            log.info("Photon raw response: {}", response);
-
             JsonNode root = objectMapper.readTree(response); // converts raw JSON string into a tree
             JsonNode features = root.get("features"); // goes inside and grabs the feature array
 
@@ -68,7 +64,7 @@ public class GeocodingService {
             // extract coordinates
             JsonNode coords = features.get(0).get("geometry").get("coordinates");
 
-            // Photon returns [longitude, latitude] — note the reversed order
+            // Photon returns [longitude, latitude]
             double longitude = coords.get(0).asDouble();
             double latitude = coords.get(1).asDouble();
 

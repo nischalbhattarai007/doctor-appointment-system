@@ -13,6 +13,7 @@ service PatientService {
   rpc GetPatientByEmail(GetByEmailRequest) returns (GetByEmailResponse);
   rpc UpdatePatient(UpdatePatientRequest)returns(UpdatePatientResponse);
   rpc DeletePatient(GetByIdRequest)returns(DeletePatientResponse);
+  rpc GetAllPatient(Empty) returns (stream PatientListResponse);
 }
 
 // Auth
@@ -133,4 +134,13 @@ message AppointmentResponse {
   string date = 4;  // format: YYYY-MM-DD
   string status = 5;  // CONFIRMED, CANCELLED, REJECTED
   string message = 6;
+}
+message Empty{}
+message PatientListResponse{
+  string patient_id = 1;
+  string first_name = 2;
+  string last_name = 3;
+  string email = 4;
+  string phone_number = 5;
+  string address = 6;
 }

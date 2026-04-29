@@ -29,6 +29,7 @@ public class BasicAuthInterceptor implements ServerInterceptor {
     //no need to verify publicly available for all
     private static final Set<String> PUBLIC_METHODS = Set.of(
             "com.doctorappointment.PatientService/RegisterPatient",
+            "com.doctorappointment.PatientService/GetAllPatient",
             "com.doctorappointment.DoctorService/RegisterDoctor",
             "com.doctorappointment.DoctorService/GetAllDoctorList"
 

@@ -2,6 +2,7 @@ package com.doctorappointment.patient.repository;
 
 import com.doctorappointment.patient.dto.PatientModel;
 
+import java.util.List;
 import java.util.UUID;
 
 public interface PatientRepoInterface {
@@ -11,7 +12,7 @@ public interface PatientRepoInterface {
     PatientModel updatePatient(PatientModel patient);
     void deletePatient(UUID id);
     boolean existsPatientByEmail(String email);
-//    List<PatientModel> getAllPatients();
+    List<PatientModel> getAllPatients();
 
 
 }

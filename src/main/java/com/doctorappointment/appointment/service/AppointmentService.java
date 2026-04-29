@@ -288,9 +288,7 @@ import java.util.UUID;
         if (appointmentId == null) {
             throw new AppointmentNotFoundException("Appointment id is required");
         }
-        log.info("Getting appointment {}", appointmentId);
         AppointmentModel existing = appointmentRepo.getAppointmentById(appointmentId);
-        log.info("Getting appointment {}", existing);
         if (existing == null) {
             throw new AppointmentNotFoundException("Appointment not found with id " + appointmentId);
         }

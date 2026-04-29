@@ -11,6 +11,7 @@ import jakarta.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 import org.mindrot.jbcrypt.BCrypt;
 
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -110,10 +111,11 @@ import java.util.UUID;
         patientRepo.deletePatient(id);
         log.info("Patient deleted with this ID {}", id);
     }
-//    public List<PatientModel> getAllPatients() {
-//        log.info("Getting all patients");
-//        return patientRepo.getAllPatients();
-//    }
+    @Override
+    public List<PatientModel> getAllPatients() {
+        log.info("Getting all patients");
+        return patientRepo.getAllPatients();
+    }
 
     //login
     @Override
@@ -131,7 +133,7 @@ import java.util.UUID;
         if(!BCrypt.checkpw(password, patient.password())) {
             throw new InvalidEmailPasswordException("Invalid email or password");
         }
-        log.info("Logged in with email {} and password {}", email, patient.password());
+        log.info("Patient with email {} successfully login", email);
         return patient;
     }
 }

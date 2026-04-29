@@ -3,6 +3,7 @@ package com.doctorappointment.patient.repository;
 import com.doctorappointment.patient.dto.PatientModel;
 import com.doctorappointment.patient.dto.PatientRequest;
 
+import java.util.List;
 import java.util.UUID;
 
 public interface PatientServiceInterface {
@@ -17,4 +18,6 @@ public interface PatientServiceInterface {
     void deletePatient(UUID id);
 
     PatientModel login(String email, String password);
+
+    List<PatientModel> getAllPatients();
 }

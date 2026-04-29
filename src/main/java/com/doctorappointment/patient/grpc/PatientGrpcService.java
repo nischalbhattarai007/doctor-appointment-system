@@ -14,6 +14,7 @@ import jakarta.inject.Singleton;
 import jakarta.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -219,8 +220,6 @@ public class PatientGrpcService extends PatientServiceGrpc.PatientServiceImplBas
         try {
             String email = BasicAuthInterceptor.EMAIL_CONTEXT_KEY.get();
             String password = BasicAuthInterceptor.PASSWORD_CONTEXT_KEY.get();
-            log.info("Login attempt for email: {}", email);
-
             PatientModel patientModel = service.login(email, password);
             String token=jwtUtil.generateToken(email,"PATIENT");
             LoginResponse response = LoginResponse.newBuilder()
@@ -241,6 +240,30 @@ public class PatientGrpcService extends PatientServiceGrpc.PatientServiceImplBas
                             .withDescription(e.getMessage())
                             .asRuntimeException());
         } catch (Exception e) {
+            responseStreamObserver.onError(
+                    Status.INTERNAL
+                            .withDescription(e.getMessage())
+                            .asRuntimeException());
+        }
+    }
+    @Override
+    public void getAllPatient(Empty request, StreamObserver<PatientListResponse> responseStreamObserver) {
+        try{
+
+            List<PatientModel> patients=service.getAllPatients();
+            for(PatientModel patient:patients){
+                PatientListResponse response=PatientListResponse.newBuilder()
+                        .setPatientId(patient.patientId().toString())
+                        .setFirstName(patient.firstName())
+                        .setLastName(patient.lastName())
+                        .setEmail(patient.email())
+                        .setPhoneNumber(patient.phoneNumber())
+                        .setAddress(patient.address())
+                        .build();
+                responseStreamObserver.onNext(response);
+            }
+            responseStreamObserver.onCompleted();
+        }catch(Exception e){
             responseStreamObserver.onError(
                     Status.INTERNAL
                             .withDescription(e.getMessage())
