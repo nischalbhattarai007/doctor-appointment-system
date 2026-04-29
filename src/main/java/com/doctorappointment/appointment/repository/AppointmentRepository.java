@@ -152,7 +152,7 @@ class AppointmentRepository implements AppointmentRepoInterface {
     public long countByDoctorAndDate(UUID doctorId, String appointment_date) {
         BoundStatement bs = countByDoctorDate.bind(doctorId, appointment_date);
         Row row = cqlSession.execute(bs).one();
-        return row == null ? 0 : row.getLong(0);
+        return row == null ? 0 : row.getLong(0); //if row is null return else return 1st column
     }
 
     @Override

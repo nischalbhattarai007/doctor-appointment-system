@@ -21,7 +21,6 @@ public class JwtUtil {
         this.secret = secret;
         this.expiryMs = expiryMs;
     }
-
     public String generateToken(String email, String role) {
         return Jwts.builder()
                 .subject(email)

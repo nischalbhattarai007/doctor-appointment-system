@@ -4,6 +4,8 @@ import com.doctorappointment.auth.util.JwtUtil;
 import com.doctorappointment.patient.exception.InvalidAuthorizationFormatException;
 import com.doctorappointment.patient.exception.MissingAuthorizationHeaderException;
 import io.grpc.*;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import jakarta.inject.Singleton;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -91,9 +93,9 @@ public class BasicAuthInterceptor implements ServerInterceptor {
                     .withValue(PASSWORD_CONTEXT_KEY, ""); // not needed anymore for JWT requests
             return Contexts.interceptCall(context, call, metadata, next);
 
-        } catch (io.jsonwebtoken.ExpiredJwtException e) {
+        } catch (ExpiredJwtException e) {
             return reject(call, "Token expired — please login again");
-        } catch (io.jsonwebtoken.JwtException e) {
+        } catch (JwtException e) {
             return reject(call, "Invalid token");
         } catch (Exception e) {
             return reject(call, "Authentication failed");
