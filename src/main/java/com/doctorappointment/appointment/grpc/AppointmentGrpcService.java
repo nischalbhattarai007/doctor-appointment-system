@@ -40,8 +40,7 @@ public class AppointmentGrpcService extends AppointmentServiceGrpc.AppointmentSe
     public void requestAppointment(AppointmentServiceCreateRequest request, StreamObserver<AppointmentServiceResponse> responseObserver) {
         try {
             String email = BasicAuthInterceptor.EMAIL_CONTEXT_KEY.get();
-            String password = BasicAuthInterceptor.PASSWORD_CONTEXT_KEY.get();
-            if (email == null || password == null) {
+            if (email == null) {
                 responseObserver.onError(
                         Status.UNAUTHENTICATED
                                 .withDescription("Missing authorization header")

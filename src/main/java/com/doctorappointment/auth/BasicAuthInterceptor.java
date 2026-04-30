@@ -92,8 +92,8 @@ public class BasicAuthInterceptor implements ServerInterceptor {
 
             Context context = Context.current()
                     .withValue(EMAIL_CONTEXT_KEY, jwtUtil.getEmail(claims))
-                    .withValue(ROLE_CONTEXT_KEY, jwtUtil.getRole(claims))
-                    .withValue(PASSWORD_CONTEXT_KEY, ""); // not needed anymore for JWT requests
+                    .withValue(ROLE_CONTEXT_KEY, jwtUtil.getRole(claims));
+//                    .withValue(PASSWORD_CONTEXT_KEY, ""); // not needed anymore for JWT requests
             return Contexts.interceptCall(context, call, metadata, next);
 
         } catch (ExpiredJwtException e) {

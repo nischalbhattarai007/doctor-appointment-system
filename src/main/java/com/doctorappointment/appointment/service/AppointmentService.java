@@ -97,7 +97,7 @@ import java.util.UUID;
                         .recipientType("DOCTOR")
                         .message("New appointment requested by patient for " + saved.appointment_date())
                         .build());
-        log.info(" Appoint request by patient id {} with doctor {} on {} ",
+        log.info(" Appointment request by patient id {} with doctor {} on {} ",
                 request.patientId(), request.doctorId(), request.appointment_date());
         return saved;
     }
