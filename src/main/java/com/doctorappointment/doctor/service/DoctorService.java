@@ -185,7 +185,7 @@ public class DoctorService implements DoctorServiceInterface {
                 .clinicBuilding(effectiveBuilding)
                 .latitude(latitude)
                 .longitude(longitude)
-                .dailyLimit(doctor.dailyLimit() == 0 ? existing.dailyLimit() : doctor.dailyLimit())
+                .dailyLimit(doctor.dailyLimit() ==0? existing.dailyLimit() : doctor.dailyLimit())
                 .geoHash(newGeohash)
                 .build();
 
@@ -216,7 +216,7 @@ public class DoctorService implements DoctorServiceInterface {
         if (email == null || email.isEmpty() || password == null) {
             throw new EmailPasswordRequiredException("Email or password is required");
         }
-        String password_auth= BasicAuthInterceptor.PASSWORD_CONTEXT_KEY.get();
+       // String password_auth= BasicAuthInterceptor.PASSWORD_CONTEXT_KEY.get();
         DoctorModel doctor = doctorRepo.getDoctorByEmail(email);
         if (doctor == null) {
             throw new EmailPasswordRequiredException("Invalid email or password");
