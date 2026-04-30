@@ -7,7 +7,7 @@ public class NotificationSubject {
     public static final String PATIENT_APPOINTMENT_RESCHEDULED="appointment.patient.rescheduled";
 
     //for doctor
-    public static final String DOCTOR_APPOINTMENT_REQUEST="appointment.doctor.confirmed";
+    public static final String DOCTOR_APPOINTMENT_REQUEST="appointment.doctor.request";
     public static final String DOCTOR_APPOINTMENT_CANCELLED="appointment.doctor.cancelled";
 
 }

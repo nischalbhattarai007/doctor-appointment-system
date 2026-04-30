@@ -21,6 +21,7 @@ public class NotificationPublisher {
             log.info("Published appointment event {}",event);
         }catch (Exception e){
             log.error("Failed to publish notification to '{}' :'{}' ",subject,e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 }
