@@ -259,6 +259,7 @@ public class AppointmentGrpcService extends AppointmentServiceGrpc.AppointmentSe
                                 .withDescription("Only doctor can reject appointments")
                                 .asRuntimeException()
                 );
+                return;
             }
             String email = BasicAuthInterceptor.EMAIL_CONTEXT_KEY.get();
             DoctorModel authenticatedDoctor = doctorService.getDoctorByEmail(email);
