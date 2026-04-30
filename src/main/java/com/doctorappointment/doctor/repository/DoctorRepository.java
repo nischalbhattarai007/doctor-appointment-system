@@ -89,8 +89,7 @@ class DoctorRepository implements DoctorRepoInterface {
             throw new DoctorCreationFailedException(e.getMessage());
         }
         Row row = rs.one();
-        assert row != null;
-        if (!row.getBoolean("[applied]")) {
+        if (row==null || !row.getBoolean("[applied]")) {
             throw new DoctorCreationFailedException("Doctor already exists");
         }
         try {
