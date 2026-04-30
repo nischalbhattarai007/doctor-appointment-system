@@ -143,16 +143,17 @@ public class AppointmentGrpcService extends AppointmentServiceGrpc.AppointmentSe
     public void cancelAppointment
     (AppointmentServiceCancelRequest request, StreamObserver<AppointmentServiceResponse> responseObserver) {
         try {
-            //  UUID appointmentId = UUID.fromString(request.getAppointmentServiceId());
-            String email = BasicAuthInterceptor.EMAIL_CONTEXT_KEY.get();
-            PatientModel authenticatedPatient = patientService.getPatientByEmail(email);
-            if(authenticatedPatient==null){
+            String role=BasicAuthInterceptor.ROLE_CONTEXT_KEY.get();
+            if(!role.equals("PATIENT")){
                 responseObserver.onError(
                         Status.PERMISSION_DENIED
-                                .withDescription("Only patient are authorized to cancel appointments")
-                                .asRuntimeException());
+                                .withDescription("Only patient can cancel appointments")
+                                .asRuntimeException()
+                );
                 return;
             }
+            String email = BasicAuthInterceptor.EMAIL_CONTEXT_KEY.get();
+            PatientModel authenticatedPatient = patientService.getPatientByEmail(email);
             //check valid patient or not
             if (!authenticatedPatient.patientId().toString().equals(request.getPatientId())) {
                 responseObserver.onError(
@@ -198,6 +199,15 @@ public class AppointmentGrpcService extends AppointmentServiceGrpc.AppointmentSe
     public void rescheduleAppointment
     (AppointmentRescheduleRequest request, StreamObserver<AppointmentServiceResponse> responseObserver) {
         try {
+            String role=BasicAuthInterceptor.ROLE_CONTEXT_KEY.get();
+            if(!role.equals("DOCTOR")){
+                responseObserver.onError(
+                        Status.PERMISSION_DENIED
+                                .withDescription("Only doctor can Reschedule appointments")
+                                .asRuntimeException()
+                );
+                return;
+            }
             String email = BasicAuthInterceptor.EMAIL_CONTEXT_KEY.get();
             DoctorModel authenticatedDoctor = doctorService.getDoctorByEmail(email);
             if (!authenticatedDoctor.doctorId().toString().equals(request.getDoctorId())) {
@@ -242,6 +252,14 @@ public class AppointmentGrpcService extends AppointmentServiceGrpc.AppointmentSe
     public void rejectAppointment
             (AppointmentActionRequest request, StreamObserver<AppointmentServiceResponse> responseObserver) {
         try {
+            String role=BasicAuthInterceptor.ROLE_CONTEXT_KEY.get();
+            if(!role.equals("DOCTOR")){
+                responseObserver.onError(
+                        Status.UNAUTHENTICATED
+                                .withDescription("Only doctor can reject appointments")
+                                .asRuntimeException()
+                );
+            }
             String email = BasicAuthInterceptor.EMAIL_CONTEXT_KEY.get();
             DoctorModel authenticatedDoctor = doctorService.getDoctorByEmail(email);
             if (!authenticatedDoctor.doctorId().toString().equals(request.getDoctorId())) {

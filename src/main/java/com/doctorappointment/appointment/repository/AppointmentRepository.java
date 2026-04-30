@@ -100,6 +100,7 @@ class AppointmentRepository implements AppointmentRepoInterface {
     public void updateStatus(UUID appointmentId, String status, String reason, String cancelledBy) {
         AppointmentModel existingModel = getAppointmentById(appointmentId);
         if (existingModel == null) {
+            log.warn("Appointment with id {} does not exist", appointmentId);
             return;
         }
         //update main table

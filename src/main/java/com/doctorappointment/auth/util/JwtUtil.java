@@ -23,6 +23,9 @@ public class JwtUtil {
     }
     public String generateToken(String email, String role) {
         return Jwts.builder()
+                .header()
+                .type("JWT")
+                .and()
                 .subject(email)
                 .claim("role", role)
                 .issuedAt(new Date())

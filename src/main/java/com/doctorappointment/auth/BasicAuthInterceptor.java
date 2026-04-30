@@ -26,6 +26,7 @@ public class BasicAuthInterceptor implements ServerInterceptor {
     // Context keys to pass credentials to handler
     public static final Context.Key<String> EMAIL_CONTEXT_KEY = Context.key("email");
     public static final Context.Key<String> PASSWORD_CONTEXT_KEY = Context.key("password");
+    public static final Context.Key<String> ROLE_CONTEXT_KEY= Context.key("role");
     //no need to verify publicly available for all
     private static final Set<String> PUBLIC_METHODS = Set.of(
             "com.doctorappointment.PatientService/RegisterPatient",
@@ -35,7 +36,7 @@ public class BasicAuthInterceptor implements ServerInterceptor {
 
     );
     private static final Set<String> LOGIN_METHODS = Set.of(
-            "com.doctorappointment.PatientService/LoginPatient",
+            "com.doctorappointment.PatientService/Login",
             "com.doctorappointment.DoctorService/DoctorLogin"
     );
 
@@ -91,6 +92,7 @@ public class BasicAuthInterceptor implements ServerInterceptor {
 
             Context context = Context.current()
                     .withValue(EMAIL_CONTEXT_KEY, jwtUtil.getEmail(claims))
+                    .withValue(ROLE_CONTEXT_KEY, jwtUtil.getRole(claims))
                     .withValue(PASSWORD_CONTEXT_KEY, ""); // not needed anymore for JWT requests
             return Contexts.interceptCall(context, call, metadata, next);
 

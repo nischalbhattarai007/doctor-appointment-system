@@ -89,6 +89,7 @@ class DoctorRepository implements DoctorRepoInterface {
             throw new DoctorCreationFailedException(e.getMessage());
         }
         Row row = rs.one();
+        assert row != null;
         if (!row.getBoolean("[applied]")) {
             throw new DoctorCreationFailedException("Doctor already exists");
         }
@@ -199,7 +200,7 @@ class DoctorRepository implements DoctorRepoInterface {
         List<DoctorModel> doctors = new ArrayList<>();
         for (Row row : rs) {
             UUID doctorId=row.getUuid(DoctorSchema.DOCTOR_ID);
-            DoctorModel doctor=getDoctorById(doctorId);
+            DoctorModel doctor=getDoctorById(doctorId); //TODO n+1 query
             if (doctor != null) {
                 doctors.add(doctor);
             }
