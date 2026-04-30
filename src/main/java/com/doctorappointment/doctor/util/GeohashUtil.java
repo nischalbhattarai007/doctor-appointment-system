@@ -6,8 +6,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Utility class for working with Geohashes.
- *
  * WHY Geohash?
  * ------------
  * Geohash converts latitude & longitude into a short string.
@@ -23,7 +21,7 @@ public class GeohashUtil {
     /**
      * Precision controls the size of the geographic grid.
      *
-     * WHY PRECISION = 5?
+     * WHY PRECISION = 6?
      * -------------------
      * - Lower precision → larger area (less accurate, faster queries)
      * - Higher precision → smaller area (more accurate, more queries needed)
@@ -35,7 +33,7 @@ public class GeohashUtil {
      * - City-level proximity search
      * - Reducing database load
      */
-    private static final int PRECISION = 5;
+    private static final int PRECISION = 6;
 
     /**
      * Private constructor to prevent instantiation.
@@ -67,7 +65,7 @@ public class GeohashUtil {
      *
      * Example:
      * Input  → (27.7172, 85.3240)
-     * Output → "tu4pr"
+     * Output → "tu4prr"
      *
      * Nearby locations will share prefix:
      * tu4pr, tu4ps, tu4pt → all close to each other
