@@ -20,6 +20,7 @@ service DoctorService{
   rpc SetDoctorSchedule(SetScheduleRequest) returns (SetScheduleResponse);
   rpc GetDoctorSchedule(GetScheduleRequest) returns (GetScheduleResponse);
   rpc GetAllDoctorList(EmptyList) returns (DoctorList);
+  rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse);
 }
 //login request
 message DoctorLoginRequest{
@@ -37,6 +38,7 @@ message DoctorLoginResponse{
   string doctor_status = 7;
   string doctor_message = 8;
   string token=9;
+  string refresh_token=10;
 }
 //register doctor
 message RegisterDoctorRequest{
@@ -257,5 +259,12 @@ message DoctorResponse{
   string clinic_building= 9;
   string clinic_name = 10;
   string doctor_email=11;
+}
+message RefreshTokenRequest{
+  string refresh_token=1;
+}
+message RefreshTokenResponse{
+  string token=1;
+  string refresh_token=2;
 }
 

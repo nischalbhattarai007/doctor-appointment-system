@@ -3,13 +3,14 @@ import com.doctorappointment.patient.dto.PatientModel;
 import com.doctorappointment.patient.dto.PatientRequest;
 import com.doctorappointment.patient.exception.EmailAlreadyExistsException;
 import com.doctorappointment.patient.exception.InvalidEmailPasswordException;
-import com.doctorappointment.patient.exception.InvalidPasswordException;
 import com.doctorappointment.patient.exception.PatientNotFoundException;
 import com.doctorappointment.patient.repository.PatientRepoInterface;
 import com.doctorappointment.patient.repository.PatientServiceInterface;
 import jakarta.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 import org.mindrot.jbcrypt.BCrypt;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.UUID;
@@ -17,6 +18,7 @@ import java.util.UUID;
 @Slf4j
 @Singleton
  class PatientService implements PatientServiceInterface {
+    private static Logger logger= LoggerFactory.getLogger(PatientService.class);
    private final PatientRepoInterface patientRepo;
 
     public PatientService(PatientRepoInterface patientRepo) {
@@ -47,6 +49,7 @@ import java.util.UUID;
                 .phoneNumber(patient.phoneNumber())
                 .address(patient.address())
                 .build();
+        logger.info("Patient {} has been register successfully",patient.patientId());
         return patientRepo.addPatient(patientModel);
     }
     //get patient by ID

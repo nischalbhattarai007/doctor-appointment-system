@@ -15,6 +15,9 @@ import com.doctorappointment.doctor.service.ScheduleService;
 import com.doctorappointment.doctor.util.GeoCalculateDistance;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import jakarta.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 import java.util.List;
@@ -75,8 +78,9 @@ public class DoctorGrpcService extends DoctorServiceGrpc.DoctorServiceImplBase {
             DoctorModel model=service.login(email, password);
             //DoctorModel model = service.getDoctorByEmail(email);
             String token=jwtUtil.generateToken(email,"DOCTOR");
+            String refreshToken= jwtUtil.refreshToken(email,"DOCTOR");
             responseObserver.onNext(
-                    DoctorGrpcHelper.toLoginResponse(model, "SUCCESS", "Doctor login successfully",token));
+                    DoctorGrpcHelper.toLoginResponse(model, "SUCCESS", "Doctor login successfully",token,refreshToken));
             log.info("Doctor login successfully");
             responseObserver.onCompleted();
         } catch (DoctorEmailNotFoundException e) {
@@ -499,6 +503,45 @@ public class DoctorGrpcService extends DoctorServiceGrpc.DoctorServiceImplBase {
                     Status.INTERNAL
                             .withDescription(e.getMessage())
                             .asException());
+        }
+    }
+    @Override
+    public void refreshToken(RefreshTokenRequest request, StreamObserver<RefreshTokenResponse> responseObserver) {
+        try {
+            String incomingRefreshToken = request.getRefreshToken();
+            Claims claims = jwtUtil.validateToken(incomingRefreshToken);
+            if (!jwtUtil.isRefreshToken(claims)) {
+                responseObserver.onError(
+                        Status.UNAUTHENTICATED
+                                .withDescription("Invalid token type — refresh token required")
+                                .asRuntimeException());
+                return;
+            }
+            String email = jwtUtil.getEmail(claims);
+            String role = jwtUtil.getRole(claims);
+            String newAccessToken = jwtUtil.generateToken(email, role);
+            log.info("Access token refreshed successfully for :{}", email);
+            responseObserver.onNext(
+                    RefreshTokenResponse.newBuilder()
+                            .setToken(newAccessToken)
+                            .setRefreshToken(incomingRefreshToken)
+                            .build());
+            responseObserver.onCompleted();
+        } catch (ExpiredJwtException e) {
+            responseObserver.onError(
+                    Status.UNAUTHENTICATED
+                            .withDescription("Refresh token expired please login again")
+                            .asRuntimeException());
+        } catch (JwtException e) {
+            responseObserver.onError(
+                    Status.UNAUTHENTICATED
+                            .withDescription("Invalid refresh token")
+                            .asRuntimeException());
+        } catch (Exception e) {
+            responseObserver.onError(
+                    Status.INTERNAL
+                            .withDescription(e.getMessage())
+                            .asRuntimeException());
         }
     }
 

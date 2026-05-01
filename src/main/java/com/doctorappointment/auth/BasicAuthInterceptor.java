@@ -16,7 +16,7 @@ public class BasicAuthInterceptor implements ServerInterceptor {
        gRPC sends everything as bytes over the network, not as text.
        So when a String value travels in metadata it must be converted
        to bytes on the way out and back to String on the way in.
-       ASCII_STRING_MARSHALLER is gRPC's builtin converter that handles this
+       ASCII_STRING_MARSHALLER is gRPC's built-in converter that handles this
        for plain text values like auth headers. You will always use this for
        normal String headers.
     */
@@ -31,8 +31,11 @@ public class BasicAuthInterceptor implements ServerInterceptor {
     private static final Set<String> PUBLIC_METHODS = Set.of(
             "com.doctorappointment.PatientService/RegisterPatient",
             "com.doctorappointment.PatientService/GetAllPatient",
+            "com.doctorappointment.DoctorService/GetAllDoctorList",
             "com.doctorappointment.DoctorService/RegisterDoctor",
-            "com.doctorappointment.DoctorService/GetAllDoctorList"
+            "com.doctorappointment.DoctorService/RefreshToken",
+            "com.doctorappointment.patientService/RefreshTokens"
+
 
     );
     private static final Set<String> LOGIN_METHODS = Set.of(
@@ -83,7 +86,7 @@ public class BasicAuthInterceptor implements ServerInterceptor {
         String authHeader = metadata.get(AUTH_HEADER);
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return reject(call, "Missing Bearer token — please login first");
+            return reject(call, "Missing Bearer token please login first");
         }
 
         try {
@@ -93,11 +96,10 @@ public class BasicAuthInterceptor implements ServerInterceptor {
             Context context = Context.current()
                     .withValue(EMAIL_CONTEXT_KEY, jwtUtil.getEmail(claims))
                     .withValue(ROLE_CONTEXT_KEY, jwtUtil.getRole(claims));
-//                    .withValue(PASSWORD_CONTEXT_KEY, ""); // not needed anymore for JWT requests
             return Contexts.interceptCall(context, call, metadata, next);
 
         } catch (ExpiredJwtException e) {
-            return reject(call, "Token expired — please login again");
+            return reject(call, "Token expired please login again");
         } catch (JwtException e) {
             return reject(call, "Invalid token");
         } catch (Exception e) {

@@ -14,6 +14,7 @@ service PatientService {
   rpc UpdatePatient(UpdatePatientRequest)returns(UpdatePatientResponse);
   rpc DeletePatient(GetByIdRequest)returns(DeletePatientResponse);
   rpc GetAllPatient(Empty) returns (stream PatientListResponse);
+  rpc RefreshTokens(RefreshTokenRequests) returns (RefreshTokenResponses);
 }
 
 // Auth
@@ -33,6 +34,7 @@ message LoginResponse {
   string status = 7;
   string message = 8;
   string token=9;
+  string refresh_token=10;
 }
 
 //  Patient register
@@ -143,4 +145,11 @@ message PatientListResponse{
   string email = 4;
   string phone_number = 5;
   string address = 6;
+}
+message RefreshTokenRequests{
+  string refresh_token=1;
+}
+message RefreshTokenResponses{
+  string token=1;
+  string refresh_token=2;
 }
