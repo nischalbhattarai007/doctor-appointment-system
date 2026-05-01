@@ -31,10 +31,10 @@ public class BasicAuthInterceptor implements ServerInterceptor {
     private static final Set<String> PUBLIC_METHODS = Set.of(
             "com.doctorappointment.PatientService/RegisterPatient",
             "com.doctorappointment.PatientService/GetAllPatient",
+            "com.doctorappointment.PatientService/RefreshTokens",
             "com.doctorappointment.DoctorService/GetAllDoctorList",
             "com.doctorappointment.DoctorService/RegisterDoctor",
-            "com.doctorappointment.DoctorService/RefreshToken",
-            "com.doctorappointment.patientService/RefreshTokens"
+            "com.doctorappointment.DoctorService/RefreshToken"
 
 
     );
@@ -93,6 +93,9 @@ public class BasicAuthInterceptor implements ServerInterceptor {
             String token = authHeader.substring(7).trim();
             var claims = jwtUtil.validateToken(token);
 
+            if(!jwtUtil.isAccessToken(claims)){
+                return reject(call, "Invalid token ");
+            }
             Context context = Context.current()
                     .withValue(EMAIL_CONTEXT_KEY, jwtUtil.getEmail(claims))
                     .withValue(ROLE_CONTEXT_KEY, jwtUtil.getRole(claims));

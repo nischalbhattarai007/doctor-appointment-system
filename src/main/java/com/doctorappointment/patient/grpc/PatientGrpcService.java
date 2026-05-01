@@ -285,7 +285,7 @@ public class PatientGrpcService extends PatientServiceGrpc.PatientServiceImplBas
             if (!jwtUtil.isRefreshToken(claims)) {
                 responseStreamObserver.onError(
                         Status.UNAUTHENTICATED
-                                .withDescription("Invalid token type — refresh token required")
+                                .withDescription("Invalid token type refresh token required")
                                 .asRuntimeException());
                 return;
             }

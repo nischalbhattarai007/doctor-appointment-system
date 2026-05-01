@@ -38,7 +38,7 @@ public class JwtUtil {
                 .and()
                 .subject(email)
                 .claim("role", role)
-                .claim("tokenType", tokenType)
+                .claim("type", tokenType)
                 .issuedAt(now)
                 .expiration(new Date(System.currentTimeMillis() + expiryMs))
                 .signWith(getKey())
