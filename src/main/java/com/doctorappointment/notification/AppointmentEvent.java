@@ -1,5 +1,7 @@
 package com.doctorappointment.notification;
+import io.micronaut.serde.annotation.Serdeable;
 import lombok.Builder;
+@Serdeable
 @Builder
 public record AppointmentEvent(
     String appointmentId,

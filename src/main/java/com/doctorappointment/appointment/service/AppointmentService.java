@@ -3,8 +3,6 @@ package com.doctorappointment.appointment.service;
 import com.doctorappointment.appointment.constant.AppointmentStatus;
 import com.doctorappointment.appointment.dto.AppointmentModel;
 import com.doctorappointment.appointment.dto.AppointmentRequest;
-//import com.doctorappointment.appointment.exception.AppointmentAlreadyActiveException;
-//import com.doctorappointment.appointment.exception.DuplicateAppointmentRequestException;
 import com.doctorappointment.appointment.exception.DuplicateAppointmentRequestException;
 import com.doctorappointment.appointment.exception.SameDateRescheduleNotAllowedException;
 import com.doctorappointment.appointment.exception.UnauthorizedAccessException;
@@ -17,7 +15,6 @@ import com.doctorappointment.doctor.repository.DoctorRepoInterface;
 import com.doctorappointment.doctor.service.ScheduleService;
 import com.doctorappointment.notification.AppointmentEvent;
 import com.doctorappointment.notification.NotificationPublisher;
-import com.doctorappointment.notification.NotificationSubject;
 import jakarta.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 
@@ -26,13 +23,16 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
+//import com.doctorappointment.appointment.exception.AppointmentAlreadyActiveException;
+//import com.doctorappointment.appointment.exception.DuplicateAppointmentRequestException;
+
 @Singleton
 @Slf4j
- class AppointmentService implements AppointmentServiceInterface {
+class AppointmentService implements AppointmentServiceInterface {
     private final AppointmentRepoInterface appointmentRepo;
     private final DoctorRepoInterface doctorRepo;
     private final NotificationPublisher publisher;
-    private final ScheduleService  scheduleService;
+    private final ScheduleService scheduleService;
 
     public AppointmentService
             (AppointmentRepoInterface appointmentRepo, DoctorRepoInterface doctorRepo, NotificationPublisher publisher, ScheduleService scheduleService) {
@@ -87,7 +87,7 @@ import java.util.UUID;
         }
         //save the appointment request in all appointment table
         AppointmentModel saved = appointmentRepo.saveAppointment(appointment);
-        publisher.publish(NotificationSubject.DOCTOR_APPOINTMENT_REQUEST,
+        publisher.publishDoctorAppointmentRequest(
                 AppointmentEvent.builder()
                         .appointmentId(saved.appointmentId().toString())
                         .patientId(saved.patientId().toString())
@@ -114,7 +114,7 @@ import java.util.UUID;
                     ("Only pending appointment is allowed. Current status is: " + existingAppointment.status());
         }
         appointmentRepo.updateStatus(appointmentId, AppointmentStatus.CONFIRMED, "", "");
-        publisher.publish(NotificationSubject.PATIENT_APPOINTMENT_CONFIRMED,
+        publisher.publishPatientAppointmentConfirmed(
                 AppointmentEvent.builder()
                         .appointmentId(appointmentId.toString())
                         .patientId(existingAppointment.patientId().toString())
@@ -146,8 +146,8 @@ import java.util.UUID;
                 existingAppointment.doctorId(),
                 existingAppointment.appointment_date());
 
-        publisher.publish(NotificationSubject.PATIENT_APPOINTMENT_REJECTED,
-                AppointmentEvent.builder()
+        publisher.publishPatientAppointmentRejected(
+               AppointmentEvent.builder()
                         .appointmentId(appointmentId.toString())
                         .patientId(existingAppointment.patientId().toString())
                         .doctorId(existingAppointment.doctorId().toString())
@@ -189,11 +189,12 @@ import java.util.UUID;
                 existingAppointment.appointment_date());
 
         //notification
-        publisher.publish(NotificationSubject.DOCTOR_APPOINTMENT_CANCELLED,
+        publisher.publishDoctorAppointmentCancelled(
                 AppointmentEvent.builder()
                         .appointmentId(appointmentId.toString())
                         .doctorId(existingAppointment.doctorId().toString())
                         .patientId(existingAppointment.patientId().toString())
+                        .date(existingAppointment.appointment_date())
                         .status(AppointmentStatus.CANCELLED)
                         .recipientType("DOCTOR")
                         .message("Appointment cancelled by patient on date" + existingAppointment.appointment_date())
@@ -237,14 +238,15 @@ import java.util.UUID;
                 existingAppointment.doctorId(),
                 existingAppointment.appointment_date());
         //notification rescheduled
-        publisher.publish(NotificationSubject.PATIENT_APPOINTMENT_RESCHEDULED, AppointmentEvent.builder()
-                .appointmentId(appointmentId.toString())
-                .doctorId(existingAppointment.doctorId().toString())
-                .patientId(existingAppointment.patientId().toString())
-                .status(AppointmentStatus.RESCHEDULED)
-                .recipientType("PATIENT")
-                .message("Your appointment has been rescheduled " + newDate)
-                .build());
+        publisher.publishPatientAppointmentScheduled(
+               AppointmentEvent.builder()
+                        .appointmentId(appointmentId.toString())
+                        .doctorId(existingAppointment.doctorId().toString())
+                        .patientId(existingAppointment.patientId().toString())
+                        .status(AppointmentStatus.RESCHEDULED)
+                        .recipientType("PATIENT")
+                        .message("Your appointment has been rescheduled " + newDate)
+                        .build());
         log.info("Appointment {} rescheduled by doctor {}", appointmentId, doctorId);
         return existingAppointment.toBuilder()
                 .appointment_date(newDate)
