@@ -513,7 +513,7 @@ public class DoctorGrpcService extends DoctorServiceGrpc.DoctorServiceImplBase {
             if (!jwtUtil.isRefreshToken(claims)) {
                 responseObserver.onError(
                         Status.UNAUTHENTICATED
-                                .withDescription("Invalid token type — refresh token required")
+                                .withDescription("Invalid token type refresh token required")
                                 .asRuntimeException());
                 return;
             }

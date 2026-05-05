@@ -126,4 +126,5 @@ public class DoctorQuery {
     public static final String FIND_BY_GEOHASH_PREFIXES=
             "SELECT " + DOCTOR_ID + " FROM " + GEOHASH_TABLE +
                     " WHERE " + GEOHASH_PREFIX + " IN ?";
+
 }

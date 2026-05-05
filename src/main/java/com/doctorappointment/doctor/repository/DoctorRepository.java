@@ -10,10 +10,8 @@ import com.doctorappointment.doctor.constant.DoctorSchema;
 import com.doctorappointment.doctor.dto.DoctorModel;
 import com.doctorappointment.doctor.exception.DoctorCreationFailedException;
 import jakarta.inject.Singleton;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+
+import java.util.*;
 
 @Singleton
 class DoctorRepository implements DoctorRepoInterface {
@@ -199,7 +197,7 @@ class DoctorRepository implements DoctorRepoInterface {
         List<DoctorModel> doctors = new ArrayList<>();
         for (Row row : rs) {
             UUID doctorId=row.getUuid(DoctorSchema.DOCTOR_ID);
-            DoctorModel doctor=getDoctorById(doctorId); //TODO n+1 query
+            DoctorModel doctor=getDoctorById(doctorId);
             if (doctor != null) {
                 doctors.add(doctor);
             }
