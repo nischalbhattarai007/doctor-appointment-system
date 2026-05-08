@@ -35,7 +35,10 @@ class AppointmentService implements AppointmentServiceInterface {
     private final ScheduleService scheduleService;
 
     public AppointmentService
-            (AppointmentRepoInterface appointmentRepo, DoctorRepoInterface doctorRepo, NotificationPublisher publisher, ScheduleService scheduleService) {
+            (AppointmentRepoInterface appointmentRepo,
+             DoctorRepoInterface doctorRepo,
+             NotificationPublisher publisher,
+             ScheduleService scheduleService) {
         this.appointmentRepo = appointmentRepo;
         this.doctorRepo = doctorRepo;
         this.publisher = publisher;
@@ -188,7 +191,7 @@ class AppointmentService implements AppointmentServiceInterface {
                 existingAppointment.doctorId(),
                 existingAppointment.appointment_date());
 
-        //notification
+        //notification pushed to doctor
         publisher.publishDoctorAppointmentCancelled(
                 AppointmentEvent.builder()
                         .appointmentId(appointmentId.toString())

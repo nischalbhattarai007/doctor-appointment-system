@@ -25,7 +25,7 @@ public class GeocodingService {
     // all three fields are required and validated before calling this
     public double[] getCoordinates(String street, String area, String city) {
         // build query in specific-to-general order for best Photon accuracy
-        // e.g. "Gyaneshwor Marga, Nepaltar, Kathmandu, Nepal"
+        // for eg: Gyaneshwor marga, Nepaltar, Kathmandu, Nepal
         String query = street.trim() + ", " + area.trim() + ", " + city.trim() + ", Nepal";
         return resolveCoordinates(query);
     }
