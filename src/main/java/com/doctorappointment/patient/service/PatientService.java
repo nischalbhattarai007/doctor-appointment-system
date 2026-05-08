@@ -88,11 +88,11 @@ import java.util.UUID;
             throw new PatientNotFoundException("Patient not found");
         }
         PatientModel updated = existingPatient.toBuilder()
-                .firstName(patient.firstName() != null ? patient.firstName() : existingPatient.firstName())
-                .lastName(patient.lastName() != null ? patient.lastName() : existingPatient.lastName())
-                .phoneNumber(patient.phoneNumber() != null ? patient.phoneNumber() : existingPatient.phoneNumber())
-                .address(patient.address() != null ? patient.address() : existingPatient.address())
-                .email(patient.email() != null ? patient.email() : existingPatient.email())
+                .firstName(pick(patient.firstName(),existingPatient.firstName()))
+                .lastName(pick(patient.lastName(),existingPatient.lastName()))
+                .phoneNumber(pick(patient.phoneNumber(),existingPatient.phoneNumber()))
+                .address(pick(patient.address(),existingPatient.address()))
+                .email(pick(patient.email(),existingPatient.email()))
                 .build();
         PatientModel result = patientRepo.updatePatient(updated);
         log.info("Patient updated with this ID {}", patient.patientId());
@@ -138,5 +138,11 @@ import java.util.UUID;
         }
         log.info("Patient with email {} successfully login", email);
         return patient;
+    }
+    private boolean isBlank(String value) {
+        return value == null || value.isBlank();
+    }
+    private String pick(String newVal,String oldVal){
+        return isBlank(newVal) ? oldVal : newVal;
     }
 }

@@ -57,10 +57,7 @@ public class DoctorService implements DoctorServiceInterface {
         String hashedPassword = BCrypt.hashpw(doctor.password(), BCrypt.gensalt());
         //get coordinates from clinic address
         double[] coordinates = geocodingService.getCoordinates
-                (
-                        doctor.street(),
-                        doctor.area(),
-                        doctor.city());
+                (doctor.street(), doctor.area(), doctor.city());
 
         double latitude = coordinates[0];
         double longitude = coordinates[1];
@@ -142,11 +139,11 @@ public class DoctorService implements DoctorServiceInterface {
         }
 
         // resolve effective clinic fields (new value if provided, else keep existing)
-        String effectiveStreet = isBlank(doctor.street()) ? existing.street() : doctor.street();
-        String effectiveArea = isBlank(doctor.area()) ? existing.area() : doctor.area();
-        String effectiveCity = isBlank(doctor.city()) ? existing.city() : doctor.city();
-        String effectiveBuilding = isBlank(doctor.clinicBuilding()) ? existing.clinicBuilding() : doctor.clinicBuilding();
-        String effectiveName = isBlank(doctor.clinicName()) ? existing.clinicName() : doctor.clinicName();
+        String effectiveStreet = pick(doctor.street(), existing.street());
+        String effectiveArea = pick(doctor.area(), existing.area());
+        String effectiveCity = pick(doctor.city(), existing.area());
+        String effectiveBuilding = pick(doctor.clinicBuilding(),existing.clinicBuilding());
+        String effectiveName = pick(doctor.clinicName(),existing.clinicName());
 
         // check if any clinic location field actually changed
         boolean clinicChanged = !effectiveStreet.equals(existing.street())
@@ -172,12 +169,12 @@ public class DoctorService implements DoctorServiceInterface {
 
         DoctorModel updated = DoctorModel.builder()
                 .doctorId(existing.doctorId())
-                .firstName(isBlank(doctor.firstName()) ? existing.firstName() : doctor.firstName())
-                .lastName(isBlank(doctor.lastName()) ? existing.lastName() : doctor.lastName())
-                .phoneNumber(isBlank(doctor.phoneNumber()) ? existing.phoneNumber() : doctor.phoneNumber())
-                .address(isBlank(doctor.address()) ? existing.address() : doctor.address())
-                .email(isBlank(doctor.email()) ? existing.email() : doctor.email())
-                .specialization(isBlank(doctor.specialization()) ? existing.specialization() : doctor.specialization())
+                .firstName(pick(doctor.firstName(),existing.firstName()))
+                .lastName(pick(doctor.lastName(),existing.lastName()))
+                .phoneNumber(pick(doctor.phoneNumber(),existing.phoneNumber()))
+                .address(pick(doctor.address(),existing.address()))
+                .email(pick(doctor.email(),existing.email()))
+                .specialization(pick(doctor.specialization(),existing.specialization()))
                 .street(effectiveStreet)
                 .area(effectiveArea)
                 .city(effectiveCity)
@@ -185,7 +182,7 @@ public class DoctorService implements DoctorServiceInterface {
                 .clinicBuilding(effectiveBuilding)
                 .latitude(latitude)
                 .longitude(longitude)
-                .dailyLimit(doctor.dailyLimit() ==0? existing.dailyLimit() : doctor.dailyLimit())
+                .dailyLimit(doctor.dailyLimit() ==0? existing.dailyLimit() : doctor.dailyLimit()) //TODO run this code update doctor daily limit to 0 for testing
                 .geoHash(newGeohash)
                 .build();
 
@@ -213,7 +210,7 @@ public class DoctorService implements DoctorServiceInterface {
     //login
     @Override
     public DoctorModel login(String email, String password) {
-        if (email == null || email.isEmpty() || password == null) {
+        if (email == null || email.isEmpty() || password == null || password.isEmpty()) {
             throw new EmailPasswordRequiredException("Email or password is required");
         }
        // String password_auth= BasicAuthInterceptor.PASSWORD_CONTEXT_KEY.get();
@@ -298,4 +295,8 @@ public class DoctorService implements DoctorServiceInterface {
         return input.trim()
                 .toLowerCase()
                 .replaceAll("\\s*,\\s*",",");
-    }}
+    }
+    private String pick(String newVal,String oldVal){
+        return isBlank(newVal) ? oldVal : newVal;
+    }
+}
