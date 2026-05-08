@@ -10,7 +10,6 @@ import com.doctorappointment.doctor.exception.ValidationException;
 import com.doctorappointment.doctor.repository.DoctorRepoInterface;
 import com.doctorappointment.doctor.repository.ScheduleRepoInterface;
 import jakarta.inject.Singleton;
-
 import java.time.LocalDate;
 import java.util.Set;
 import java.util.UUID;

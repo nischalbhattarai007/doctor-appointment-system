@@ -1,9 +1,16 @@
-syntax = "proto3";
+syntax = "proto3";//protobuf syntax
 
-option java_multiple_files = true;
-option java_package = "com.doctorappointment";
-option java_outer_classname = "DoctorProto";
-option objc_class_prefix = "HLW";
+option java_multiple_files = true; //generate separate java files per message/service
+option java_package = "com.doctorappointment"; // package name
+option java_outer_classname = "DoctorProto"; //outer wrapper class name
+option objc_class_prefix = "HLW"; //used in macOs or apple. to generate code in many language
+/*
+    prefix for objective C
+    objective c doesn't have proper package namespaces like java
+    objective c classes are global.
+    so if two libraries both create same name they conflict.
+    to avoid this prefixes are added
+*/
 
 package com.doctorappointment;
 
