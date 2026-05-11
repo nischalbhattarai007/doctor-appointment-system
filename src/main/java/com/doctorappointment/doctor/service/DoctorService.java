@@ -125,7 +125,6 @@ public class DoctorService implements DoctorServiceInterface {
     //update doctor by id
     @Override
     public DoctorModel updateDoctor(DoctorModel doctor) {
-        ValidateDoctor.validateEmail(doctor.email());
         ValidateDoctor.validatePhone(doctor.phoneNumber());
         if (doctor.doctorId() == null) {
             throw new DoctorIdNotFoundException("Doctor id is required");

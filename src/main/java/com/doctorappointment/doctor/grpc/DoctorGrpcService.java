@@ -172,19 +172,30 @@ public class DoctorGrpcService extends DoctorServiceGrpc.DoctorServiceImplBase {
                 return;
             }
             DoctorModel authenticatedDoctor = service.getDoctorByEmail(email);
-            if (!authenticatedDoctor.doctorId().toString().equals(request.getDoctorId())) {
+            if(authenticatedDoctor == null) {
                 responseObserver.onError(
-                        Status.PERMISSION_DENIED
-                                .withDescription("Doctor ID doesn't match")
+                        Status.UNAUTHENTICATED
+                                .withDescription("Authentication doctor not found")
                                 .asRuntimeException()
                 );
                 return;
             }
+//            if (!authenticatedDoctor.doctorId().toString().equals(request.getDoctorId())) {
+//                responseObserver.onError(
+//                        Status.PERMISSION_DENIED
+//                                .withDescription("Doctor ID doesn't match")
+//                                .asRuntimeException()
+//                );
+//                return;
+//            }
             DoctorModel doctor = service.updateDoctor(
-                    DoctorGrpcHelper.fromUpdateRequest(request));
+                    DoctorGrpcHelper.fromUpdateRequest(request)
+                            .toBuilder()
+                            .doctorId(authenticatedDoctor.doctorId())
+                            .build());
             responseObserver.onNext(
                     DoctorGrpcHelper.toUpdateResponse(doctor, "SUCCESS", "Doctor updated successfully"));
-            log.info("Doctor with ID {} updated successfully", request.getDoctorId());
+            log.info("Doctor with ID {} updated successfully",authenticatedDoctor.doctorId());
             responseObserver.onCompleted();
         } catch (DoctorIdNotFoundException e) {
             responseObserver.onError(
@@ -318,10 +329,6 @@ public class DoctorGrpcService extends DoctorServiceGrpc.DoctorServiceImplBase {
                                             .setCity(d.city())
                                             .setDoctorPhoneNumber(d.phoneNumber())
                                             .setDistanceKm(distances.get(doctors.indexOf(d)))
-                                            /*
-                                                makes O(N2) time complexity as everytime
-                                                it scans the whole table to check
-                                             */
                                             .build())
                             .collect(Collectors.toList()))
                     .setDoctorStatus("SUCCESS")

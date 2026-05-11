@@ -137,19 +137,17 @@ message GetByDoctorEmailResponse{
 }
 //update doctor by Id
 message UpdateDoctorRequest{
-  string doctor_id = 1;
-  string doctor_first_name = 2;
-  string doctor_last_name = 3;
-  string doctor_phone_number = 4;
-  string doctor_address = 5;
-  string specialization = 6;
-  string street=7;
-  string area=8;
-  string city=9;
-  int32 daily_limit = 10;
-  string clinic_name = 11;
-  string clinic_building = 12;
-  string doctor_email=13;
+  string doctor_first_name = 1;
+  string doctor_last_name = 2;
+  string doctor_phone_number = 3;
+  string doctor_address = 4;
+  string specialization = 5;
+  string street=6;
+  string area=7;
+  string city=8;
+  int32 daily_limit = 9;
+  string clinic_name = 10;
+  string clinic_building = 11;
 }
 //update doctor by Id response
 message UpdateDoctorResponse{
@@ -169,6 +167,7 @@ message UpdateDoctorResponse{
   string clinic_building = 14;
   string doctor_status = 15;
   string doctor_message = 16;
+  int32 daily_limit=17;
 }
 // get doctor by location
 message LocationRequest{

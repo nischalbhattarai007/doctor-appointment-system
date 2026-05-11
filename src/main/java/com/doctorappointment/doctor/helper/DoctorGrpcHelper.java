@@ -57,12 +57,10 @@ public class DoctorGrpcHelper {
     public static DoctorModel fromUpdateRequest
     (UpdateDoctorRequest request) {
         return DoctorModel.builder()
-                .doctorId(UUID.fromString(request.getDoctorId()))
                 .firstName(request.getDoctorFirstName())
                 .lastName(request.getDoctorLastName())
                 .phoneNumber(request.getDoctorPhoneNumber())
                 .address(request.getDoctorAddress())
-                .email(request.getDoctorEmail())
                 .specialization(request.getSpecialization())
                 .street(request.getStreet())
                 .area(request.getArea())
@@ -84,6 +82,7 @@ public class DoctorGrpcHelper {
                 .setDoctorEmail(model.email())
                 .setSpecialization(model.specialization())
                 .setStreet(model.street())
+                .setDailyLimit(model.dailyLimit())
                 .setArea(model.area())
                 .setCity(model.city())
                 .setLatitude(model.latitude())
