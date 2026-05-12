@@ -17,17 +17,17 @@ public class BasicAuthValidator {
         this.doctorRepo = doctorRepo;
     }
 
-    public boolean validate(String email, String password) {
+    public String validate(String email, String password) {
         PatientModel patient = patientRepo.getPatientByEmail(email);
         //check patient table
-        if (patient != null && !patient.isDeleted()) {
-            return BCrypt.checkpw(password, patient.password());
+        if (patient != null && !patient.isDeleted() && BCrypt.checkpw(password, patient.password())) {
+            return "PATIENT";
         }
         //check doctor table
         DoctorModel doctor = doctorRepo.getDoctorByEmail(email);
-        if (doctor != null && !doctor.isDeleted()) {
-            return BCrypt.checkpw(password, doctor.password());
+        if (doctor != null && !doctor.isDeleted() && BCrypt.checkpw(password, doctor.password())) {
+            return "DOCTOR";
         }
-        return false;
+        return null;
     }
 }

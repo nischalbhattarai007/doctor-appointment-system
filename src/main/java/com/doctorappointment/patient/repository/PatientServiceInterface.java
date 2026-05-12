@@ -17,7 +17,7 @@ public interface PatientServiceInterface {
 
     void deletePatient(UUID id);
 
-    PatientModel login(String email, String password);
+//    PatientModel login(String email, String password);
 
     List<PatientModel> getAllPatients();
 }

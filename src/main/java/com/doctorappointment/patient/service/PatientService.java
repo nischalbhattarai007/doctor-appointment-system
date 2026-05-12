@@ -18,7 +18,7 @@ import java.util.UUID;
 @Slf4j
 @Singleton
  class PatientService implements PatientServiceInterface {
-    private static Logger logger= LoggerFactory.getLogger(PatientService.class);
+    private static final Logger logger= LoggerFactory.getLogger(PatientService.class);
    private final PatientRepoInterface patientRepo;
 
     public PatientService(PatientRepoInterface patientRepo) {
@@ -121,24 +121,24 @@ import java.util.UUID;
     }
 
     //login
-    @Override
-    public PatientModel login(String email, String password) {
-        if(email == null || password == null) {
-            throw new PatientNotFoundException("Email is required");
-        }
-        PatientModel patient=patientRepo.getPatientByEmail(email.trim());
-        if(patient == null) {
-            throw new InvalidEmailPasswordException("Patient not found");
-        }
-        if(patient.isDeleted()){
-            throw new PatientNotFoundException("Patient not found");
-        }
-        if(!BCrypt.checkpw(password, patient.password())) {
-            throw new InvalidEmailPasswordException("Invalid email or password");
-        }
-        log.info("Patient with email {} successfully login", email);
-        return patient;
-    }
+//    @Override
+//    public PatientModel login(String email, String password) {
+//        if(email == null || password == null) {
+//            throw new PatientNotFoundException("Email is required");
+//        }
+//        PatientModel patient=patientRepo.getPatientByEmail(email.trim());
+//        if(patient == null) {
+//            throw new InvalidEmailPasswordException("Patient not found");
+//        }
+//        if(patient.isDeleted()){
+//            throw new PatientNotFoundException("Patient not found");
+//        }
+//        if(!BCrypt.checkpw(password, patient.password())) {
+//            throw new InvalidEmailPasswordException("Invalid email or password");
+//        }
+//        log.info("Patient with email {} successfully login", email);
+//        return patient;
+//    }
     private boolean isBlank(String value) {
         return value == null || value.isBlank();
     }

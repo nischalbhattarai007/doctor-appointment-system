@@ -1,7 +1,7 @@
 package com.doctorappointment.patient.grpc;
 
 import com.doctorappointment.*;
-import com.doctorappointment.auth.BasicAuthInterceptor;
+import com.doctorappointment.auth.basicauth.BasicAuthInterceptor;
 import com.doctorappointment.auth.util.JwtUtil;
 import com.doctorappointment.patient.dto.PatientModel;
 import com.doctorappointment.patient.exception.EmailAlreadyExistsException;
@@ -13,6 +13,7 @@ import io.grpc.stub.StreamObserver;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
+import io.micronaut.grpc.annotation.GrpcService;
 import jakarta.inject.Singleton;
 import jakarta.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +35,6 @@ public class PatientGrpcService extends PatientServiceGrpc.PatientServiceImplBas
     @Override
     public void registerPatient
             (RegisterPatientRequest request, StreamObserver<PatientResponse> responseStreamObserver) {
-        try {
             var patientReq = PatientGrpcHelper.fromRegisterRequest(request);
             PatientModel patientModel = service.addPatient(patientReq);
             responseStreamObserver.onNext(
@@ -42,29 +42,11 @@ public class PatientGrpcService extends PatientServiceGrpc.PatientServiceImplBas
                             (patientModel, "SUCCESS", "Patient registered successfully"));
             log.info("Patient registered successfully");
             responseStreamObserver.onCompleted();
-        } catch (EmailAlreadyExistsException e) {
-            responseStreamObserver.onError(
-                    Status.ALREADY_EXISTS
-                            .withDescription("Email already exists")
-                            .asRuntimeException());
-        } catch (ValidationException e) {
-            responseStreamObserver.onError(
-                    Status.INVALID_ARGUMENT
-                            .withDescription(e.getMessage())
-                            .asRuntimeException());
-        } catch (Exception e) {
-            responseStreamObserver.onError(
-                    Status.INTERNAL
-                            .withDescription(e.getMessage())
-                            .asRuntimeException()
-            );
-        }
     }
 
     @Override
     public void getPatientById
             (GetByIdRequest request, StreamObserver<GetByIdResponse> responseStreamObserver) {
-        try {
             String email = BasicAuthInterceptor.EMAIL_CONTEXT_KEY.get();
             String idString = request.getPatientId();
             UUID id = UUID.fromString(idString);
@@ -97,18 +79,11 @@ public class PatientGrpcService extends PatientServiceGrpc.PatientServiceImplBas
             log.info("Patient retrieved from ID successfully");
             responseStreamObserver.onNext(response);
             responseStreamObserver.onCompleted();
-        } catch (Exception e) {
-            responseStreamObserver.onError(
-                    Status.INTERNAL
-                            .withDescription(e.getMessage())
-                            .asRuntimeException());
-        }
     }
 
     @Override
     public void getPatientByEmail
             (GetByEmailRequest request, StreamObserver<GetByEmailResponse> responseStreamObserver) {
-        try {
             String email_check = BasicAuthInterceptor.EMAIL_CONTEXT_KEY.get();
             if (!email_check.equals(request.getEmail())) {
                 responseStreamObserver.onError(
@@ -139,18 +114,11 @@ public class PatientGrpcService extends PatientServiceGrpc.PatientServiceImplBas
             log.info("Patient retrieved from email  successfully");
             responseStreamObserver.onNext(response);
             responseStreamObserver.onCompleted();
-        } catch (Exception e) {
-            responseStreamObserver.onError(
-                    Status.INTERNAL
-                            .withDescription(e.getMessage())
-                            .asRuntimeException());
-        }
     }
 
     @Override
     public void updatePatient
             (UpdatePatientRequest request, StreamObserver<UpdatePatientResponse> responseStreamObserver) {
-        try {
             String email = BasicAuthInterceptor.EMAIL_CONTEXT_KEY.get();
             UUID id = UUID.fromString(request.getPatientId());
             PatientModel existing = service.getPatientById(id);
@@ -168,29 +136,17 @@ public class PatientGrpcService extends PatientServiceGrpc.PatientServiceImplBas
                             (patientModel, "Success", "Patient updated successfully"));
             log.info("Patient updated successfully");
             responseStreamObserver.onCompleted();
-        } catch (PatientNotFoundException e) {
-            responseStreamObserver.onError(
-                    Status.NOT_FOUND
-                            .withDescription("Patient not found")
-                            .asRuntimeException());
-        } catch (Exception e) {
-            responseStreamObserver.onError(
-                    Status.INTERNAL
-                            .withDescription(e.getMessage())
-                            .asRuntimeException());
-        }
     }
 
     @Override
     public void deletePatient
             (GetByIdRequest request, StreamObserver<DeletePatientResponse> responseStreamObserver) {
-        try {
             String email = BasicAuthInterceptor.EMAIL_CONTEXT_KEY.get();
             UUID id = UUID.fromString(request.getPatientId());
             PatientModel existing = service.getPatientById(id);
             if (!existing.email().equals(email)) {
                 responseStreamObserver.onError(
-                        Status.UNAUTHENTICATED
+                        Status.PERMISSION_DENIED
                                 .withDescription("Access denied")
                                 .asRuntimeException()
                 );
@@ -203,29 +159,31 @@ public class PatientGrpcService extends PatientServiceGrpc.PatientServiceImplBas
                     .build();
             responseStreamObserver.onNext(response);
             responseStreamObserver.onCompleted();
-        } catch (PatientNotFoundException e) {
-            responseStreamObserver.onError(
-                    Status.NOT_FOUND
-                            .withDescription("Patient not found")
-                            .asRuntimeException());
-        } catch (Exception e) {
-            responseStreamObserver.onError(
-                    Status.INTERNAL
-                            .withDescription(e.getMessage())
-                            .asRuntimeException());
-        }
     }
 
     //login
     @Override
     public void login
     (LoginRequest request, StreamObserver<LoginResponse> responseStreamObserver) {
-        try {
             String email = BasicAuthInterceptor.EMAIL_CONTEXT_KEY.get();
-            String password = BasicAuthInterceptor.PASSWORD_CONTEXT_KEY.get();
-            PatientModel patientModel = service.login(email, password);
-            String token = jwtUtil.generateToken(email, "PATIENT");
-            String refreshToken = jwtUtil.refreshToken(email, "PATIENT");
+            String role = BasicAuthInterceptor.ROLE_CONTEXT_KEY.get();
+            PatientModel patientModel = service.getPatientByEmail(email);
+            if (patientModel == null || patientModel.isDeleted()) {
+                responseStreamObserver.onError(
+                        Status.NOT_FOUND
+                                .withDescription("Patient not found")
+                                .asRuntimeException()
+                );
+                return;
+            }
+            // role check only patient account can use this
+            if (!"PATIENT".equals(role)) {
+                responseStreamObserver.onError(
+                        Status.PERMISSION_DENIED.withDescription("Access denied").asRuntimeException());
+                return;
+            }
+            String token = jwtUtil.generateToken(email, role);
+            String refreshToken = jwtUtil.refreshToken(email, role);
             LoginResponse response = LoginResponse.newBuilder()
                     .setPatientId(String.valueOf(patientModel.patientId()))
                     .setFirstName(patientModel.firstName())
@@ -239,23 +197,10 @@ public class PatientGrpcService extends PatientServiceGrpc.PatientServiceImplBas
             responseStreamObserver.onNext(response);
             log.info("Patient login successfully");
             responseStreamObserver.onCompleted();
-        } catch (PatientNotFoundException e) {
-            responseStreamObserver.onError(
-                    Status.UNAUTHENTICATED
-                            .withDescription(e.getMessage())
-                            .asRuntimeException());
-        } catch (Exception e) {
-            responseStreamObserver.onError(
-                    Status.INTERNAL
-                            .withDescription(e.getMessage())
-                            .asRuntimeException());
-        }
     }
 
     @Override
     public void getAllPatient(Empty request, StreamObserver<PatientListResponse> responseStreamObserver) {
-        try {
-
             List<PatientModel> patients = service.getAllPatients();
             for (PatientModel patient : patients) {
                 PatientListResponse response = PatientListResponse.newBuilder()
@@ -269,52 +214,28 @@ public class PatientGrpcService extends PatientServiceGrpc.PatientServiceImplBas
                 responseStreamObserver.onNext(response);
             }
             responseStreamObserver.onCompleted();
-        } catch (Exception e) {
-            responseStreamObserver.onError(
-                    Status.INTERNAL
-                            .withDescription(e.getMessage())
-                            .asRuntimeException());
-        }
     }
 
     @Override
     public void refreshTokens(RefreshTokenRequests requests, StreamObserver<RefreshTokenResponses> responseStreamObserver) {
-        try {
-            String incomingRefreshToken = requests.getRefreshToken();
-            Claims claims = jwtUtil.validateToken(incomingRefreshToken);
-            if (!jwtUtil.isRefreshToken(claims)) {
-                responseStreamObserver.onError(
-                        Status.UNAUTHENTICATED
-                                .withDescription("Invalid token type refresh token required")
-                                .asRuntimeException());
-                return;
-            }
-            String email = jwtUtil.getEmail(claims);
-            String role = jwtUtil.getRole(claims);
-            String newAccessToken = jwtUtil.generateToken(email, role);
-            log.info("Access token refreshed successfully for :{}", email);
-            responseStreamObserver.onNext(
-                    RefreshTokenResponses.newBuilder()
-                            .setToken(newAccessToken)
-                            .setRefreshToken(incomingRefreshToken)
-                            .build());
-            responseStreamObserver.onCompleted();
-        } catch (ExpiredJwtException e) {
+        String incomingRefreshToken = requests.getRefreshToken();
+        Claims claims = jwtUtil.validateToken(incomingRefreshToken);
+        if (!jwtUtil.isRefreshToken(claims)) {
             responseStreamObserver.onError(
                     Status.UNAUTHENTICATED
-                            .withDescription("Refresh token expired please login again")
+                            .withDescription("Invalid token type refresh token required")
                             .asRuntimeException());
-        } catch (JwtException e) {
-            responseStreamObserver.onError(
-                    Status.UNAUTHENTICATED
-                            .withDescription("Invalid refresh token")
-                            .asRuntimeException());
-        } catch (Exception e) {
-            responseStreamObserver.onError(
-                    Status.INTERNAL
-                            .withDescription(e.getMessage())
-                            .asRuntimeException());
+            return;
         }
+        String email = jwtUtil.getEmail(claims);
+        String role = jwtUtil.getRole(claims);
+        String newAccessToken = jwtUtil.generateToken(email, role);
+        log.info("Access token refreshed successfully for :{}", email);
+        responseStreamObserver.onNext(
+                RefreshTokenResponses.newBuilder()
+                        .setToken(newAccessToken)
+                        .setRefreshToken(incomingRefreshToken)
+                        .build());
+        responseStreamObserver.onCompleted();
     }
-
 }

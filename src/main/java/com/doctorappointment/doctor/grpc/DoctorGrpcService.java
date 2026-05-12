@@ -2,7 +2,7 @@ package com.doctorappointment.doctor.grpc;
 
 import com.doctorappointment.*;
 import com.doctorappointment.appointment.repository.AppointmentRepoInterface;
-import com.doctorappointment.auth.BasicAuthInterceptor;
+import com.doctorappointment.auth.basicauth.BasicAuthInterceptor;
 import com.doctorappointment.auth.util.JwtUtil;
 import com.doctorappointment.doctor.dto.DoctorModel;
 import com.doctorappointment.doctor.dto.DoctorScheduleModel;
@@ -74,9 +74,21 @@ public class DoctorGrpcService extends DoctorServiceGrpc.DoctorServiceImplBase {
     public void doctorLogin(DoctorLoginRequest request, StreamObserver<DoctorLoginResponse> responseObserver) {
         try {
             String email = BasicAuthInterceptor.EMAIL_CONTEXT_KEY.get();
-            String password = BasicAuthInterceptor.PASSWORD_CONTEXT_KEY.get();
-            DoctorModel model=service.login(email, password);
-            //DoctorModel model = service.getDoctorByEmail(email);
+            String role=BasicAuthInterceptor.ROLE_CONTEXT_KEY.get();
+            DoctorModel model=service.getDoctorByEmail(email);
+            if(model==null || model.isDeleted()){
+                responseObserver.onError(
+                        Status.NOT_FOUND
+                                .withDescription("Doctor not found")
+                                .asRuntimeException()
+                );
+                return;
+            }
+            if (!"DOCTOR".equals(role)) {
+                responseObserver.onError(
+                        Status.PERMISSION_DENIED.withDescription("Access denied").asRuntimeException());
+                return;
+            }
             String token=jwtUtil.generateToken(email,"DOCTOR");
             String refreshToken= jwtUtil.refreshToken(email,"DOCTOR");
             responseObserver.onNext(
@@ -226,7 +238,7 @@ public class DoctorGrpcService extends DoctorServiceGrpc.DoctorServiceImplBase {
             DoctorModel authenticatedDoctor = service.getDoctorByEmail(email);
             if (!authenticatedDoctor.doctorId().toString().equals(request.getDoctorId())) {
                 responseObserver.onError(
-                        Status.UNAUTHENTICATED
+                        Status.PERMISSION_DENIED
                                 .withDescription(" Unauthorized person access! ")
                                 .asRuntimeException()
                 );
@@ -328,7 +340,7 @@ public class DoctorGrpcService extends DoctorServiceGrpc.DoctorServiceImplBase {
                                             .setArea(d.area())
                                             .setCity(d.city())
                                             .setDoctorPhoneNumber(d.phoneNumber())
-                                            .setDistanceKm(distances.get(doctors.indexOf(d)))
+                                            .setDistanceKm(distances.get(doctors.indexOf(d))) //TODO fix o(n2)
                                             .build())
                             .collect(Collectors.toList()))
                     .setDoctorStatus("SUCCESS")

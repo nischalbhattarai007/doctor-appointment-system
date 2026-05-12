@@ -18,7 +18,7 @@ public interface DoctorServiceInterface {
 
     void deleteDoctorById(UUID id);
 
-    DoctorModel login(String email, String password);
+//    DoctorModel login(String email, String password);
 
     DoctorModel getDoctorAvailability(UUID id);
 

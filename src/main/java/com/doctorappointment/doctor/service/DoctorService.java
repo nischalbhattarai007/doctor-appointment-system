@@ -1,5 +1,4 @@
 package com.doctorappointment.doctor.service;
-import com.doctorappointment.auth.BasicAuthInterceptor;
 import com.doctorappointment.doctor.dto.DoctorModel;
 import com.doctorappointment.doctor.dto.DoctorRequest;
 import com.doctorappointment.doctor.exception.*;
@@ -140,7 +139,7 @@ public class DoctorService implements DoctorServiceInterface {
         // resolve effective clinic fields (new value if provided, else keep existing)
         String effectiveStreet = pick(doctor.street(), existing.street());
         String effectiveArea = pick(doctor.area(), existing.area());
-        String effectiveCity = pick(doctor.city(), existing.area());
+        String effectiveCity = pick(doctor.city(), existing.city());
         String effectiveBuilding = pick(doctor.clinicBuilding(),existing.clinicBuilding());
         String effectiveName = pick(doctor.clinicName(),existing.clinicName());
 
@@ -181,7 +180,7 @@ public class DoctorService implements DoctorServiceInterface {
                 .clinicBuilding(effectiveBuilding)
                 .latitude(latitude)
                 .longitude(longitude)
-                .dailyLimit(doctor.dailyLimit() ==0? existing.dailyLimit() : doctor.dailyLimit()) //TODO run this code update doctor daily limit to 0 for testing
+                .dailyLimit(doctor.dailyLimit() ==0? existing.dailyLimit() : doctor.dailyLimit())
                 .geoHash(newGeohash)
                 .build();
 
@@ -207,25 +206,25 @@ public class DoctorService implements DoctorServiceInterface {
     }
 
     //login
-    @Override
-    public DoctorModel login(String email, String password) {
-        if (email == null || email.isEmpty() || password == null || password.isEmpty()) {
-            throw new EmailPasswordRequiredException("Email or password is required");
-        }
-       // String password_auth= BasicAuthInterceptor.PASSWORD_CONTEXT_KEY.get();
-        DoctorModel doctor = doctorRepo.getDoctorByEmail(email);
-        if (doctor == null) {
-            throw new EmailPasswordRequiredException("Invalid email or password");
-        }
-        if (doctor.isDeleted()) {
-            throw new DoctorIdNotFoundException("Doctor account is deactivated");
-        }
-        if (!BCrypt.checkpw(password, doctor.password())) {
-            throw new InvalidPasswordException("Invalid email or password");
-        }
-        log.info("Logged successfully for email {} ", email);
-        return doctor;
-    }
+//    @Override
+//    public DoctorModel login(String email, String password) {
+//        if (email == null || email.isEmpty() || password == null || password.isEmpty()) {
+//            throw new EmailPasswordRequiredException("Email or password is required");
+//        }
+//       // String password_auth= BasicAuthInterceptor.PASSWORD_CONTEXT_KEY.get();
+//        DoctorModel doctor = doctorRepo.getDoctorByEmail(email);
+//        if (doctor == null) {
+//            throw new EmailPasswordRequiredException("Invalid email or password");
+//        }
+//        if (doctor.isDeleted()) {
+//            throw new DoctorIdNotFoundException("Doctor account is deactivated");
+//        }
+//        if (!BCrypt.checkpw(password, doctor.password())) {
+//            throw new InvalidPasswordException("Invalid email or password");
+//        }
+//        log.info("Logged successfully for email {} ", email);
+//        return doctor;
+//    }
 
     //get doctor availability
     @Override

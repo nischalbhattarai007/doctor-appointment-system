@@ -8,12 +8,6 @@ import java.util.Set;
 public class GeohashUtil {
     private static final int PRECISION = 6;
     private GeohashUtil() {}
-
-    /**
-      1. Latitude and longitude ranges are repeatedly divided
-      2. Each split generates binary bits
-      3. Bits are combined and encoded into Base32 string
-     */
     public static String encode(double latitude, double longitude) {
         return GeoHash
                 .withCharacterPrecision(latitude, longitude, PRECISION) // create geohash using given precision
