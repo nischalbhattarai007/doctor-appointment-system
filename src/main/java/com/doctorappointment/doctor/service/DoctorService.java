@@ -7,6 +7,7 @@ import com.doctorappointment.doctor.repository.DoctorServiceInterface;
 import com.doctorappointment.doctor.util.GeoCalculateDistance;
 import com.doctorappointment.doctor.util.GeohashUtil;
 import jakarta.inject.Singleton;
+import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.mindrot.jbcrypt.BCrypt;
 import java.util.List;
@@ -19,7 +20,7 @@ public class DoctorService implements DoctorServiceInterface {
     private final DoctorRepoInterface doctorRepo;
     private final GeocodingService geocodingService;
 
-    public DoctorService(DoctorRepoInterface doctorRepo, GeocodingService geocodingService) {
+    public DoctorService(DoctorRepoInterface doctorRepo,GeocodingService geocodingService) {
         this.doctorRepo = doctorRepo;
         this.geocodingService = geocodingService;
     }

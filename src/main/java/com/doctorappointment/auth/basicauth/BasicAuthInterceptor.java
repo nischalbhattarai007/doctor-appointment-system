@@ -4,7 +4,9 @@ import com.doctorappointment.auth.BasicAuthValidator;
 import com.doctorappointment.patient.exception.InvalidAuthorizationFormatException;
 import com.doctorappointment.patient.exception.MissingAuthorizationHeaderException;
 import io.grpc.*;
+import io.micronaut.context.annotation.Value;
 import jakarta.inject.Singleton;
+
 import lombok.extern.slf4j.Slf4j;
 
 import java.nio.charset.StandardCharsets;
@@ -13,6 +15,7 @@ import java.util.Set;
 
 @Singleton
 @Slf4j
+
 public class BasicAuthInterceptor implements ServerInterceptor {
     public static final Context.Key<String> EMAIL_CONTEXT_KEY = Context.key("email");
     public static final Context.Key<String> ROLE_CONTEXT_KEY = Context.key("role");
@@ -24,14 +27,19 @@ public class BasicAuthInterceptor implements ServerInterceptor {
             "com.doctorappointment.DoctorService/DoctorLogin"
     );
     private final BasicAuthValidator basicAuthValidator;
+    private final boolean isEnable;
 
-    public BasicAuthInterceptor(BasicAuthValidator basicAuthValidator) {
+    public BasicAuthInterceptor(BasicAuthValidator basicAuthValidator,@Value("${auth.enable}") boolean isEnable) {
         this.basicAuthValidator = basicAuthValidator;
+        this.isEnable = isEnable;
     }
 
     @Override
     public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(
             ServerCall<ReqT, RespT> call, Metadata metadata, ServerCallHandler<ReqT, RespT> next) {
+        if(!isEnable){
+            return Contexts.interceptCall(Context.current(),call,metadata,next);
+        }
 
         String method = call.getMethodDescriptor().getFullMethodName();
 

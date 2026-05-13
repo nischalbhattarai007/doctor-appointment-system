@@ -5,6 +5,7 @@ import com.doctorappointment.auth.util.JwtUtil;
 import io.grpc.*;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
+import io.micronaut.context.annotation.Value;
 import jakarta.inject.Singleton;
 
 import java.util.Set;
@@ -29,14 +30,19 @@ public class JwtAuthInterceptor implements ServerInterceptor {
     );
 
     private final JwtUtil jwtUtil;
+    private final boolean isEnable;
 
-    public JwtAuthInterceptor(JwtUtil jwtUtil) {
+    public JwtAuthInterceptor(JwtUtil jwtUtil,@Value("${auth.enable}") boolean isEnable) {
         this.jwtUtil = jwtUtil;
+        this.isEnable = isEnable;
     }
 
     @Override
     public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(
             ServerCall<ReqT, RespT> call, Metadata metadata, ServerCallHandler<ReqT, RespT> next) {
+        if(!isEnable){
+            return Contexts.interceptCall(Context.current(),call,metadata,next);
+        }
 
         String method = call.getMethodDescriptor().getFullMethodName();
 
