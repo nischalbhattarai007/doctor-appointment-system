@@ -29,17 +29,17 @@ public class BasicAuthInterceptor implements ServerInterceptor {
             "DoctorLogin"
     );
     private final BasicAuthValidator basicAuthValidator;
-    private final boolean isEnable;
+    private final boolean authEnable;
 
-    public BasicAuthInterceptor(BasicAuthValidator basicAuthValidator,@Value("${auth.enable}") boolean isEnable) {
+    public BasicAuthInterceptor(BasicAuthValidator basicAuthValidator,@Value("${auth.enable}") boolean authEnable) {
         this.basicAuthValidator = basicAuthValidator;
-        this.isEnable = isEnable;
+        this.authEnable = authEnable;
     }
 
     @Override
     public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(
             ServerCall<ReqT, RespT> call, Metadata metadata, ServerCallHandler<ReqT, RespT> next) {
-        if(!isEnable){
+        if(!authEnable){
             /*
                 isEnable=true -> skips this block
                 isEnable=false-> triggered this block and execute this block with no authorization code

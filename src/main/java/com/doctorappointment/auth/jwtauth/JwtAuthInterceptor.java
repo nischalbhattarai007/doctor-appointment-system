@@ -27,17 +27,17 @@ public class JwtAuthInterceptor implements ServerInterceptor {
     );
 
     private final JwtUtil jwtUtil;
-    private final boolean isEnable;
+    private final boolean authEnable;
 
-    public JwtAuthInterceptor(JwtUtil jwtUtil,@Value("${auth.enable}") boolean isEnable) {
+    public JwtAuthInterceptor(JwtUtil jwtUtil,@Value("${auth.enable}") boolean authEnable) {
         this.jwtUtil = jwtUtil;
-        this.isEnable = isEnable;
+        this.authEnable = authEnable;
     }
 
     @Override
     public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(
             ServerCall<ReqT, RespT> call, Metadata metadata, ServerCallHandler<ReqT, RespT> next) {
-        if(!isEnable){
+        if(!authEnable){
             /********************************************************
              if isEnable true this block skipped
                  and if isEnable false this block executed
