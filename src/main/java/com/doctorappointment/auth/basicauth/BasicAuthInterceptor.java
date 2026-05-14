@@ -17,14 +17,16 @@ import java.util.Set;
 @Slf4j
 
 public class BasicAuthInterceptor implements ServerInterceptor {
+    // Context keys shared between BasicAuthInterceptor and JwtAuthInterceptor.
+    // BasicAuth runs first (login flow), JwtAuth runs second (all other calls).
     public static final Context.Key<String> EMAIL_CONTEXT_KEY = Context.key("email");
     public static final Context.Key<String> ROLE_CONTEXT_KEY = Context.key("role");
     private static final Metadata.Key<String> AUTH_HEADER =
             Metadata.Key.of("authorization", Metadata.ASCII_STRING_MARSHALLER);
 
     private static final Set<String> LOGIN_METHODS = Set.of(
-            "com.doctorappointment.PatientService/Login",
-            "com.doctorappointment.DoctorService/DoctorLogin"
+            "Login",
+            "DoctorLogin"
     );
     private final BasicAuthValidator basicAuthValidator;
     private final boolean isEnable;
@@ -38,13 +40,18 @@ public class BasicAuthInterceptor implements ServerInterceptor {
     public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(
             ServerCall<ReqT, RespT> call, Metadata metadata, ServerCallHandler<ReqT, RespT> next) {
         if(!isEnable){
+            /*
+                isEnable=true -> skips this block
+                isEnable=false-> triggered this block and execute this block with no authorization code
+             */
             return Contexts.interceptCall(Context.current(),call,metadata,next);
         }
 
         String method = call.getMethodDescriptor().getFullMethodName();
+        String simpleName=method.substring(method.lastIndexOf('/')+1);
 
-        // Skip — not a login method, let it through
-        if (!LOGIN_METHODS.contains(method)) {
+        // Skip - not a login method
+        if (!LOGIN_METHODS.contains(simpleName)) {
             return Contexts.interceptCall(Context.current(), call, metadata, next);
         }
 
@@ -85,6 +92,7 @@ public class BasicAuthInterceptor implements ServerInterceptor {
         if (parts.length != 2) {
             throw new InvalidAuthorizationFormatException("Invalid authorization format");
         }
+        log.debug("Decoded authorization header: {} and password: {}", parts[0], parts[1]);
         return parts;
     }
 

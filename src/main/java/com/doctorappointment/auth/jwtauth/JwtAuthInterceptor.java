@@ -14,19 +14,16 @@ import java.util.Set;
 public class JwtAuthInterceptor implements ServerInterceptor {
     private static final Metadata.Key<String> AUTH_HEADER =
             Metadata.Key.of("authorization", Metadata.ASCII_STRING_MARSHALLER);
-
+    //no need validation for this methods no jwt no basic auth
     private static final Set<String> PUBLIC_METHODS = Set.of(
-            "com.doctorappointment.PatientService/RegisterPatient",
-            "com.doctorappointment.PatientService/GetAllPatient",
-            "com.doctorappointment.PatientService/RefreshTokens",
-            "com.doctorappointment.DoctorService/GetAllDoctorList",
-            "com.doctorappointment.DoctorService/RegisterDoctor",
-            "com.doctorappointment.DoctorService/RefreshToken"
-    );
-
-    private static final Set<String> LOGIN_METHODS = Set.of(
-            "com.doctorappointment.PatientService/Login",
-            "com.doctorappointment.DoctorService/DoctorLogin"
+            "RegisterPatient",
+            "GetAllPatient",
+            "RefreshTokens",
+            "GetAllDoctorList",
+            "RegisterDoctor",
+            "RefreshToken",
+            "Login",
+            "DoctorLogin"
     );
 
     private final JwtUtil jwtUtil;
@@ -41,13 +38,18 @@ public class JwtAuthInterceptor implements ServerInterceptor {
     public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(
             ServerCall<ReqT, RespT> call, Metadata metadata, ServerCallHandler<ReqT, RespT> next) {
         if(!isEnable){
+            /********************************************************
+             if isEnable true this block skipped
+                 and if isEnable false this block executed
+                    and bypass the interception and authentication
+              ************************************************************/
             return Contexts.interceptCall(Context.current(),call,metadata,next);
         }
 
         String method = call.getMethodDescriptor().getFullMethodName();
-
+        String simpleName=method.substring(method.lastIndexOf("/")+1);
         // Public and login methods don't need a JWT
-        if (PUBLIC_METHODS.contains(method) || LOGIN_METHODS.contains(method)) {
+        if (PUBLIC_METHODS.contains(simpleName)) {
             return Contexts.interceptCall(Context.current(), call, metadata, next);
         }
 

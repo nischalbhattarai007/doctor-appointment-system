@@ -31,13 +31,13 @@ public class ValidateNewAppointment {
         try {
             LocalDate localDate = LocalDate.parse(date);
             LocalDate now = LocalDate.now(NEPAL_ZONE);
-            LocalDate maxDate = now.plusMonths(3);
+//            LocalDate maxDate = now.plusMonths(3);
             if(localDate.isBefore(now)){
                 throw new DateValidationException("Appointment date cannot be in past.");
             }
-            if(localDate.isAfter(maxDate)){
-                throw new DateValidationException("Appointment date cannot be more then 3 months in advance.");
-            }
+//            if(localDate.isAfter(maxDate)){
+//                throw new DateValidationException("Appointment date cannot be more then 3 months in advance.");
+//            }
         } catch (DateTimeParseException e) {
             throw new DateValidationException("Invalid date format. Expected format: YYYY-MM-DD (example: 2026-07-20)");
         }

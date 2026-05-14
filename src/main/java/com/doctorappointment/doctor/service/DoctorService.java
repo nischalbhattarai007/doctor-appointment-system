@@ -6,6 +6,8 @@ import com.doctorappointment.doctor.repository.DoctorRepoInterface;
 import com.doctorappointment.doctor.repository.DoctorServiceInterface;
 import com.doctorappointment.doctor.util.GeoCalculateDistance;
 import com.doctorappointment.doctor.util.GeohashUtil;
+import com.doctorappointment.patient.dto.PatientModel;
+import com.doctorappointment.patient.service.PatientService;
 import jakarta.inject.Singleton;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
@@ -19,8 +21,7 @@ import java.util.UUID;
 public class DoctorService implements DoctorServiceInterface {
     private final DoctorRepoInterface doctorRepo;
     private final GeocodingService geocodingService;
-
-    public DoctorService(DoctorRepoInterface doctorRepo,GeocodingService geocodingService) {
+    public DoctorService(DoctorRepoInterface doctorRepo, GeocodingService geocodingService) {
         this.doctorRepo = doctorRepo;
         this.geocodingService = geocodingService;
     }
@@ -199,6 +200,7 @@ public class DoctorService implements DoctorServiceInterface {
         if (doctor == null) {
             throw new DoctorIdNotFoundException("Doctor not found with id " + id);
         }
+        
         if (doctor.isDeleted()) {
             throw new DoctorIdNotFoundException("Doctor account is deactivated");
         }

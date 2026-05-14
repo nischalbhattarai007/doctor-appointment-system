@@ -17,7 +17,7 @@ import java.util.UUID;
 
 @Slf4j
 @Singleton
- class PatientService implements PatientServiceInterface {
+ public class PatientService implements PatientServiceInterface {
     private static final Logger logger= LoggerFactory.getLogger(PatientService.class);
    private final PatientRepoInterface patientRepo;
 
