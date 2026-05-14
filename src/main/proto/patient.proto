@@ -25,14 +25,14 @@ message LoginRequest {
 }
 
 message LoginResponse {
+  // previous set as status
+  reserved 7;
+  reserved 8;
+  reserved 2;
+  reserved 4;
+  reserved 5;
+  reserved 6;
   string patient_id = 1;
-  string first_name = 2;
-  string last_name = 3;
-  string email = 4;
-  string phone_number = 5;
-  string address = 6;
-  string status = 7;
-  string message = 8;
   string token=9;
   string refresh_token=10;
 }
@@ -49,13 +49,14 @@ message RegisterPatientRequest {
 }
 
 message PatientResponse {
+  // previous set as status
+  reserved 7;
   string patient_id = 1;
   string first_name = 2;
   string last_name = 3;
   string email = 4;
   string phone_number = 5;
   string address = 6;
-  string status = 7;
   string message = 8;
 }
 
@@ -65,19 +66,21 @@ message GetByIdRequest {
 }
 
 message GetByIdResponse {
+  // previous set as status
+  reserved 7;
   string patient_id = 1;
   string first_name = 2;
   string last_name = 3;
   string email = 4;
   string phone_number = 5;
   string address = 6;
-  string status = 7;
   string message = 8;
 }
 
 message DeletePatientResponse{
+  // previous set as status
+  reserved 2;
   string patient_id = 1;
-  string status = 2;
   string message = 3;
 }
 
@@ -92,13 +95,14 @@ message UpdatePatientRequest {
 }
 
 message UpdatePatientResponse {
+  // previous set as status
+  reserved 7;
   string patient_id = 1;
   string first_name = 2;
   string last_name = 3;
   string email = 4;
   string phone_number = 5;
   string address = 6;
-  string status = 7;
   string message = 8;
 }
 //get patients by email
@@ -106,13 +110,14 @@ message GetByEmailRequest{
   string email = 1;
 }
 message GetByEmailResponse{
+  // previous set as status
+  reserved 7;
   string patient_id = 1;
   string first_name = 2;
   string last_name = 3;
   string email = 4;
   string phone_number = 5;
   string address = 6;
-  string status = 7;
   string message = 8;
 }
 

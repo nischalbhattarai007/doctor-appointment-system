@@ -39,7 +39,7 @@ public class PatientGrpcService extends PatientServiceGrpc.PatientServiceImplBas
             PatientModel patientModel = service.addPatient(patientReq);
             responseStreamObserver.onNext(
                     PatientGrpcHelper.toResponse
-                            (patientModel, "SUCCESS", "Patient registered successfully"));
+                            (patientModel, "Patient registered successfully"));
             log.info("Patient registered successfully");
             responseStreamObserver.onCompleted();
     }
@@ -73,7 +73,6 @@ public class PatientGrpcService extends PatientServiceGrpc.PatientServiceImplBas
                     .setAddress(patientModel.address())
                     .setPhoneNumber(patientModel.phoneNumber())
                     .setEmail(patientModel.email())
-                    .setStatus("Success")
                     .setMessage("Patients retrieved successfully")
                     .build();
             log.info("Patient retrieved from ID successfully");
@@ -108,7 +107,6 @@ public class PatientGrpcService extends PatientServiceGrpc.PatientServiceImplBas
                     .setAddress(patientModel.address())
                     .setPhoneNumber(patientModel.phoneNumber())
                     .setEmail(patientModel.email())
-                    .setStatus("Success")
                     .setMessage("Patients retrieved successfully")
                     .build();
             log.info("Patient retrieved from email  successfully");
@@ -133,7 +131,7 @@ public class PatientGrpcService extends PatientServiceGrpc.PatientServiceImplBas
             PatientModel patientModel = service.updatePatient(PatientGrpcHelper.fromUpdateRequest(request));
             responseStreamObserver.onNext(
                     PatientGrpcHelper.toUpdateResponse
-                            (patientModel, "Success", "Patient updated successfully"));
+                            (patientModel,  "Patient updated successfully"));
             log.info("Patient updated successfully");
             responseStreamObserver.onCompleted();
     }
@@ -154,7 +152,6 @@ public class PatientGrpcService extends PatientServiceGrpc.PatientServiceImplBas
             }
             service.deletePatient(id);
             DeletePatientResponse response = DeletePatientResponse.newBuilder()
-                    .setStatus("Success")
                     .setMessage("Patient deleted successfully")
                     .build();
             responseStreamObserver.onNext(response);
@@ -186,11 +183,6 @@ public class PatientGrpcService extends PatientServiceGrpc.PatientServiceImplBas
             String refreshToken = jwtUtil.refreshToken(email, role);
             LoginResponse response = LoginResponse.newBuilder()
                     .setPatientId(String.valueOf(patientModel.patientId()))
-                    .setFirstName(patientModel.firstName())
-                    .setLastName(patientModel.lastName())
-                    .setAddress(patientModel.address())
-                    .setEmail(patientModel.email())
-                    .setPhoneNumber(patientModel.phoneNumber())
                     .setToken(token)
                     .setRefreshToken(refreshToken)
                     .build();

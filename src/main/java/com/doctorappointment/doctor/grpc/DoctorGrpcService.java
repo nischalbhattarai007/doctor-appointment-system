@@ -75,7 +75,7 @@ public class DoctorGrpcService extends DoctorServiceGrpc.DoctorServiceImplBase {
         String token = jwtUtil.generateToken(email, "DOCTOR");
         String refreshToken = jwtUtil.refreshToken(email, "DOCTOR");
         responseObserver.onNext(
-                DoctorGrpcHelper.toLoginResponse(model, "SUCCESS", "Doctor login successfully", token, refreshToken));
+                DoctorGrpcHelper.toLoginResponse(model, token, refreshToken));
         log.info("Doctor login successfully");
         responseObserver.onCompleted();
     }

@@ -31,7 +31,6 @@ public class PatientGrpcHelper {
                 .build();
     }
     public static PatientResponse toResponse(PatientModel patient,
-                                             String status,
                                              String message) {
         return PatientResponse.newBuilder()
                 .setPatientId(patient.patientId().toString())
@@ -40,7 +39,6 @@ public class PatientGrpcHelper {
                 .setEmail(patient.email())
                 .setPhoneNumber(patient.phoneNumber())
                 .setAddress(patient.address())
-                .setStatus(status)
                 .setMessage(message)
                 .build();
     }
@@ -55,7 +53,6 @@ public class PatientGrpcHelper {
                 .build();
     }
     public static UpdatePatientResponse toUpdateResponse(PatientModel patient,
-                                                                         String status,
                                                                          String message) {
         return UpdatePatientResponse.newBuilder()
                 .setPatientId(patient.patientId().toString())
@@ -64,7 +61,6 @@ public class PatientGrpcHelper {
                 .setEmail(patient.email())
                 .setPhoneNumber(patient.phoneNumber())
                 .setAddress(patient.address())
-                .setStatus(status)
                 .setMessage(message)
                 .build();
     }

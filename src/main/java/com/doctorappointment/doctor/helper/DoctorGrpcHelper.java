@@ -96,19 +96,10 @@ public class DoctorGrpcHelper {
 
     //login
     public static DoctorLoginResponse toLoginResponse(DoctorModel doctor,
-                                                      String status,
-                                                      String message,
                                                       String token,
                                                       String refreshToken) {
         return DoctorLoginResponse.newBuilder()
                 .setDoctorId(doctor.doctorId().toString())
-                .setDoctorFirstName(doctor.firstName())
-                .setDoctorLastName(doctor.lastName())
-                .setDoctorEmail(doctor.email())
-                .setDoctorPhoneNumber(doctor.phoneNumber())
-                .setDoctorAddress(doctor.address())
-                .setDoctorStatus(status)
-                .setDoctorMessage(message)
                 .setToken(token)
                 .setRefreshToken(refreshToken)
                 .build();
