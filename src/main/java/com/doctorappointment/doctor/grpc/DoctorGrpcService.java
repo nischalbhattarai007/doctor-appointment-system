@@ -48,7 +48,7 @@ public class DoctorGrpcService extends DoctorServiceGrpc.DoctorServiceImplBase {
         DoctorModel doctor = service.addDoctor(
                 DoctorGrpcHelper.fromRegisterRequest(request));
         responseObserver.onNext(
-                DoctorGrpcHelper.toRegisterResponse(doctor, "SUCCESS", "Doctor registered successfully"));
+                DoctorGrpcHelper.toRegisterResponse(doctor, "Doctor registered successfully"));
         log.info("Doctor registered successfully");
         responseObserver.onCompleted();
     }

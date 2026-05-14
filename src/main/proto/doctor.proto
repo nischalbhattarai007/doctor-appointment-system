@@ -65,6 +65,7 @@ message RegisterDoctorRequest{
 }
 //register response
 message RegisterDoctorResponse{
+  reserved 15;//previously used for doctor_status
   string doctor_id = 1;
   string doctor_first_name = 2;
   string doctor_last_name = 3;
@@ -79,7 +80,6 @@ message RegisterDoctorResponse{
   double longitude = 12;
   string clinic_name=13;
   string clinic_building=14;
-  string doctor_status = 15;
   string doctor_message = 16;
 
 }

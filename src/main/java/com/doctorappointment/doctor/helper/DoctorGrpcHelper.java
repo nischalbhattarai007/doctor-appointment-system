@@ -6,7 +6,6 @@ import com.doctorappointment.doctor.dto.DoctorRequest;
 import jakarta.inject.Singleton;
 
 import java.util.List;
-import java.util.UUID;
 
 @Singleton
 public class DoctorGrpcHelper {
@@ -31,7 +30,7 @@ public class DoctorGrpcHelper {
 
     //register response to doctor
     public static RegisterDoctorResponse toRegisterResponse
-    (DoctorModel doctor, String status, String message) {
+    (DoctorModel doctor, String message) {
         return RegisterDoctorResponse.newBuilder()
                 .setDoctorId(doctor.doctorId().toString())
                 .setDoctorFirstName(doctor.firstName())
@@ -47,9 +46,7 @@ public class DoctorGrpcHelper {
                 .setLongitude(doctor.longitude())
                 .setClinicName(doctor.clinicName())
                 .setClinicBuilding(doctor.clinicBuilding())
-                .setDoctorStatus(status)
                 .setDoctorMessage(message)
-
                 .build();
     }
 
@@ -188,14 +185,18 @@ public class DoctorGrpcHelper {
         }
         return builder.build();
     }
-//response doctor availability
-    public static DoctorAvailabilityResponse toAvailabilityResponse(String doctorId,
-                                                                    String date,
-                                                                    boolean isAvailable,
-                                                                    int bookedCount,
-                                                                    int maxCapacity,
-                                                                    String status,
-                                                                    String message) {
+
+    //response doctor availability
+    public static DoctorAvailabilityResponse toAvailabilityResponse
+    (
+            String doctorId,
+            String date,
+            boolean isAvailable,
+            int bookedCount,
+            int maxCapacity,
+            String status,
+            String message
+    ) {
         return DoctorAvailabilityResponse.newBuilder()
                 .setDoctorId(doctorId)
                 .setDate(date)
